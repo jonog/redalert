@@ -10,7 +10,7 @@ Configure servers to monitor via `servers.json`:
          "name":"Server 1",
          "address":"http://server1.com/healthcheck",
          "interval":3,
-         "actions":["console"]
+         "actions":["console", "email"]
       },
       {
          "name":"Server 2",
@@ -31,8 +31,16 @@ Configure servers to monitor via `servers.json`:
 Build and run with env variables set for configuring actions.
 ```
 go build
-RA_SLACK_URL=<webhook_url> ./redalert
+
+RA_GMAIL_USER=<insert> \
+RA_GMAIL_PASS=<insert> \
+RA_GMAIL_NOTIFICATION_ADDRESS=<insert> \
+RA_SLACK_URL=<insert> \
+./redalert
 ```
+
+### Note for Gmail:
+If there are errors sending email via gmail - enable `Access for less secure apps` under Account permissions @ https://www.google.com/settings/u/2/security
 
 ### TODO
 * Setup server info & alerting configuration via config file(s)

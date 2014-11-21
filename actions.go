@@ -1,11 +1,7 @@
 package main
 
 import (
-	"bytes"
-	"encoding/json"
-	"errors"
 	"log"
-	"net/http"
 	"os"
 )
 
@@ -23,6 +19,16 @@ func (s *Service) SetupActions() {
 		log.Println("Slack is not configured")
 	} else {
 		s.actions["slack"] = SlackWebhook{url: os.Getenv("RA_SLACK_URL")}
+	}
+
+	if os.Getenv("RA_GMAIL_USER") == "" || os.Getenv("RA_GMAIL_PASS") == "" || os.Getenv("RA_GMAIL_NOTIFICATION_ADDRESS") == "" {
+		log.Println("Email is not configured")
+	} else {
+		s.actions["email"] = Email{
+			user:                os.Getenv("RA_GMAIL_USER"),
+			pass:                os.Getenv("RA_GMAIL_PASS"),
+			notificationAddress: os.Getenv("RA_GMAIL_NOTIFICATION_ADDRESS"),
+		}
 	}
 
 }
@@ -45,44 +51,5 @@ func (a ConsoleMessage) Send(server *Server) error {
 	return nil
 }
 
-type SlackWebhook struct {
-	url string
-}
-
-func (a SlackWebhook) Send(server *Server) error {
-	message := SlackPayload{
-		Channel:   "#general",
-		Username:  "redalert",
-		Text:      "Uhoh, " + server.name + " has been nuked!!!",
-		Parse:     "full",
-		IconEmoji: ":rocket:",
-	}
-
-	buf, err := json.Marshal(message)
-	if err != nil {
-		return err
-	}
-
-	resp, err := http.Post(a.url, "application/json", bytes.NewBuffer(buf))
-	if err != nil {
-		return err
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		return errors.New("Not OK")
-	}
-	return nil
-}
-
-type SlackPayload struct {
-	Channel   string `json:"channel"`
-	Username  string `json:"username,omitempty"`
-	Text      string `json:"text"`
-	Parse     string `json:"parse"`
-	IconEmoji string `json:"icon_emoji,omitempty"`
-}
-
-// TODO
-type Email struct{}
 type SMS struct{}
 type ExecuteCommand struct{}
