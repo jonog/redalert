@@ -42,7 +42,7 @@ func (s *Server) Ping() error {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		return errors.New("Invalid status code")
 	}
 	s.log.Println("OK", s.name)
