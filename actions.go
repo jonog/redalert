@@ -31,6 +31,17 @@ func (s *Service) SetupActions() {
 		}
 	}
 
+	if os.Getenv("RA_TWILIO_ACCOUNT_SID") == "" || os.Getenv("RA_TWILIO_AUTH_TOKEN") == "" || os.Getenv("RA_TWILIO_PHONE_NUMBER") == "" || os.Getenv("RA_TWILIO_TWILIO_NUMBER") == "" {
+		log.Println("SMS is not configured")
+	} else {
+		s.actions["sms"] = SMS{
+			accountSid:   os.Getenv("RA_TWILIO_ACCOUNT_SID"),
+			authToken:    os.Getenv("RA_TWILIO_AUTH_TOKEN"),
+			phoneNumber:  os.Getenv("RA_TWILIO_PHONE_NUMBER"),
+			twilioNumber: os.Getenv("RA_TWILIO_TWILIO_NUMBER"),
+		}
+	}
+
 }
 
 func (s *Service) GetAction(name string) Action {
@@ -51,5 +62,4 @@ func (a ConsoleMessage) Send(server *Server) error {
 	return nil
 }
 
-type SMS struct{}
 type ExecuteCommand struct{}

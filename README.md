@@ -36,6 +36,10 @@ RA_GMAIL_USER=<insert> \
 RA_GMAIL_PASS=<insert> \
 RA_GMAIL_NOTIFICATION_ADDRESS=<insert> \
 RA_SLACK_URL=<insert> \
+RA_TWILIO_ACCOUNT_SID=<insert> \
+RA_TWILIO_AUTH_TOKEN=<insert> \
+RA_TWILIO_PHONE_NUMBER=<insert> \
+RA_TWILIO_TWILIO_NUMBER=<insert> \
 ./redalert
 ```
 
@@ -46,7 +50,5 @@ If there are errors sending email via gmail - enable `Access for less secure app
 * Setup server info & alerting configuration via config file(s)
 * Add more alerting configurations. I.e. add additional types which satisfy the Action interface.
 ```
-type Email struct{}
-type SMS struct{}
 type ExecuteCommand struct{}
 ```
