@@ -1,5 +1,9 @@
 ### Redalert
-For monitoring a series of servers at specified intervals & triggering actions if there is downtime (e.g. send email, post webhook).
+For monitoring a series of servers at specified intervals & triggering actions if there is downtime. Currently supports:
+* sending email (via gmail)
+* sending SMS (via Twilio)
+* posting a message to Slack
+* messaging on `stderr`
 
 #### Getting started:
 Configure servers to monitor via `servers.json`:
@@ -10,19 +14,19 @@ Configure servers to monitor via `servers.json`:
          "name":"Server 1",
          "address":"http://server1.com/healthcheck",
          "interval":3,
-         "actions":["console", "email"]
+         "actions":["stderr", "email"]
       },
       {
          "name":"Server 2",
          "address":"http://server2.com/healthcheck",
          "interval":3,
-         "actions":["console", "slack"]
+         "actions":["stderr", "slack"]
       },
       {
          "name":"Server 1",
          "address":"http://server3.com/healthcheck",
          "interval":3,
-         "actions":["console"]
+         "actions":["stderr", "sms"]
       }
    ]
 }
@@ -40,15 +44,12 @@ RA_TWILIO_ACCOUNT_SID=<insert> \
 RA_TWILIO_AUTH_TOKEN=<insert> \
 RA_TWILIO_PHONE_NUMBER=<insert> \
 RA_TWILIO_TWILIO_NUMBER=<insert> \
-./redalert
+./redalert 2> errors.log
 ```
 
 ### Note for Gmail:
 If there are errors sending email via gmail - enable `Access for less secure apps` under Account permissions @ https://www.google.com/settings/u/2/security
 
 ### TODO
-* Setup server info & alerting configuration via config file(s)
-* Add more alerting configurations. I.e. add additional types which satisfy the Action interface.
-```
-type ExecuteCommand struct{}
-```
+* Ability to send to multiple email addresses & SMS numbers
+* Store latency information

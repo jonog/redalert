@@ -28,7 +28,7 @@ func (s *Service) AddServer(name string, address string, interval int, actionNam
 		address:  address,
 		interval: interval,
 		actions:  actions,
-		log:      log.New(os.Stdout, name+" ", log.Ldate|log.Ltime|log.Lshortfile),
+		log:      log.New(os.Stdout, name+" ", log.Ldate|log.Ltime),
 	})
 
 }

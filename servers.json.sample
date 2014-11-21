@@ -4,19 +4,19 @@
          "name":"Server 1",
          "address":"http://server1.com/healthcheck",
          "interval":3,
-         "actions":["console"]
+         "actions":["stderr", "email"]
       },
       {  
          "name":"Server 2",
          "address":"http://server2.com/healthcheck",
          "interval":3,
-         "actions":["console", "slack"]
+         "actions":["stderr", "slack"]
       },
       {  
          "name":"Server 1",
          "address":"http://server3.com/healthcheck",
          "interval":3,
-         "actions":["console"]
+         "actions":["stderr", "sms"]
       }
    ]
 }
