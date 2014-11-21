@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"net/http"
 	"net/url"
 	"strings"
@@ -28,7 +29,10 @@ func (a SMS) Send(server *Server) error {
 	req.SetBasicAuth(a.accountSid, a.authToken)
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	_, err := client.Do(req)
+	resp, err := client.Do(req)
+	if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
+		return errors.New("Invalid Twilio status code")
+	}
 	return err
 
 }
