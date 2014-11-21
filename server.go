@@ -16,29 +16,21 @@ type Server struct {
 	log      *log.Logger
 }
 
-func getAction(name string) Action {
-	switch name {
-	case "console_message":
-		return ConsoleMessage{}
-	default:
-		panic("Unknown action!")
-	}
-}
-
-func NewServer(name string, address string, interval int, actionNames []string) *Server {
+func (s *Service) AddServer(name string, address string, interval int, actionNames []string) {
 
 	actions := []Action{}
 	for _, actionName := range actionNames {
-		actions = append(actions, getAction(actionName))
+		actions = append(actions, s.GetAction(actionName))
 	}
 
-	return &Server{
+	s.servers = append(s.servers, &Server{
 		name:     name,
 		address:  address,
 		interval: interval,
 		actions:  actions,
 		log:      log.New(os.Stdout, name+" ", log.Ldate|log.Ltime|log.Lshortfile),
-	}
+	})
+
 }
 
 func (s *Server) Ping() error {

@@ -1,18 +1,32 @@
 package main
 
-func main() {
+type Service struct {
+	servers []*Server
+	actions map[string]Action
+}
 
-	servers := []*Server{
-		NewServer("Server 1", "http://server1.com/healthcheck", 3, []string{"console_message"}),
-		NewServer("Server 2", "http://server2.com/healthcheck", 3, []string{"console_message"}),
-		NewServer("Server 3", "http://server3.com/healthcheck", 3, []string{"console_message"}),
-	}
-
-	for _, server := range servers {
+func (s *Service) Start() {
+	stopTimer := make(chan bool)
+	for _, server := range s.servers {
 		go server.Monitor()
 	}
-
-	stopTimer := make(chan bool)
 	<-stopTimer
+}
+
+func main() {
+
+	service := new(Service)
+	service.SetupActions()
+
+	config, err := ReadConfigFile()
+	if err != nil {
+		panic("Missing or invalid config")
+	}
+
+	for _, sc := range config.Servers {
+		service.AddServer(sc.Name, sc.Address, sc.Interval, sc.Actions)
+	}
+
+	service.Start()
 
 }
