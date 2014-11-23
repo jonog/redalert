@@ -5,6 +5,8 @@ For monitoring a series of servers at specified intervals & triggering alerts if
 * posting a message to Slack
 * messaging on `stderr`
 
+![](https://cloud.githubusercontent.com/assets/1314353/5157264/edb21476-733a-11e4-8452-4b96b443f7ee.jpg)
+
 #### Getting started:
 Configure servers to monitor via `servers.json`:
 ```

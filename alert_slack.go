@@ -12,6 +12,7 @@ type SlackWebhook struct {
 }
 
 func (a SlackWebhook) Trigger(event *Event) error {
+
 	message := SlackPayload{
 		Channel:   "#general",
 		Username:  "redalert",
@@ -33,6 +34,8 @@ func (a SlackWebhook) Trigger(event *Event) error {
 	if resp.StatusCode != http.StatusOK {
 		return errors.New("Not OK")
 	}
+
+	event.server.log.Println(white, "Slack alert successfully triggered.", reset)
 	return nil
 }
 

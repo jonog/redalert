@@ -33,6 +33,12 @@ func (a SMS) Trigger(event *Event) error {
 	if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
 		return errors.New("Invalid Twilio status code")
 	}
-	return err
+
+	if err != nil {
+		return err
+	}
+
+	event.server.log.Println(white, "SMS alert successfully triggered.", reset)
+	return nil
 
 }

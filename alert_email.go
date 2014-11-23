@@ -17,5 +17,10 @@ func (a Email) Trigger(event *Event) error {
 	auth := smtp.PlainAuth("", a.user, a.pass, "smtp.gmail.com")
 	err := smtp.SendMail("smtp.gmail.com:587", auth, a.user,
 		[]string{a.notificationAddress}, []byte(body))
-	return err
+	if err != nil {
+		return err
+	}
+
+	event.server.log.Println(white, "Email alert successfully triggered.", reset)
+	return nil
 }
