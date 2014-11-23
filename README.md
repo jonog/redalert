@@ -1,5 +1,5 @@
 ### Redalert
-For monitoring a series of servers at specified intervals & triggering actions if there is downtime. Currently supports:
+For monitoring a series of servers at specified intervals & triggering alerts if there is downtime. Currently supports:
 * sending email (via gmail)
 * sending SMS (via Twilio)
 * posting a message to Slack
@@ -14,25 +14,25 @@ Configure servers to monitor via `servers.json`:
          "name":"Server 1",
          "address":"http://server1.com/healthcheck",
          "interval":3,
-         "actions":["stderr", "email"]
+         "alerts":["stderr", "email"]
       },
       {
          "name":"Server 2",
          "address":"http://server2.com/healthcheck",
          "interval":3,
-         "actions":["stderr", "slack"]
+         "alerts":["stderr", "slack"]
       },
       {
          "name":"Server 1",
          "address":"http://server3.com/healthcheck",
          "interval":3,
-         "actions":["stderr", "sms"]
+         "alerts":["stderr", "sms"]
       }
    ]
 }
 ```
 
-Build and run with env variables set for configuring actions.
+Build and run with env variables set for configuring alerts.
 ```
 go build
 

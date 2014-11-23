@@ -2,7 +2,7 @@ package main
 
 type Service struct {
 	servers []*Server
-	actions map[string]Action
+	alerts  map[string]Alert
 }
 
 func (s *Service) Start() {
@@ -16,7 +16,7 @@ func (s *Service) Start() {
 func main() {
 
 	service := new(Service)
-	service.SetupActions()
+	service.SetupAlerts()
 
 	config, err := ReadConfigFile()
 	if err != nil {
@@ -24,7 +24,7 @@ func main() {
 	}
 
 	for _, sc := range config.Servers {
-		service.AddServer(sc.Name, sc.Address, sc.Interval, sc.Actions)
+		service.AddServer(sc.Name, sc.Address, sc.Interval, sc.Alerts)
 	}
 
 	service.Start()

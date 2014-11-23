@@ -13,7 +13,7 @@ type ServerConfig struct {
 	Name     string   `json:"name"`
 	Address  string   `json:"address"`
 	Interval int      `json:"interval"`
-	Actions  []string `json:"actions"`
+	Alerts   []string `json:"alerts"`
 }
 
 func ReadConfigFile() (*Config, error) {

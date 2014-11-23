@@ -12,22 +12,22 @@ type Server struct {
 	name     string
 	address  string
 	interval int
-	actions  []Action
+	alerts   []Alert
 	log      *log.Logger
 }
 
-func (s *Service) AddServer(name string, address string, interval int, actionNames []string) {
+func (s *Service) AddServer(name string, address string, interval int, alertNames []string) {
 
-	actions := []Action{}
-	for _, actionName := range actionNames {
-		actions = append(actions, s.GetAction(actionName))
+	alerts := []Alert{}
+	for _, alertName := range alertNames {
+		alerts = append(alerts, s.GetAlert(alertName))
 	}
 
 	s.servers = append(s.servers, &Server{
 		name:     name,
 		address:  address,
 		interval: interval,
-		actions:  actions,
+		alerts:   alerts,
 		log:      log.New(os.Stdout, name+" ", log.Ldate|log.Ltime),
 	})
 
@@ -59,7 +59,7 @@ func (s *Server) Monitor() {
 			err = s.Ping()
 			if err != nil {
 				s.log.Println("ERROR", s.name)
-				s.TriggerActions()
+				s.TriggerAlerts()
 			}
 		}
 	}()
@@ -68,10 +68,10 @@ func (s *Server) Monitor() {
 	<-block
 }
 
-func (s *Server) TriggerActions() {
+func (s *Server) TriggerAlerts() {
 
 	var err error
-	for _, alert := range s.actions {
+	for _, alert := range s.alerts {
 		err = alert.Send(s)
 		if err != nil {
 			s.log.Fatal(err)
