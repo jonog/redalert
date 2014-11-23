@@ -8,6 +8,12 @@ import (
 	"time"
 )
 
+var (
+	green = string([]byte{27, 91, 57, 55, 59, 52, 50, 109})
+	red   = string([]byte{27, 91, 57, 55, 59, 52, 49, 109})
+	reset = string([]byte{27, 91, 48, 109})
+)
+
 type Server struct {
 	name     string
 	address  string
@@ -45,7 +51,7 @@ func (s *Server) Ping() error {
 	if resp.StatusCode != http.StatusOK {
 		return errors.New("Invalid status code")
 	}
-	s.log.Println("OK", s.name)
+	s.log.Println(green, "OK", reset, s.name)
 
 	return nil
 }
@@ -58,7 +64,7 @@ func (s *Server) Monitor() {
 		for _ = range ticker.C {
 			err = s.Ping()
 			if err != nil {
-				s.log.Println("ERROR", s.name)
+				s.log.Println(red, "ERROR", reset, s.name)
 				s.TriggerAlerts()
 			}
 		}
