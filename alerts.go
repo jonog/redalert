@@ -3,10 +3,21 @@ package main
 import (
 	"log"
 	"os"
+	"strings"
+	"time"
 )
 
 type Alert interface {
-	Send(*Server) error
+	Trigger(*Event) error
+}
+
+type Event struct {
+	server *Server
+	time   time.Time
+}
+
+func (e *Event) ShortMessage() string {
+	return strings.Join([]string{"Uhoh,", e.server.name, "not responding. Failed ping to", e.server.address}, " ")
 }
 
 func (s *Service) SetupAlerts() {

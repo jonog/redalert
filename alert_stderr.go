@@ -7,8 +7,7 @@ import (
 
 type StandardError struct{}
 
-func (a StandardError) Send(server *Server) error {
-	server.log.Println()
-	fmt.Fprintln(os.Stderr, "Uhoh, "+server.name+" has been nuked!!!")
+func (a StandardError) Trigger(event *Event) error {
+	fmt.Fprintln(os.Stderr, event.ShortMessage())
 	return nil
 }

@@ -11,11 +11,11 @@ type SlackWebhook struct {
 	url string
 }
 
-func (a SlackWebhook) Send(server *Server) error {
+func (a SlackWebhook) Trigger(event *Event) error {
 	message := SlackPayload{
 		Channel:   "#general",
 		Username:  "redalert",
-		Text:      "Uhoh, " + server.name + " has been nuked!!!",
+		Text:      event.ShortMessage(),
 		Parse:     "full",
 		IconEmoji: ":rocket:",
 	}

@@ -8,17 +8,14 @@ type Email struct {
 	notificationAddress string
 }
 
-func (a Email) Send(server *Server) error {
+func (a Email) Trigger(event *Event) error {
 
-	body := "To: " + a.notificationAddress + "\r\nSubject: " +
-		"Uhoh, " + server.name + " has been nuked!!!" + "\r\n\r\n" +
-		"Issue pinging " + server.address
+	body := "To: " + a.notificationAddress +
+		"\r\nSubject: " + event.ShortMessage() +
+		"\r\n\r\n" + event.ShortMessage()
+
 	auth := smtp.PlainAuth("", a.user, a.pass, "smtp.gmail.com")
 	err := smtp.SendMail("smtp.gmail.com:587", auth, a.user,
 		[]string{a.notificationAddress}, []byte(body))
-	if err != nil {
-		return err
-	}
-	return nil
-
+	return err
 }

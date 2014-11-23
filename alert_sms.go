@@ -14,14 +14,14 @@ type SMS struct {
 	twilioNumber string
 }
 
-func (a SMS) Send(server *Server) error {
+func (a SMS) Trigger(event *Event) error {
 
 	urlStr := "https://api.twilio.com/2010-04-01/Accounts/" + a.accountSid + "/Messages.json"
 
 	v := url.Values{}
 	v.Set("To", a.phoneNumber)
 	v.Set("From", a.twilioNumber)
-	v.Set("Body", "Uhoh, "+server.name+" has been nuked!!!")
+	v.Set("Body", event.ShortMessage())
 	rb := *strings.NewReader(v.Encode())
 
 	client := &http.Client{}

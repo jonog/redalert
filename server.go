@@ -70,9 +70,11 @@ func (s *Server) Monitor() {
 
 func (s *Server) TriggerAlerts() {
 
+	event := &Event{server: s, time: time.Now()}
+
 	var err error
 	for _, alert := range s.alerts {
-		err = alert.Send(s)
+		err = alert.Trigger(event)
 		if err != nil {
 			s.log.Fatal(err)
 		}
