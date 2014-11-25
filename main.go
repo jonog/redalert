@@ -1,16 +1,34 @@
 package main
 
+import (
+	"os"
+	"os/signal"
+	"sync"
+)
+
 type Service struct {
 	servers []*Server
 	alerts  map[string]Alert
+	wg      sync.WaitGroup
 }
 
 func (s *Service) Start() {
-	stopTimer := make(chan bool)
+
+	// use this to keep the service running, even if no monitoring is occuring
+	s.wg.Add(1)
+
 	for _, server := range s.servers {
 		go server.Monitor()
 	}
-	<-stopTimer
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	go func() {
+		for _ = range c {
+			s.wg.Done()
+		}
+	}()
+
 }
 
 func main() {
@@ -28,5 +46,6 @@ func main() {
 	}
 
 	service.Start()
+	service.wg.Wait()
 
 }

@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"sync"
 	"time"
 )
 
@@ -21,6 +23,8 @@ type Server struct {
 	interval int
 	alerts   []Alert
 	log      *log.Logger
+	service  *Service
+	wg       sync.WaitGroup
 }
 
 func (s *Service) AddServer(name string, address string, interval int, alertNames []string) {
@@ -30,12 +34,15 @@ func (s *Service) AddServer(name string, address string, interval int, alertName
 		alerts = append(alerts, s.GetAlert(alertName))
 	}
 
+	var wg sync.WaitGroup
 	s.servers = append(s.servers, &Server{
 		name:     name,
 		address:  address,
 		interval: interval,
 		alerts:   alerts,
 		log:      log.New(os.Stdout, name+" ", log.Ldate|log.Ltime),
+		service:  s,
+		wg:       wg,
 	})
 
 }
@@ -59,6 +66,9 @@ func (s *Server) Ping() error {
 
 func (s *Server) Monitor() {
 
+	s.service.wg.Add(1)
+	s.wg.Add(1)
+
 	var err error
 	ticker := time.NewTicker(time.Second * time.Duration(s.interval))
 	go func() {
@@ -71,8 +81,18 @@ func (s *Server) Monitor() {
 		}
 	}()
 
-	block := make(chan bool)
-	<-block
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	go func() {
+		for _ = range c {
+			s.wg.Done()
+		}
+	}()
+
+	s.wg.Wait()
+
+	s.service.wg.Done()
+
 }
 
 func (s *Server) TriggerAlerts() {
