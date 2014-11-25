@@ -37,7 +37,7 @@ type TwilioConfig struct {
 }
 
 func ReadConfigFile() (*Config, error) {
-	file, err := ioutil.ReadFile("servers.json")
+	file, err := ioutil.ReadFile("config.json")
 	if err != nil {
 		return nil, err
 	}

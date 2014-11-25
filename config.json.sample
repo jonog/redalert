@@ -1,0 +1,37 @@
+{  
+   "servers":[  
+      {  
+         "name":"Server 1",
+         "address":"http://server1.com/healthcheck",
+         "interval":10,
+         "alerts":["stderr"]
+      },
+      {  
+         "name":"Server 2",
+         "address":"http://server2.com/healthcheck",
+         "interval":10,
+         "alerts":["stderr", "gmail", "slack", "twilio"]
+      },
+      {  
+         "name":"Server 3",
+         "address":"http://server3.com/healthcheck",
+         "interval":10,
+         "alerts":["stderr"]
+      }
+   ],
+   "gmail": {
+      "user": "",
+      "pass": "",
+      "notification_addresses": []
+   },
+   "slack": {
+      "webhook_url": ""
+   },
+   "twilio": {
+      "account_sid": "",
+      "auth_token": "",
+      "twilio_number": "",
+      "notification_numbers": []
+   }
+
+}

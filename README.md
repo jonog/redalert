@@ -5,47 +5,56 @@ For monitoring a series of servers at specified intervals & triggering alerts if
 * posting a message to Slack
 * messaging on `stderr`
 
+Current alert options: ["stderr", "gmail", "slack", "twilio"]
+
 ![](https://cloud.githubusercontent.com/assets/1314353/5157264/edb21476-733a-11e4-8452-4b96b443f7ee.jpg)
 
 #### Getting started:
-Configure servers to monitor via `servers.json`:
+Configure servers to monitor & alert settings via `config.json`:
 ```
-{
-   "servers":[
-      {
+{  
+   "servers":[  
+      {  
          "name":"Server 1",
          "address":"http://server1.com/healthcheck",
-         "interval":3,
-         "alerts":["stderr", "email"]
+         "interval":10,
+         "alerts":["stderr"]
       },
-      {
+      {  
          "name":"Server 2",
          "address":"http://server2.com/healthcheck",
-         "interval":3,
-         "alerts":["stderr", "slack"]
+         "interval":10,
+         "alerts":["stderr", "gmail", "slack", "twilio"]
       },
-      {
-         "name":"Server 1",
+      {  
+         "name":"Server 3",
          "address":"http://server3.com/healthcheck",
-         "interval":3,
-         "alerts":["stderr", "sms"]
+         "interval":10,
+         "alerts":["stderr"]
       }
-   ]
+   ],
+   "gmail": {
+      "user": "",
+      "pass": "",
+      "notification_addresses": []
+   },
+   "slack": {
+      "webhook_url": ""
+   },
+   "twilio": {
+      "account_sid": "",
+      "auth_token": "",
+      "twilio_number": "",
+      "notification_numbers": []
+   }
+
 }
 ```
 
-Build and run with env variables set for configuring alerts.
+Build and run (capture stderr).
 ```
 go build
 
-RA_GMAIL_USER=<insert> \
-RA_GMAIL_PASS=<insert> \
-RA_GMAIL_NOTIFICATION_ADDRESS=<insert> \
-RA_SLACK_URL=<insert> \
-RA_TWILIO_ACCOUNT_SID=<insert> \
-RA_TWILIO_AUTH_TOKEN=<insert> \
-RA_TWILIO_PHONE_NUMBER=<insert> \
-RA_TWILIO_TWILIO_NUMBER=<insert> \
 ./redalert 2> errors.log
 ```
 
@@ -53,5 +62,6 @@ RA_TWILIO_TWILIO_NUMBER=<insert> \
 If there are errors sending email via gmail - enable `Access for less secure apps` under Account permissions @ https://www.google.com/settings/u/2/security
 
 ### TODO
-* Ability to send to multiple email addresses & SMS numbers
 * Store latency information
+* Change server config on the fly
+* Exponential backoff after X attempts

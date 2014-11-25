@@ -5,13 +5,13 @@ import (
 	"strings"
 )
 
-type Email struct {
+type Gmail struct {
 	user                  string
 	pass                  string
 	notificationAddresses []string
 }
 
-func (a Email) Trigger(event *Event) error {
+func (a Gmail) Trigger(event *Event) error {
 
 	body := "To: " + strings.Join(a.notificationAddresses, ",") +
 		"\r\nSubject: " + event.ShortMessage() +
@@ -24,6 +24,6 @@ func (a Email) Trigger(event *Event) error {
 		return err
 	}
 
-	event.server.log.Println(white, "Email alert successfully triggered.", reset)
+	event.server.log.Println(white, "Gmail alert successfully triggered.", reset)
 	return nil
 }

@@ -7,14 +7,14 @@ import (
 	"strings"
 )
 
-type SMS struct {
+type Twilio struct {
 	accountSid   string
 	authToken    string
 	phoneNumbers []string
 	twilioNumber string
 }
 
-func (a SMS) Trigger(event *Event) (err error) {
+func (a Twilio) Trigger(event *Event) (err error) {
 
 	msg := event.ShortMessage()
 	for _, num := range a.phoneNumbers {
@@ -23,7 +23,7 @@ func (a SMS) Trigger(event *Event) (err error) {
 			return
 		}
 	}
-	event.server.log.Println(white, "SMS alert successfully triggered.", reset)
+	event.server.log.Println(white, "Twilio alert successfully triggered.", reset)
 	return nil
 
 }
