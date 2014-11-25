@@ -34,12 +34,13 @@ func (s *Service) Start() {
 func main() {
 
 	service := new(Service)
-	service.SetupAlerts()
 
 	config, err := ReadConfigFile()
 	if err != nil {
 		panic("Missing or invalid config")
 	}
+
+	service.SetupAlerts(config)
 
 	for _, sc := range config.Servers {
 		service.AddServer(sc.Name, sc.Address, sc.Interval, sc.Alerts)

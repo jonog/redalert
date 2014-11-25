@@ -20,7 +20,7 @@ func (e *Event) ShortMessage() string {
 	return strings.Join([]string{"Uhoh,", e.server.name, "not responding. Failed ping to", e.server.address}, " ")
 }
 
-func (s *Service) SetupAlerts() {
+func (s *Service) SetupAlerts(config *Config) {
 
 	logger := log.New(os.Stdout, "Setup ", log.Ldate|log.Ltime)
 
@@ -28,30 +28,30 @@ func (s *Service) SetupAlerts() {
 
 	s.alerts["stderr"] = StandardError{}
 
-	if os.Getenv("RA_SLACK_URL") == "" {
+	if config.Slack == nil || config.Slack.WebhookURL == "" {
 		logger.Println("Slack is not configured")
 	} else {
-		s.alerts["slack"] = SlackWebhook{url: os.Getenv("RA_SLACK_URL")}
+		s.alerts["slack"] = SlackWebhook{url: config.Slack.WebhookURL}
 	}
 
-	if os.Getenv("RA_GMAIL_USER") == "" || os.Getenv("RA_GMAIL_PASS") == "" || os.Getenv("RA_GMAIL_NOTIFICATION_ADDRESS") == "" {
-		logger.Println("Email is not configured")
+	if config.Gmail == nil || config.Gmail.User == "" || config.Gmail.Pass == "" || len(config.Gmail.NotificationAddresses) == 0 {
+		logger.Println("Gmail is not configured")
 	} else {
 		s.alerts["email"] = Email{
-			user:                os.Getenv("RA_GMAIL_USER"),
-			pass:                os.Getenv("RA_GMAIL_PASS"),
-			notificationAddress: os.Getenv("RA_GMAIL_NOTIFICATION_ADDRESS"),
+			user: config.Gmail.User,
+			pass: config.Gmail.Pass,
+			notificationAddresses: config.Gmail.NotificationAddresses,
 		}
 	}
 
-	if os.Getenv("RA_TWILIO_ACCOUNT_SID") == "" || os.Getenv("RA_TWILIO_AUTH_TOKEN") == "" || os.Getenv("RA_TWILIO_PHONE_NUMBER") == "" || os.Getenv("RA_TWILIO_TWILIO_NUMBER") == "" {
+	if config.Twilio == nil || config.Twilio.AccountSID == "" || config.Twilio.AuthToken == "" || len(config.Twilio.NotificationNumbers) == 0 || config.Twilio.TwilioNumber == "" {
 		logger.Println("SMS is not configured")
 	} else {
 		s.alerts["sms"] = SMS{
-			accountSid:   os.Getenv("RA_TWILIO_ACCOUNT_SID"),
-			authToken:    os.Getenv("RA_TWILIO_AUTH_TOKEN"),
-			phoneNumber:  os.Getenv("RA_TWILIO_PHONE_NUMBER"),
-			twilioNumber: os.Getenv("RA_TWILIO_TWILIO_NUMBER"),
+			accountSid:   config.Twilio.AccountSID,
+			authToken:    config.Twilio.AuthToken,
+			phoneNumbers: config.Twilio.NotificationNumbers,
+			twilioNumber: config.Twilio.TwilioNumber,
 		}
 	}
 
