@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"sync"
 	"time"
 )
@@ -52,12 +53,12 @@ func (s *Server) Ping() error {
 	s.log.Println("Pinging: ", s.name)
 	resp, err := http.Get(s.address)
 	if err != nil {
-		return errors.New("Error retrieving from URL")
+		return errors.New("redalert ping: failed http.Get " + err.Error())
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return errors.New("Invalid status code")
+		return errors.New("redalert ping: non-200 status code. status code was " + strconv.Itoa(resp.StatusCode))
 	}
 	s.log.Println(green, "OK", reset, s.name)
 
@@ -72,10 +73,19 @@ func (s *Server) Monitor() {
 	var err error
 	ticker := time.NewTicker(time.Second * time.Duration(s.interval))
 	go func() {
+
+		var startTime time.Time
+		var endTime time.Time
+
 		for _ = range ticker.C {
+
+			startTime = time.Now()
 			err = s.Ping()
+			endTime = time.Now()
+			s.log.Println(white, "Analytics: ", endTime.Sub(startTime), reset)
+
 			if err != nil {
-				s.log.Println(red, "ERROR", reset, s.name)
+				s.log.Println(red, "ERROR: ", err, reset, s.name)
 				s.TriggerAlerts()
 			}
 		}
