@@ -5,7 +5,10 @@ For monitoring a series of servers at specified intervals & triggering alerts if
 * posting a message to Slack
 * messaging on `stderr`
 
-Current alert options: ["stderr", "gmail", "slack", "twilio"]
+#### Features:
+Alert options: ["stderr", "gmail", "slack", "twilio"]
+Provides ping status & latency info to `stdout`.
+Has a linear back-off after failed pings (see notes below).
 
 ![](https://cloud.githubusercontent.com/assets/1314353/5157264/edb21476-733a-11e4-8452-4b96b443f7ee.jpg)
 
@@ -58,10 +61,17 @@ go build
 ./redalert 2> errors.log
 ```
 
-### Note for Gmail:
+
+#### Linear back-off after failure
+The pinging interval will be adjusted to X * pinging interval where X is the number of times the pinger has failed. E.g. after 1 failure, the pinging interval will not be changed, but a server (with pinging interval of 10s) which has failed ping once will only be pinged after 20s, then 30s, 40s etc.
+When a failing server is successfully pinged, the pinging frequency returns to the originally configured value.
+
+#### Note for Gmail:
 If there are errors sending email via gmail - enable `Access for less secure apps` under Account permissions @ https://www.google.com/settings/u/2/security
 
 ### TODO
+* Alerts on successful ping of failing server
 * Store latency information
 * Change server config on the fly
-* Exponential backoff after X attempts
+* Alternative backoff configurations (e.g. no backoff / exponential backoff after X attempts)
+* Improved handling/recovering from any errors detected in redalert
