@@ -19,13 +19,14 @@ var (
 )
 
 type Server struct {
-	name     string
-	address  string
-	interval int
-	alerts   []Alert
-	log      *log.Logger
-	service  *Service
-	wg       sync.WaitGroup
+	name      string
+	address   string
+	interval  int
+	alerts    []Alert
+	log       *log.Logger
+	service   *Service
+	failCount int
+	wg        sync.WaitGroup
 }
 
 func (s *Service) AddServer(name string, address string, interval int, alertNames []string) {
@@ -65,36 +66,52 @@ func (s *Server) Ping() error {
 	return nil
 }
 
+func (s *Server) SchedulePing(stopChan chan bool) {
+
+	originalDelay := time.Second * time.Duration(s.interval)
+	delay := time.Second * time.Duration(s.interval)
+
+	go func() {
+		var err error
+		for {
+
+			err = s.Ping()
+			if err != nil {
+				s.log.Println(red, "ERROR: ", err, reset, s.name)
+				event := &Event{server: s, time: time.Now()}
+				s.TriggerAlerts(event)
+				s.IncrFailCount()
+				if s.failCount > 0 {
+					delay = time.Second * time.Duration((s.failCount-1)*s.interval)
+				}
+			} else {
+				delay = originalDelay
+				s.failCount = 0
+			}
+
+			select {
+			case <-time.After(delay):
+			case <-stopChan:
+				return
+			}
+		}
+	}()
+
+}
+
 func (s *Server) Monitor() {
 
 	s.service.wg.Add(1)
 	s.wg.Add(1)
 
-	var err error
-	ticker := time.NewTicker(time.Second * time.Duration(s.interval))
+	stopScheduler := make(chan bool)
+	s.SchedulePing(stopScheduler)
+
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt)
 	go func() {
-
-		var startTime time.Time
-		var endTime time.Time
-
-		for _ = range ticker.C {
-
-			startTime = time.Now()
-			err = s.Ping()
-			endTime = time.Now()
-			s.log.Println(white, "Analytics: ", endTime.Sub(startTime), reset)
-
-			if err != nil {
-				s.log.Println(red, "ERROR: ", err, reset, s.name)
-				s.TriggerAlerts()
-			}
-		}
-	}()
-
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
-	go func() {
-		for _ = range c {
+		for _ = range sigChan {
+			stopScheduler <- true
 			s.wg.Done()
 		}
 	}()
@@ -105,10 +122,9 @@ func (s *Server) Monitor() {
 
 }
 
-func (s *Server) TriggerAlerts() {
+func (s *Server) TriggerAlerts(event *Event) {
 
-	event := &Event{server: s, time: time.Now()}
-
+	// TODO: shift to a queue
 	var err error
 	for _, alert := range s.alerts {
 		err = alert.Trigger(event)
@@ -116,4 +132,8 @@ func (s *Server) TriggerAlerts() {
 			s.log.Fatal(err)
 		}
 	}
+}
+
+func (s *Server) IncrFailCount() {
+	s.failCount += 1
 }
