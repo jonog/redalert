@@ -68,14 +68,23 @@ func (s *Server) Ping() error {
 
 func (s *Server) SchedulePing(stopChan chan bool) {
 
-	originalDelay := time.Second * time.Duration(s.interval)
-	delay := time.Second * time.Duration(s.interval)
-
 	go func() {
+
 		var err error
+
+		originalDelay := time.Second * time.Duration(s.interval)
+		delay := time.Second * time.Duration(s.interval)
+
+		var startTime time.Time
+		var endTime time.Time
+
 		for {
 
+			startTime = time.Now()
 			err = s.Ping()
+			endTime = time.Now()
+			s.log.Println(white, "Analytics: ", endTime.Sub(startTime), reset)
+
 			if err != nil {
 				s.log.Println(red, "ERROR: ", err, reset, s.name)
 				event := &Event{server: s, time: time.Now()}
