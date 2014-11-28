@@ -51,8 +51,12 @@ func (s *Service) AddServer(name string, address string, interval int, alertName
 
 func (s *Server) Ping() error {
 
+	startTime := time.Now()
 	s.log.Println("Pinging: ", s.name)
 	resp, err := http.Get(s.address)
+	endTime := time.Now()
+	s.log.Println(white, "Analytics: ", endTime.Sub(startTime), reset)
+
 	if err != nil {
 		return errors.New("redalert ping: failed http.Get " + err.Error())
 	}
@@ -75,23 +79,16 @@ func (s *Server) SchedulePing(stopChan chan bool) {
 		originalDelay := time.Second * time.Duration(s.interval)
 		delay := time.Second * time.Duration(s.interval)
 
-		var startTime time.Time
-		var endTime time.Time
-
 		for {
 
-			startTime = time.Now()
 			err = s.Ping()
-			endTime = time.Now()
-			s.log.Println(white, "Analytics: ", endTime.Sub(startTime), reset)
-
 			if err != nil {
 				s.log.Println(red, "ERROR: ", err, reset, s.name)
 				event := &Event{server: s, time: time.Now()}
 				s.TriggerAlerts(event)
 				s.IncrFailCount()
 				if s.failCount > 0 {
-					delay = time.Second * time.Duration((s.failCount-1)*s.interval)
+					delay = time.Second * time.Duration(s.failCount*s.interval)
 				}
 			} else {
 				delay = originalDelay
