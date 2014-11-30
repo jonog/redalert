@@ -12,12 +12,18 @@ type Alert interface {
 }
 
 type Event struct {
-	server *Server
-	time   time.Time
+	Server  *Server
+	Time    time.Time
+	Type    string
+	Latency time.Duration
 }
 
 func (e *Event) ShortMessage() string {
-	return strings.Join([]string{"Uhoh,", e.server.name, "not responding. Failed ping to", e.server.address}, " ")
+	return strings.Join([]string{"Uhoh,", e.Server.Name, "not responding. Failed ping to", e.Server.Address}, " ")
+}
+
+func (e *Event) PrintLatency() int64 {
+	return e.Latency.Nanoseconds() / 1e6
 }
 
 func (s *Service) SetupAlerts(config *Config) {

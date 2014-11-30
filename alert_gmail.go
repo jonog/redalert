@@ -24,6 +24,6 @@ func (a Gmail) Trigger(event *Event) error {
 		return err
 	}
 
-	event.server.log.Println(white, "Gmail alert successfully triggered.", reset)
+	event.Server.log.Println(white, "Gmail alert successfully triggered.", reset)
 	return nil
 }

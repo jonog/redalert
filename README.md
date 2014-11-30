@@ -9,6 +9,7 @@ For monitoring a series of servers at specified intervals & triggering alerts if
 Alert options: ["stderr", "gmail", "slack", "twilio"]
 Provides ping status & latency info to `stdout`.
 Has a linear back-off after failed pings (see notes below).
+Provides a web status UI (visit localhost:8888/, configure port via env RA_PORT)
 
 ![](https://cloud.githubusercontent.com/assets/1314353/5157264/edb21476-733a-11e4-8452-4b96b443f7ee.jpg)
 
@@ -68,6 +69,9 @@ When a failing server is successfully pinged, the pinging frequency returns to t
 
 #### Note for Gmail:
 If there are errors sending email via gmail - enable `Access for less secure apps` under Account permissions @ https://www.google.com/settings/u/2/security
+
+#### Credits:
+Rocket emoji via https://github.com/twitter/twemoji
 
 ### TODO
 * Alerts on successful ping of failing server
