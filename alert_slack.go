@@ -35,7 +35,7 @@ func (a SlackWebhook) Trigger(event *Event) error {
 		return errors.New("Not OK")
 	}
 
-	event.server.log.Println(white, "Slack alert successfully triggered.", reset)
+	event.Server.log.Println(white, "Slack alert successfully triggered.", reset)
 	return nil
 }
 

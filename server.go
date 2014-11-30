@@ -19,13 +19,14 @@ var (
 )
 
 type Server struct {
-	name      string
-	address   string
-	interval  int
+	Name      string
+	Address   string
+	Interval  int
 	alerts    []Alert
 	log       *log.Logger
 	service   *Service
 	failCount int
+	LastEvent *Event
 	wg        sync.WaitGroup
 }
 
@@ -38,9 +39,9 @@ func (s *Service) AddServer(name string, address string, interval int, alertName
 
 	var wg sync.WaitGroup
 	s.servers = append(s.servers, &Server{
-		name:     name,
-		address:  address,
-		interval: interval,
+		Name:     name,
+		Address:  address,
+		Interval: interval,
 		alerts:   alerts,
 		log:      log.New(os.Stdout, name+" ", log.Ldate|log.Ltime),
 		service:  s,
@@ -49,25 +50,26 @@ func (s *Service) AddServer(name string, address string, interval int, alertName
 
 }
 
-func (s *Server) Ping() error {
+func (s *Server) Ping() (time.Duration, error) {
 
 	startTime := time.Now()
-	s.log.Println("Pinging: ", s.name)
-	resp, err := http.Get(s.address)
+	s.log.Println("Pinging: ", s.Name)
+	resp, err := http.Get(s.Address)
 	endTime := time.Now()
-	s.log.Println(white, "Analytics: ", endTime.Sub(startTime), reset)
+	latency := endTime.Sub(startTime)
+	s.log.Println(white, "Analytics: ", latency, reset)
 
 	if err != nil {
-		return errors.New("redalert ping: failed http.Get " + err.Error())
+		return latency, errors.New("redalert ping: failed http.Get " + err.Error())
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return errors.New("redalert ping: non-200 status code. status code was " + strconv.Itoa(resp.StatusCode))
+		return latency, errors.New("redalert ping: non-200 status code. status code was " + strconv.Itoa(resp.StatusCode))
 	}
-	s.log.Println(green, "OK", reset, s.name)
+	s.log.Println(green, "OK", reset, s.Name)
 
-	return nil
+	return latency, nil
 }
 
 func (s *Server) SchedulePing(stopChan chan bool) {
@@ -75,22 +77,27 @@ func (s *Server) SchedulePing(stopChan chan bool) {
 	go func() {
 
 		var err error
+		var event *Event
+		var latency time.Duration
 
-		originalDelay := time.Second * time.Duration(s.interval)
-		delay := time.Second * time.Duration(s.interval)
+		originalDelay := time.Second * time.Duration(s.Interval)
+		delay := time.Second * time.Duration(s.Interval)
 
 		for {
 
-			err = s.Ping()
+			latency, err = s.Ping()
 			if err != nil {
-				s.log.Println(red, "ERROR: ", err, reset, s.name)
-				event := &Event{server: s, time: time.Now()}
+				s.log.Println(red, "ERROR: ", err, reset, s.Name)
+				event = &Event{Server: s, Time: time.Now(), Type: "redalert", Latency: latency}
+				s.LastEvent = event
 				s.TriggerAlerts(event)
 				s.IncrFailCount()
 				if s.failCount > 0 {
-					delay = time.Second * time.Duration(s.failCount*s.interval)
+					delay = time.Second * time.Duration(s.failCount*s.Interval)
 				}
 			} else {
+				event = &Event{Server: s, Time: time.Now(), Type: "greenalert", Latency: latency}
+				s.LastEvent = event
 				delay = originalDelay
 				s.failCount = 0
 			}

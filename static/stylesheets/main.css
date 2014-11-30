@@ -1,0 +1,50 @@
+body {
+  text-transform: uppercase;
+  text-align: center;
+  margin: 0;
+  color: #ffffff;
+  font-size: 2em;
+  font-family: 'Montserrat', sans-serif;
+  background: #696969;
+}
+
+.brand img {
+  float: left;
+}
+
+.brand .redalert {
+  margin-top: 15px;
+  float:left;
+}
+
+.server {
+  width: 100%;
+  float: left;
+  padding: 1em 0;
+  background: #19BC9D;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  cursor: pointer; cursor: hand;
+}
+
+.server:nth-child(2n+1) {
+  background: #2ECB70;
+}
+
+.server.redalert {
+  background: #b80000;
+}
+
+.server.redalert:nth-child(2n+1) {
+  background: #f80000;
+}
+
+.server .latency {
+  font-size: 1.6em;
+}
+
+.server .latency .ms {
+  font-size: 0.3em;
+  margin-right: 10px;
+}

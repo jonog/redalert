@@ -1,0 +1,29 @@
+{{define "dash"}}
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>REDALERT</title>
+  <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Montserrat:700">
+  <link rel="stylesheet" href="/static/stylesheets/main.css">
+</head>
+<body>
+	<div id="content">
+	  <div class="server" style="display:none;"></div>
+
+	  <div class="brand">
+	  	<img src="/static/images/rocket.png">
+	  	<div class="redalert">REDALERT</div>
+	  </div>
+
+	  {{range $element := .Servers }}
+    	<div class="server {{ $element.LastEvent.Type }}">
+    		<span class="latency">{{ $element.LastEvent.PrintLatency }}<span class="ms">ms</span></span>
+    		{{ $element.Name }}
+    	</div>
+	  {{ end }}
+
+	</div>
+</body>
+</html>
+{{end}}
