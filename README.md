@@ -10,6 +10,7 @@ Alert options: ["stderr", "gmail", "slack", "twilio"]
 Provides ping status & latency info to `stdout`.
 Has a linear back-off after failed pings (see notes below).
 Provides a web status UI (visit localhost:8888/, configure port via env RA_PORT)
+Provides an alert when a failing server has recovered (i.e. a successful ping, following a failing ping).
 
 ![](https://cloud.githubusercontent.com/assets/1314353/5157264/edb21476-733a-11e4-8452-4b96b443f7ee.jpg)
 
@@ -77,7 +78,6 @@ If there are errors sending email via gmail - enable `Access for less secure app
 Rocket emoji via https://github.com/twitter/twemoji
 
 ### TODO
-* Alerts on successful ping of failing server
 * Store latency information
 * Change server config on the fly
 * Alternative backoff configurations (e.g. no backoff / exponential backoff after X attempts)

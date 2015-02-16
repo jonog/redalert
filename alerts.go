@@ -3,27 +3,10 @@ package main
 import (
 	"log"
 	"os"
-	"strings"
-	"time"
 )
 
 type Alert interface {
 	Trigger(*Event) error
-}
-
-type Event struct {
-	Server  *Server
-	Time    time.Time
-	Type    string
-	Latency time.Duration
-}
-
-func (e *Event) ShortMessage() string {
-	return strings.Join([]string{"Uhoh,", e.Server.Name, "not responding. Failed ping to", e.Server.Address}, " ")
-}
-
-func (e *Event) PrintLatency() int64 {
-	return e.Latency.Nanoseconds() / 1e6
 }
 
 func (s *Service) SetupAlerts(config *Config) {

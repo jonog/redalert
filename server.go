@@ -86,20 +86,33 @@ func (s *Server) SchedulePing(stopChan chan bool) {
 		for {
 
 			latency, err = s.Ping()
+
 			if err != nil {
+
 				s.log.Println(red, "ERROR: ", err, reset, s.Name)
-				event = &Event{Server: s, Time: time.Now(), Type: "redalert", Latency: latency}
+				event = NewRedAlert(s, latency)
 				s.LastEvent = event
+
 				s.TriggerAlerts(event)
+
 				s.IncrFailCount()
 				if s.failCount > 0 {
 					delay = time.Second * time.Duration(s.failCount*s.Interval)
 				}
+
 			} else {
-				event = &Event{Server: s, Time: time.Now(), Type: "greenalert", Latency: latency}
+
+				event = NewGreenAlert(s, latency)
+				isRedalertRecovery := s.LastEvent != nil && s.LastEvent.isRedAlert()
 				s.LastEvent = event
+				if isRedalertRecovery {
+					s.log.Println(green, "RECOVERY: ", reset, s.Name)
+					s.TriggerAlerts(event)
+				}
+
 				delay = originalDelay
 				s.failCount = 0
+
 			}
 
 			select {
