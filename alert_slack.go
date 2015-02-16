@@ -8,17 +8,42 @@ import (
 )
 
 type SlackWebhook struct {
-	url string
+	url       string
+	channel   string
+	username  string
+	iconEmoji string
 }
 
 func (a SlackWebhook) Trigger(event *Event) error {
 
+	var payloadChannel string
+	var payloadUsername string
+	var payloadIconEmoji string
+
+	if a.channel == "" {
+		payloadChannel = "#general"
+	} else {
+		payloadChannel = a.channel
+	}
+
+	if a.username == "" {
+		payloadUsername = "redalert"
+	} else {
+		payloadUsername = a.username
+	}
+
+	if a.iconEmoji == "" {
+		payloadIconEmoji = ":rocket:"
+	} else {
+		payloadIconEmoji = a.iconEmoji
+	}
+
 	message := SlackPayload{
-		Channel:   "#general",
-		Username:  "redalert",
+		Channel:   payloadChannel,
+		Username:  payloadUsername,
 		Text:      event.ShortMessage(),
 		Parse:     "full",
-		IconEmoji: ":rocket:",
+		IconEmoji: payloadIconEmoji,
 	}
 
 	buf, err := json.Marshal(message)

@@ -37,7 +37,12 @@ func (s *Service) SetupAlerts(config *Config) {
 	if config.Slack == nil || config.Slack.WebhookURL == "" {
 		logger.Println("Slack is not configured")
 	} else {
-		s.alerts["slack"] = SlackWebhook{url: config.Slack.WebhookURL}
+		s.alerts["slack"] = SlackWebhook{
+			url:       config.Slack.WebhookURL,
+			channel:   config.Slack.Channel,
+			username:  config.Slack.Username,
+			iconEmoji: config.Slack.IconEmoji,
+		}
 	}
 
 	if config.Gmail == nil || config.Gmail.User == "" || config.Gmail.Pass == "" || len(config.Gmail.NotificationAddresses) == 0 {

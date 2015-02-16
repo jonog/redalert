@@ -43,7 +43,10 @@ Configure servers to monitor & alert settings via `config.json`:
       "notification_addresses": []
    },
    "slack": {
-      "webhook_url": ""
+      "webhook_url": "",
+      "channel": "#general",
+      "username": "redalert",
+      "icon_emoji": ":rocket:"
    },
    "twilio": {
       "account_sid": "",
