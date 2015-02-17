@@ -170,5 +170,5 @@ func (s *Server) TriggerAlerts(event *Event) {
 }
 
 func (s *Server) IncrFailCount() {
-	s.failCount += 1
+	s.failCount++
 }

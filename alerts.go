@@ -9,7 +9,7 @@ type Alert interface {
 	Trigger(*Event) error
 }
 
-func (s *Service) SetupAlerts(config *Config) {
+func (s *Service) ConfigureAlerts() {
 
 	logger := log.New(os.Stdout, "Setup ", log.Ldate|log.Ltime)
 
@@ -17,35 +17,35 @@ func (s *Service) SetupAlerts(config *Config) {
 
 	s.alerts["stderr"] = StandardError{}
 
-	if config.Slack == nil || config.Slack.WebhookURL == "" {
+	if s.config.Slack == nil || s.config.Slack.WebhookURL == "" {
 		logger.Println("Slack is not configured")
 	} else {
 		s.alerts["slack"] = SlackWebhook{
-			url:       config.Slack.WebhookURL,
-			channel:   config.Slack.Channel,
-			username:  config.Slack.Username,
-			iconEmoji: config.Slack.IconEmoji,
+			url:       s.config.Slack.WebhookURL,
+			channel:   s.config.Slack.Channel,
+			username:  s.config.Slack.Username,
+			iconEmoji: s.config.Slack.IconEmoji,
 		}
 	}
 
-	if config.Gmail == nil || config.Gmail.User == "" || config.Gmail.Pass == "" || len(config.Gmail.NotificationAddresses) == 0 {
+	if s.config.Gmail == nil || s.config.Gmail.User == "" || s.config.Gmail.Pass == "" || len(s.config.Gmail.NotificationAddresses) == 0 {
 		logger.Println("Gmail is not configured")
 	} else {
 		s.alerts["gmail"] = Gmail{
-			user: config.Gmail.User,
-			pass: config.Gmail.Pass,
-			notificationAddresses: config.Gmail.NotificationAddresses,
+			user: s.config.Gmail.User,
+			pass: s.config.Gmail.Pass,
+			notificationAddresses: s.config.Gmail.NotificationAddresses,
 		}
 	}
 
-	if config.Twilio == nil || config.Twilio.AccountSID == "" || config.Twilio.AuthToken == "" || len(config.Twilio.NotificationNumbers) == 0 || config.Twilio.TwilioNumber == "" {
+	if s.config.Twilio == nil || s.config.Twilio.AccountSID == "" || s.config.Twilio.AuthToken == "" || len(s.config.Twilio.NotificationNumbers) == 0 || s.config.Twilio.TwilioNumber == "" {
 		logger.Println("Twilio is not configured")
 	} else {
 		s.alerts["twilio"] = Twilio{
-			accountSid:   config.Twilio.AccountSID,
-			authToken:    config.Twilio.AuthToken,
-			phoneNumbers: config.Twilio.NotificationNumbers,
-			twilioNumber: config.Twilio.TwilioNumber,
+			accountSid:   s.config.Twilio.AccountSID,
+			authToken:    s.config.Twilio.AuthToken,
+			phoneNumbers: s.config.Twilio.NotificationNumbers,
+			twilioNumber: s.config.Twilio.TwilioNumber,
 		}
 	}
 

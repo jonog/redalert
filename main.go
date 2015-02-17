@@ -13,6 +13,7 @@ import (
 )
 
 type Service struct {
+	config  *Config
 	servers []*Server
 	alerts  map[string]Alert
 	wg      sync.WaitGroup
@@ -94,21 +95,19 @@ func (ah appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func getPort() string {
 	if os.Getenv("RA_PORT") == "" {
 		return "8888"
-	} else {
-		return os.Getenv("RA_PORT")
 	}
+	return os.Getenv("RA_PORT")
 }
 
 func main() {
-
-	service := new(Service)
 
 	config, err := ReadConfigFile()
 	if err != nil {
 		panic("Missing or invalid config")
 	}
+	service := &Service{config: config}
 
-	service.SetupAlerts(config)
+	service.ConfigureAlerts()
 
 	for _, sc := range config.Servers {
 		service.AddServer(sc.Name, sc.Address, sc.Interval, sc.Alerts)
@@ -127,7 +126,10 @@ func main() {
 
 		port := getPort()
 		fmt.Println("Listening on port ", port, " ...")
-		http.ListenAndServe(":"+port, nil)
+		err := http.ListenAndServe(":"+port, nil)
+		if err != nil {
+			panic(err)
+		}
 	}()
 
 	service.wg.Wait()
