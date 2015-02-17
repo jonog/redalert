@@ -54,13 +54,22 @@ func (s *Server) Ping() (time.Duration, error) {
 
 	startTime := time.Now()
 	s.log.Println("Pinging: ", s.Name)
-	resp, err := http.Get(s.Address)
+
+	req, err := http.NewRequest("GET", s.Address, nil)
+	if err != nil {
+		return 0, errors.New("redalert ping: failed parsing url in http.NewRequest " + err.Error())
+	}
+
+	req.Header.Add("User-Agent", "Redalert/1.0")
+	client := &http.Client{}
+	resp, err := client.Do(req)
+
 	endTime := time.Now()
 	latency := endTime.Sub(startTime)
 	s.log.Println(white, "Analytics: ", latency, reset)
 
 	if err != nil {
-		return latency, errors.New("redalert ping: failed http.Get " + err.Error())
+		return latency, errors.New("redalert ping: failed client.Do " + err.Error())
 	}
 	defer resp.Body.Close()
 
