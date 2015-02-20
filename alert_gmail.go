@@ -11,6 +11,14 @@ type Gmail struct {
 	notificationAddresses []string
 }
 
+func NewGmail(config *GmailConfig) Gmail {
+	return Gmail{
+		user: config.User,
+		pass: config.Pass,
+		notificationAddresses: config.NotificationAddresses,
+	}
+}
+
 func (a Gmail) Name() string {
 	return "Gmail"
 }

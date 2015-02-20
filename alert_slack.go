@@ -14,6 +14,15 @@ type SlackWebhook struct {
 	iconEmoji string
 }
 
+func NewSlackWebhook(config *SlackConfig) SlackWebhook {
+	return SlackWebhook{
+		url:       config.WebhookURL,
+		channel:   config.Channel,
+		username:  config.Username,
+		iconEmoji: config.IconEmoji,
+	}
+}
+
 func (a SlackWebhook) Name() string {
 	return "SlackWebhook"
 }

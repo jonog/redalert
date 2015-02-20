@@ -14,6 +14,15 @@ type Twilio struct {
 	twilioNumber string
 }
 
+func NewTwilio(config *TwilioConfig) Twilio {
+	return Twilio{
+		accountSid:   config.AccountSID,
+		authToken:    config.AuthToken,
+		phoneNumbers: config.NotificationNumbers,
+		twilioNumber: config.TwilioNumber,
+	}
+}
+
 func (a Twilio) Name() string {
 	return "Twilio"
 }
