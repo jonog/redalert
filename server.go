@@ -98,7 +98,7 @@ func (s *Server) SchedulePing(stopChan chan bool) {
 
 			if err != nil {
 
-				s.log.Println(red, "ERROR: ", err, reset, s.Name)
+				s.log.Println(red, "ERROR: ", err, reset)
 				event = NewRedAlert(s, latency)
 				s.LastEvent = event
 
