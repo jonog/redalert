@@ -11,6 +11,10 @@ type Gmail struct {
 	notificationAddresses []string
 }
 
+func (a Gmail) Name() string {
+	return "Gmail"
+}
+
 func (a Gmail) Trigger(event *Event) error {
 
 	body := "To: " + strings.Join(a.notificationAddresses, ",") +

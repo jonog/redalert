@@ -14,6 +14,10 @@ type SlackWebhook struct {
 	iconEmoji string
 }
 
+func (a SlackWebhook) Name() string {
+	return "SlackWebhook"
+}
+
 func (a SlackWebhook) Trigger(event *Event) error {
 
 	var payloadChannel string

@@ -7,6 +7,7 @@ import (
 
 type Alert interface {
 	Trigger(*Event) error
+	Name() string
 }
 
 func (s *Service) ConfigureAlerts() {

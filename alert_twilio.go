@@ -14,6 +14,10 @@ type Twilio struct {
 	twilioNumber string
 }
 
+func (a Twilio) Name() string {
+	return "Twilio"
+}
+
 func (a Twilio) Trigger(event *Event) (err error) {
 
 	msg := event.ShortMessage()

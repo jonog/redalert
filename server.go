@@ -159,14 +159,26 @@ func (s *Server) Monitor() {
 
 func (s *Server) TriggerAlerts(event *Event) {
 
-	// TODO: shift to a queue
-	var err error
-	for _, alert := range s.alerts {
-		err = alert.Trigger(event)
-		if err != nil {
-			s.log.Fatal(err)
+	go func() {
+
+		var currentAlert Alert
+
+		defer func() {
+			if r := recover(); r != nil {
+				s.log.Println(red, "CRITICAL: Failure triggering alert ["+currentAlert.Name()+"] due to : ", r, reset)
+			}
+		}()
+
+		var err error
+		for _, alert := range s.alerts {
+			currentAlert = alert
+			err = alert.Trigger(event)
+			if err != nil {
+				s.log.Fatalf("Error triggering alert %v", err)
+			}
 		}
-	}
+
+	}()
 }
 
 func (s *Server) IncrFailCount() {
