@@ -161,20 +161,11 @@ func (s *Server) TriggerAlerts(event *Event) {
 
 	go func() {
 
-		var currentAlert Alert
-
-		defer func() {
-			if r := recover(); r != nil {
-				s.log.Println(red, "CRITICAL: Failure triggering alert ["+currentAlert.Name()+"] due to : ", r, reset)
-			}
-		}()
-
 		var err error
 		for _, alert := range s.alerts {
-			currentAlert = alert
 			err = alert.Trigger(event)
 			if err != nil {
-				s.log.Fatalf("Error triggering alert %v", err)
+				s.log.Println(red, "CRITICAL: Failure triggering alert ["+alert.Name()+"]: ", err.Error())
 			}
 		}
 
