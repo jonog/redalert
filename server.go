@@ -2,6 +2,8 @@ package main
 
 import (
 	"errors"
+	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -50,6 +52,10 @@ func (s *Service) AddServer(name string, address string, interval int, alertName
 
 }
 
+var GlobalClient = http.Client{
+	Timeout: time.Duration(10 * time.Second),
+}
+
 func (s *Server) Ping() (time.Duration, error) {
 
 	startTime := time.Now()
@@ -61,17 +67,19 @@ func (s *Server) Ping() (time.Duration, error) {
 	}
 
 	req.Header.Add("User-Agent", "Redalert/1.0")
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	resp, err := GlobalClient.Do(req)
 
 	endTime := time.Now()
 	latency := endTime.Sub(startTime)
 	s.log.Println(white, "Analytics: ", latency, reset)
 
+	if resp != nil {
+		io.Copy(ioutil.Discard, resp.Body)
+		resp.Body.Close()
+	}
 	if err != nil {
 		return latency, errors.New("redalert ping: failed client.Do " + err.Error())
 	}
-	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		return latency, errors.New("redalert ping: non-200 status code. status code was " + strconv.Itoa(resp.StatusCode))
@@ -102,11 +110,29 @@ func (s *Server) SchedulePing(stopChan chan bool) {
 				event = NewRedAlert(s, latency)
 				s.LastEvent = event
 
-				s.TriggerAlerts(event)
+				// before sending an alert, pause 5 seconds & retry
+				// prevent alerts from occaisional errors ('no such host' / 'i/o timeout') on cloud providers
+				// todo: adjust sleep to fit with interval
+				time.Sleep(5 * time.Second)
+				_, rePingErr := s.Ping()
+				if rePingErr != nil {
 
-				s.IncrFailCount()
-				if s.failCount > 0 {
-					delay = time.Second * time.Duration(s.failCount*s.Interval)
+					// re-ping fails (confirms error)
+
+					s.TriggerAlerts(event)
+
+					s.IncrFailCount()
+					if s.failCount > 0 {
+						delay = time.Second * time.Duration(s.failCount*s.Interval)
+					}
+
+				} else {
+
+					// re-ping succeeds (likely false positive, discard last event)
+
+					delay = originalDelay
+					s.failCount = 0
+					s.LastEvent = nil
 				}
 
 			} else {
