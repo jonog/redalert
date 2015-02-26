@@ -107,8 +107,6 @@ func (s *Server) SchedulePing(stopChan chan bool) {
 			if err != nil {
 
 				s.log.Println(red, "ERROR: ", err, reset)
-				event = NewRedAlert(s, latency)
-				s.LastEvent = event
 
 				// before sending an alert, pause 5 seconds & retry
 				// prevent alerts from occaisional errors ('no such host' / 'i/o timeout') on cloud providers
@@ -119,6 +117,8 @@ func (s *Server) SchedulePing(stopChan chan bool) {
 
 					// re-ping fails (confirms error)
 
+					event = NewRedAlert(s, latency)
+					s.LastEvent = event
 					s.TriggerAlerts(event)
 
 					s.IncrFailCount()
@@ -128,11 +128,10 @@ func (s *Server) SchedulePing(stopChan chan bool) {
 
 				} else {
 
-					// re-ping succeeds (likely false positive, discard last event)
+					// re-ping succeeds (likely false positive)
 
 					delay = originalDelay
 					s.failCount = 0
-					s.LastEvent = nil
 				}
 
 			} else {
