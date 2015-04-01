@@ -1,54 +1,64 @@
 package main
 
 import (
+	"container/list"
 	"errors"
-	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
 
 var (
-	green = string([]byte{27, 91, 57, 55, 59, 52, 50, 109})
-	red   = string([]byte{27, 91, 57, 55, 59, 52, 49, 109})
-	reset = string([]byte{27, 91, 48, 109})
-	white = string([]byte{27, 91, 57, 48, 59, 52, 55, 109})
+	green           = string([]byte{27, 91, 57, 55, 59, 52, 50, 109})
+	red             = string([]byte{27, 91, 57, 55, 59, 52, 49, 109})
+	reset           = string([]byte{27, 91, 48, 109})
+	white           = string([]byte{27, 91, 57, 48, 59, 52, 55, 109})
+	MaxEventsStored = 100
 )
 
 type Server struct {
-	Name      string
-	Address   string
-	Interval  int
-	alerts    []Alert
-	log       *log.Logger
-	service   *Service
-	failCount int
-	LastEvent *Event
-	wg        sync.WaitGroup
+	Name         string
+	Address      string
+	Interval     int
+	alerts       []Alert
+	log          *log.Logger
+	service      *Service
+	failCount    int
+	LastEvent    *Event
+	EventHistory *list.List
+	wg           sync.WaitGroup
+}
+
+func NewServer(name, address string, interval int) *Server {
+	var wg sync.WaitGroup
+	return &Server{
+		Name:         name,
+		Address:      address,
+		Interval:     interval,
+		log:          log.New(os.Stdout, name+" ", log.Ldate|log.Ltime),
+		wg:           wg,
+		EventHistory: list.New(),
+	}
 }
 
 func (s *Service) AddServer(name string, address string, interval int, alertNames []string) {
+
+	server := NewServer(name, address, interval)
+	server.service = s
 
 	alerts := []Alert{}
 	for _, alertName := range alertNames {
 		alerts = append(alerts, s.GetAlert(alertName))
 	}
+	server.alerts = alerts
 
-	var wg sync.WaitGroup
-	s.servers = append(s.servers, &Server{
-		Name:     name,
-		Address:  address,
-		Interval: interval,
-		alerts:   alerts,
-		log:      log.New(os.Stdout, name+" ", log.Ldate|log.Ltime),
-		service:  s,
-		wg:       wg,
-	})
+	s.servers = append(s.servers, server)
 
 }
 
@@ -68,24 +78,26 @@ func (s *Server) Ping() (time.Duration, error) {
 
 	req.Header.Add("User-Agent", "Redalert/1.0")
 	resp, err := GlobalClient.Do(req)
+	if err != nil {
+		return 0, errors.New("redalert ping: failed client.Do " + err.Error())
+	}
+
+	_, err = ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
 
 	endTime := time.Now()
 	latency := endTime.Sub(startTime)
 	s.log.Println(white, "Analytics: ", latency, reset)
 
-	if resp != nil {
-		io.Copy(ioutil.Discard, resp.Body)
-		resp.Body.Close()
-	}
 	if err != nil {
-		return latency, errors.New("redalert ping: failed client.Do " + err.Error())
+		return latency, errors.New("redalert ping: failed reading body " + err.Error())
 	}
 
 	if resp.StatusCode != http.StatusOK {
 		return latency, errors.New("redalert ping: non-200 status code. status code was " + strconv.Itoa(resp.StatusCode))
 	}
-	s.log.Println(green, "OK", reset, s.Name)
 
+	s.log.Println(green, "OK", reset, s.Name)
 	return latency, nil
 }
 
@@ -118,7 +130,7 @@ func (s *Server) SchedulePing(stopChan chan bool) {
 					// re-ping fails (confirms error)
 
 					event = NewRedAlert(s, latency)
-					s.LastEvent = event
+					s.StoreEvent(event)
 					s.TriggerAlerts(event)
 
 					s.IncrFailCount()
@@ -136,9 +148,9 @@ func (s *Server) SchedulePing(stopChan chan bool) {
 
 			} else {
 
-				event = NewGreenAlert(s, latency)
 				isRedalertRecovery := s.LastEvent != nil && s.LastEvent.isRedAlert()
-				s.LastEvent = event
+				event = NewGreenAlert(s, latency)
+				s.StoreEvent(event)
 				if isRedalertRecovery {
 					s.log.Println(green, "RECOVERY: ", reset, s.Name)
 					s.TriggerAlerts(event)
@@ -195,6 +207,25 @@ func (s *Server) TriggerAlerts(event *Event) {
 		}
 
 	}()
+}
+
+func (s *Server) StoreEvent(event *Event) {
+	s.LastEvent = event
+	s.EventHistory.PushFront(event)
+	if s.EventHistory.Len() > MaxEventsStored {
+		s.EventHistory.Remove(s.EventHistory.Back())
+	}
+}
+
+func (s *Server) GetEvents() string {
+	var output []string
+	for e := s.EventHistory.Front(); e != nil; e = e.Next() {
+		event := e.Value.(*Event)
+		if event != nil {
+			output = append([]string{strconv.FormatInt(event.Latency.Nanoseconds()/1e6, 10)}, output...)
+		}
+	}
+	return strings.Join(output, ",")
 }
 
 func (s *Server) IncrFailCount() {
