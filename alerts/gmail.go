@@ -1,9 +1,17 @@
-package main
+package alerts
 
 import (
 	"net/smtp"
 	"strings"
+
+	"github.com/jonog/redalert/core"
 )
+
+type GmailConfig struct {
+	User                  string   `json:"user"`
+	Pass                  string   `json:"pass"`
+	NotificationAddresses []string `json:"notification_addresses"`
+}
 
 type Gmail struct {
 	user                  string
@@ -23,7 +31,7 @@ func (a Gmail) Name() string {
 	return "Gmail"
 }
 
-func (a Gmail) Trigger(event *Event) error {
+func (a Gmail) Trigger(event *core.Event) error {
 
 	body := "To: " + strings.Join(a.notificationAddresses, ",") +
 		"\r\nSubject: " + event.ShortMessage() +
@@ -36,6 +44,6 @@ func (a Gmail) Trigger(event *Event) error {
 		return err
 	}
 
-	event.Server.log.Println(white, "Gmail alert successfully triggered.", reset)
+	event.Server.Log.Println("Gmail alert successfully triggered.")
 	return nil
 }

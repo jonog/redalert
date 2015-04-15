@@ -1,8 +1,10 @@
-package main
+package alerts
 
 import (
 	"log"
 	"os"
+
+	"github.com/jonog/redalert/core"
 )
 
 type StandardError struct {
@@ -19,8 +21,8 @@ func (a StandardError) Name() string {
 	return "StandardError"
 }
 
-func (a StandardError) Trigger(event *Event) error {
+func (a StandardError) Trigger(event *core.Event) error {
 	a.log.Println(event.ShortMessage())
-	event.Server.log.Println(white, "Stderr alert successfully triggered.", reset)
+	event.Server.Log.Println("Stderr alert successfully triggered.")
 	return nil
 }

@@ -1,11 +1,20 @@
-package main
+package alerts
 
 import (
 	"errors"
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/jonog/redalert/core"
 )
+
+type TwilioConfig struct {
+	AccountSID          string   `json:"account_sid"`
+	AuthToken           string   `json:"auth_token"`
+	TwilioNumber        string   `json:"twilio_number"`
+	NotificationNumbers []string `json:"notification_numbers"`
+}
 
 type Twilio struct {
 	accountSid   string
@@ -27,7 +36,7 @@ func (a Twilio) Name() string {
 	return "Twilio"
 }
 
-func (a Twilio) Trigger(event *Event) (err error) {
+func (a Twilio) Trigger(event *core.Event) (err error) {
 
 	msg := event.ShortMessage()
 	for _, num := range a.phoneNumbers {
@@ -36,7 +45,7 @@ func (a Twilio) Trigger(event *Event) (err error) {
 			return
 		}
 	}
-	event.Server.log.Println(white, "Twilio alert successfully triggered.", reset)
+	event.Server.Log.Println("Twilio alert successfully triggered.")
 	return nil
 
 }

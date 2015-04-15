@@ -1,11 +1,20 @@
-package main
+package alerts
 
 import (
 	"bytes"
 	"encoding/json"
 	"errors"
 	"net/http"
+
+	"github.com/jonog/redalert/core"
 )
+
+type SlackConfig struct {
+	WebhookURL string `json:"webhook_url"`
+	Channel    string `json:"channel"`
+	Username   string `json:"username"`
+	IconEmoji  string `json:"icon_emoji"`
+}
 
 type SlackWebhook struct {
 	url       string
@@ -27,7 +36,7 @@ func (a SlackWebhook) Name() string {
 	return "SlackWebhook"
 }
 
-func (a SlackWebhook) Trigger(event *Event) error {
+func (a SlackWebhook) Trigger(event *core.Event) error {
 
 	var payloadChannel string
 	var payloadUsername string
@@ -73,7 +82,7 @@ func (a SlackWebhook) Trigger(event *Event) error {
 		return errors.New("Not OK")
 	}
 
-	event.Server.log.Println(white, "Slack alert successfully triggered.", reset)
+	event.Server.Log.Println("Slack alert successfully triggered.")
 	return nil
 }
 
