@@ -23,6 +23,6 @@ func (a StandardError) Name() string {
 
 func (a StandardError) Trigger(event *core.Event) error {
 	a.log.Println(event.ShortMessage())
-	event.Server.Log.Println("Stderr alert successfully triggered.")
+	event.Check.Log.Println("Stderr alert successfully triggered.")
 	return nil
 }

@@ -82,7 +82,7 @@ func (a SlackWebhook) Trigger(event *core.Event) error {
 		return errors.New("Not OK")
 	}
 
-	event.Server.Log.Println("Slack alert successfully triggered.")
+	event.Check.Log.Println("Slack alert successfully triggered.")
 	return nil
 }
 

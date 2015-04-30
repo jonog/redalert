@@ -10,17 +10,10 @@ import (
 )
 
 type Config struct {
-	Servers []ServerConfig       `json:"servers"`
-	Gmail   *alerts.GmailConfig  `json:"gmail,omitempty"`
-	Slack   *alerts.SlackConfig  `json:"slack,omitempty"`
-	Twilio  *alerts.TwilioConfig `json:"twilio,omitempty"`
-}
-
-type ServerConfig struct {
-	Name     string   `json:"name"`
-	Address  string   `json:"address"`
-	Interval int      `json:"interval"`
-	Alerts   []string `json:"alerts"`
+	Checks []core.CheckConfig   `json:"checks"`
+	Gmail  *alerts.GmailConfig  `json:"gmail,omitempty"`
+	Slack  *alerts.SlackConfig  `json:"slack,omitempty"`
+	Twilio *alerts.TwilioConfig `json:"twilio,omitempty"`
 }
 
 func ReadConfigFile() (*Config, error) {

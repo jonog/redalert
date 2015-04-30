@@ -45,7 +45,7 @@ func (a Twilio) Trigger(event *core.Event) (err error) {
 			return
 		}
 	}
-	event.Server.Log.Println("Twilio alert successfully triggered.")
+	event.Check.Log.Println("Twilio alert successfully triggered.")
 	return nil
 
 }

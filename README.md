@@ -18,21 +18,24 @@ Provides an alert when a failing server has recovered (i.e. a successful ping, f
 Configure servers to monitor & alert settings via `config.json`:
 ```
 {  
-   "servers":[  
+   "checks":[  
       {  
          "name":"Server 1",
+         "type": "web-ping",
          "address":"http://server1.com/healthcheck",
          "interval":10,
          "alerts":["stderr"]
       },
       {  
          "name":"Server 2",
+         "type": "web-ping",
          "address":"http://server2.com/healthcheck",
          "interval":10,
          "alerts":["stderr", "gmail", "slack", "twilio"]
       },
       {  
          "name":"Server 3",
+         "type": "web-ping",
          "address":"http://server3.com/healthcheck",
          "interval":10,
          "alerts":["stderr"]
