@@ -31,20 +31,23 @@ var GlobalClient = http.Client{
 
 func (wp *WebPinger) Check() (map[string]float64, error) {
 
+	metrics := make(map[string]float64)
+	metrics["latency"] = float64(0)
+
 	startTime := time.Now()
 	fmt.Println(wp.Identifier, " : Pinging")
 
 	req, err := http.NewRequest("GET", wp.Address, nil)
 	if err != nil {
 		fmt.Println(wp.Identifier, " : FAIL ", red, "OK", reset)
-		return nil, errors.New("redalert ping: failed parsing url in http.NewRequest " + err.Error())
+		return metrics, errors.New("redalert ping: failed parsing url in http.NewRequest " + err.Error())
 	}
 
 	req.Header.Add("User-Agent", "Redalert/1.0")
 	resp, err := GlobalClient.Do(req)
 	if err != nil {
 		fmt.Println(wp.Identifier, " : FAIL ", red, "OK", reset)
-		return nil, errors.New("redalert ping: failed client.Do " + err.Error())
+		return metrics, errors.New("redalert ping: failed client.Do " + err.Error())
 	}
 
 	_, err = ioutil.ReadAll(resp.Body)
@@ -52,7 +55,6 @@ func (wp *WebPinger) Check() (map[string]float64, error) {
 
 	endTime := time.Now()
 	latency := endTime.Sub(startTime)
-	metrics := make(map[string]float64)
 	metrics["latency"] = float64(latency.Seconds() * 1e3)
 
 	fmt.Println(wp.Identifier, " : Analytics ", white, metrics, reset)

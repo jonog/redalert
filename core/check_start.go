@@ -54,7 +54,7 @@ func (c *Check) run(stopChan chan bool) {
 				// prevent alerts from occaisional errors ('no such host' / 'i/o timeout') on cloud providers
 				// todo: adjust sleep to fit with interval
 				time.Sleep(5 * time.Second)
-				_, reCheckErr := c.Checker.Check()
+				checkData, reCheckErr := c.Checker.Check()
 				if reCheckErr != nil {
 
 					// re-check fails (confirms error)
