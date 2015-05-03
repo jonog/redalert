@@ -48,3 +48,7 @@ func (s *Service) Start() {
 func (s *Service) KeepRunning() {
 	s.wg.Wait()
 }
+
+func (s *Service) Checks() []*Check {
+	return s.checks
+}

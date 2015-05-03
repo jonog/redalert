@@ -1,6 +1,9 @@
 package core
 
-import "time"
+import (
+	"strconv"
+	"time"
+)
 
 type Event struct {
 	Check *Check
@@ -36,4 +39,8 @@ func (e *Event) ShortMessage() string {
 	}
 
 	return ""
+}
+
+func (e *Event) DisplayMetric(metric string) string {
+	return strconv.FormatFloat(e.Data[metric], 'f', 1, 64)
 }

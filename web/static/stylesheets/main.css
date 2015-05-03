@@ -3,7 +3,6 @@ body {
   text-align: center;
   margin: 0;
   color: #ffffff;
-  font-size: 2em;
   font-family: 'Montserrat', sans-serif;
   background: #696969;
 }
@@ -20,7 +19,6 @@ body {
 .server {
   width: 100%;
   float: left;
-  padding: 1em 0;
   background: #19BC9D;
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -40,11 +38,24 @@ body {
   background: #f80000;
 }
 
+.server .status-check-name {
+  font-size: 0.75em;
+  position: absolute;
+  left: 10px;
+  margin-bottom: 35px;
+  margin-top: 5px;
+}
+
 .server .latency {
   font-size: 1.6em;
 }
 
-.server .latency .ms {
+.server .metric .name{
+  font-size: 0.45em;
+}
+
+.server .metric .data{}
+
+.server .metric .unit{
   font-size: 0.3em;
-  margin-right: 10px;
 }

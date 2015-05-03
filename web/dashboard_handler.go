@@ -10,12 +10,13 @@ import (
 )
 
 type DashboardInfo struct {
-	Servers []*core.Server
+	Checks []*core.Check
 }
 
 func dashboardHandler(c *appCtx, w http.ResponseWriter, r *http.Request) {
 
 	templateBox, err := rice.FindBox("templates")
+
 	if err != nil {
 		log.Println(err.Error())
 		http.Error(w, http.StatusText(500), 500)
@@ -42,7 +43,7 @@ func dashboardHandler(c *appCtx, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	info := &DashboardInfo{Servers: c.service.Servers}
+	info := &DashboardInfo{Checks: c.service.Checks()}
 
 	if err := tmplMessage.Execute(w, info); err != nil {
 		log.Println(err.Error())

@@ -25,12 +25,20 @@
 	  	<div class="redalert">REDALERT</div>
 	  </div>
 
-	  {{range $element := .Servers }}
+	  {{range $element := .Checks }}
     	<div class="server {{ $element.LastEvent.Type }}">
-    		<span class="latency">{{ $element.LastEvent.PrintLatency }}<span class="ms">ms</span></span>
-    		{{ $element.Name }}
-    		<div><span class="inlinesparkline">{{ $element.GetEvents }}</span></div>
-    	</div>
+        <div class="status-check-name">{{ $element.Name }}</div>
+        <div class="status-metrics">
+          {{ range $key, $val := $element.LastEvent.Data }}
+              <p class="metric">
+                <span class="name">{{$key}}</span>
+                <span class="data">{{ $element.LastEvent.DisplayMetric $key }}</span>
+                <span class="unit">ms</span>
+                <span class="inlinesparkline">{{ $element.RecentMetrics $key }}</span>
+              </p>
+          {{ end }}
+        </div>
+      </div>
 	  {{ end }}
 
 	</div>
