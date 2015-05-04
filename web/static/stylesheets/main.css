@@ -46,10 +46,6 @@ body {
   margin-top: 5px;
 }
 
-.server .latency {
-  font-size: 1.6em;
-}
-
 .server .metric .name{
   font-size: 0.45em;
 }

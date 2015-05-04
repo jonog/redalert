@@ -33,7 +33,7 @@
               <p class="metric">
                 <span class="name">{{$key}}</span>
                 <span class="data">{{ $element.LastEvent.DisplayMetric $key }}</span>
-                <span class="unit">ms</span>
+                <span class="unit">{{ ($element.Checker.MetricInfo $key).Unit }}</span>
                 <span class="inlinesparkline">{{ $element.RecentMetrics $key }}</span>
               </p>
           {{ end }}

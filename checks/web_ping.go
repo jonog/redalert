@@ -21,6 +21,12 @@ type WebPinger struct {
 	Address    string
 }
 
+var WebPingerMetrics = map[string]MetricInfo{
+	"latency": MetricInfo{
+		Unit: "ms",
+	},
+}
+
 func NewWebPinger(identifier, address string) *WebPinger {
 	return &WebPinger{identifier, address}
 }
@@ -70,6 +76,10 @@ func (wp *WebPinger) Check() (map[string]float64, error) {
 	fmt.Println(wp.Identifier, " : Analytics ", green, "OK", reset)
 
 	return metrics, nil
+}
+
+func (wp *WebPinger) MetricInfo(metric string) MetricInfo {
+	return WebPingerMetrics[metric]
 }
 
 func (wp *WebPinger) RedAlertMessage() string {
