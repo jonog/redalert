@@ -37,6 +37,19 @@ var GlobalClient = http.Client{
 
 func (wp *WebPinger) Check() (map[string]float64, error) {
 
+	metrics, err := wp.ping()
+	if err != nil {
+		// if the initial ping fails, retry after 5 seconds
+		// the retry is to avoid noise from intermittent network/connection issues
+		time.Sleep(5 * time.Second)
+		return wp.ping()
+	}
+
+	return metrics, nil
+}
+
+func (wp *WebPinger) ping() (map[string]float64, error) {
+
 	metrics := make(map[string]float64)
 	metrics["latency"] = float64(0)
 
@@ -46,14 +59,14 @@ func (wp *WebPinger) Check() (map[string]float64, error) {
 	req, err := http.NewRequest("GET", wp.Address, nil)
 	if err != nil {
 		fmt.Println(wp.Identifier, " : FAIL ", red, "OK", reset)
-		return metrics, errors.New("redalert ping: failed parsing url in http.NewRequest " + err.Error())
+		return metrics, errors.New("web-ping: failed parsing url in http.NewRequest " + err.Error())
 	}
 
 	req.Header.Add("User-Agent", "Redalert/1.0")
 	resp, err := GlobalClient.Do(req)
 	if err != nil {
 		fmt.Println(wp.Identifier, " : FAIL ", red, "OK", reset)
-		return metrics, errors.New("redalert ping: failed client.Do " + err.Error())
+		return metrics, errors.New("web-ping: failed client.Do " + err.Error())
 	}
 
 	_, err = ioutil.ReadAll(resp.Body)
@@ -66,11 +79,11 @@ func (wp *WebPinger) Check() (map[string]float64, error) {
 	fmt.Println(wp.Identifier, " : Analytics ", white, metrics, reset)
 
 	if err != nil {
-		return metrics, errors.New("redalert ping: failed reading body " + err.Error())
+		return metrics, errors.New("web-ping: failed reading body " + err.Error())
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return metrics, errors.New("redalert ping: non-200 status code. status code was " + strconv.Itoa(resp.StatusCode))
+		return metrics, errors.New("web-ping: non-200 status code. status code was " + strconv.Itoa(resp.StatusCode))
 	}
 
 	fmt.Println(wp.Identifier, " : Analytics ", green, "OK", reset)
@@ -83,7 +96,7 @@ func (wp *WebPinger) MetricInfo(metric string) MetricInfo {
 }
 
 func (wp *WebPinger) RedAlertMessage() string {
-	return "Uhoh, failed ping to" + wp.Address
+	return "Uhoh, failed ping to " + wp.Address
 }
 
 func (wp *WebPinger) GreenAlertMessage() string {

@@ -46,46 +46,37 @@ func (c *Check) run(stopChan chan bool) {
 
 			checkData, err = c.Checker.Check()
 
+			// Trigger RedAlert if check fails
 			if err != nil {
 
-				c.Log.Println(red, "ERROR: ", err, reset)
+				event = NewRedAlert(c, checkData)
+				c.storeEvent(event)
 
-				// before sending an alert, pause 5 seconds & retry
-				// prevent alerts from occaisional errors ('no such host' / 'i/o timeout') on cloud providers
-				// todo: adjust sleep to fit with interval
-				time.Sleep(5 * time.Second)
-				checkData, reCheckErr := c.Checker.Check()
-				if reCheckErr != nil {
+				c.Log.Println(red, "ERROR:", err, reset)
+				c.triggerAlerts(event)
 
-					// re-check fails (confirms error)
-
-					event = NewRedAlert(c, checkData)
-					c.storeEvent(event)
-					c.triggerAlerts(event)
-
-					c.incrFailCount()
-					if c.failCount > 0 {
-						delay = time.Second * time.Duration(c.failCount*c.Interval)
-					}
-
-				} else {
-
-					// re-check succeeds (likely false positive)
-
-					delay = originalDelay
-					c.resetFailCount()
+				// increase fail count and delay between checks
+				c.incrFailCount()
+				if c.failCount > 0 {
+					delay = time.Second * time.Duration(c.failCount*c.Interval)
 				}
 
-			} else {
+			}
+
+			// Trigger GreenAlert if check is successful and was previously failing
+			if err == nil {
 
 				isRedalertRecovery := c.LastEvent != nil && c.LastEvent.isRedAlert()
+
 				event = NewGreenAlert(c, checkData)
 				c.storeEvent(event)
+
 				if isRedalertRecovery {
-					c.Log.Println(green, "RECOVERY: ", reset, c.Name)
+					c.Log.Println(green, "RECOVERY: ", reset)
 					c.triggerAlerts(event)
 				}
 
+				// reset fail count & delay between checks
 				delay = originalDelay
 				c.resetFailCount()
 
