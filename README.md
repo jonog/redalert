@@ -81,7 +81,9 @@ If there are errors sending email via gmail - enable `Access for less secure app
 Rocket emoji via https://github.com/twitter/twemoji
 
 ### TODO
-* Store latency information
+* Set alerts based on metric threshold values / calculated values
+* Distinguish between an error performing a check & a failing check. i.e. Check should return two errors.
+* Safely handle concurrent read/writes in key data structures accessed in different goroutines.
 * Change server config on the fly
 * Alternative backoff configurations (e.g. no backoff / exponential backoff after X attempts)
 * Improved handling/recovering from any errors detected in redalert
