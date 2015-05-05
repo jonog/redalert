@@ -1,10 +1,5 @@
 package checks
 
-import (
-	"encoding/json"
-	"fmt"
-)
-
 // TODO:
 // add mutex to handle concurrent read/writes
 
@@ -23,18 +18,10 @@ func NewSCollector(host string) *SCollector {
 
 func (sc *SCollector) Check() (map[string]float64, error) {
 
-	fmt.Println("SCollector Check")
-
 	_, exists := GlobalSCollector[Host(sc.Host)]
 	if !exists {
 		GlobalSCollector[Host(sc.Host)] = make(map[string]float64)
 	}
-
-	jsonB, err := json.MarshalIndent(GlobalSCollector[Host(sc.Host)], "", "\t")
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(string(jsonB))
 
 	output := make(map[string]float64)
 	for key, val := range GlobalSCollector[Host(sc.Host)] {
