@@ -16,8 +16,10 @@ func Run(service *core.Service, port string) {
 
 	box := rice.MustFindBox("static")
 	fs := http.FileServer(box.HTTPBox())
+
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 	http.Handle("/", appHandler{context, dashboardHandler})
+	http.Handle("/api/put", appHandler{context, metricsReceiverHandler})
 
 	fmt.Println("Listening on port ", port, " ...")
 	err := http.ListenAndServe(":"+port, nil)

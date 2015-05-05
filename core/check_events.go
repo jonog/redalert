@@ -1,8 +1,6 @@
 package core
 
-import (
-	"strings"
-)
+import "strings"
 
 var MaxEventsStored = 100
 
@@ -34,7 +32,8 @@ func (c *Check) RecentMetrics(metric string) string {
 	for e := c.EventHistory.Front(); e != nil; e = e.Next() {
 		event := e.Value.(*Event)
 		if event != nil {
-			output = append([]string{event.DisplayMetric(metric)}, output...)
+			metricStr := event.DisplayMetric(metric)
+			output = append([]string{metricStr}, output...)
 		}
 	}
 	return strings.Join(output, ",")

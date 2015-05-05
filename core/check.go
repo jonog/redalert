@@ -11,9 +11,14 @@ import (
 type CheckConfig struct {
 	Name     string   `json:"name"`
 	Type     string   `json:"type"`
-	Address  string   `json:"address"`
 	Interval int      `json:"interval"`
 	Alerts   []string `json:"alerts"`
+
+	// used for web-ping
+	Address string `json:"address"`
+
+	// used for scollector
+	Host string `json:"host"`
 }
 
 type Check struct {
@@ -32,11 +37,13 @@ type Check struct {
 func NewCheck(config CheckConfig) *Check {
 
 	var checker Checker
-	if config.Type == "web-ping" {
+	switch config.Type {
+	case "web-ping":
 		id := config.Name + " (" + config.Address + ")"
 		checker = checks.NewWebPinger(id, config.Address)
-	} else {
-		// todo - add validation, handle err gracefully
+	case "scollector":
+		checker = checks.NewSCollector(config.Host)
+	default:
 		panic("unknown type")
 	}
 

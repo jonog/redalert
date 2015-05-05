@@ -20,6 +20,13 @@
          "address":"http://server3.com/healthcheck",
          "interval":10,
          "alerts":["stderr"]
+      },
+      {
+         "name": "scollector-metrics",
+         "type": "scollector",
+         "host": "hostname",
+         "interval": 15,
+         "alerts": ["stderr"]
       }
    ],
    "gmail": {
