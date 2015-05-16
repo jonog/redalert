@@ -102,8 +102,12 @@ Rocket emoji via https://github.com/twitter/twemoji
 
 ### TODO
 * Set alerts based on metric threshold values / calculated values
+* Integrate more checks (db query, expvars, remote command via ssh, consul)
+* Integrate more notifiers (webhooks, msgqueue)
+* Push events to a time-series database
+* Better web UI (handle more metrics, tags/searchable, charts)
 * Distinguish between an error performing a check & a failing check. i.e. Check should return two errors.
 * Safely handle concurrent read/writes in key data structures accessed in different goroutines.
-* Change server config on the fly
+* Change server config on the fly / interface out storage of config.
 * Alternative backoff configurations (e.g. no backoff / exponential backoff after X attempts)
 * Improved handling/recovering from any errors detected in redalert
