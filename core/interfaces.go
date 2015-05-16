@@ -5,8 +5,8 @@ import (
 	"github.com/jonog/redalert/notifiers"
 )
 
-type Alert interface {
-	Trigger(notifiers.Message) error
+type Notifier interface {
+	Notify(notifiers.Message) error
 	Name() string
 }
 

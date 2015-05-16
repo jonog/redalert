@@ -21,7 +21,7 @@ func (a StandardError) Name() string {
 	return a.name
 }
 
-func (a StandardError) Trigger(msg Message) error {
+func (a StandardError) Notify(msg Message) error {
 	a.log.Println(msg.ShortMessage())
 	return nil
 }

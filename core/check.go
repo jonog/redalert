@@ -25,7 +25,7 @@ type Check struct {
 	Name         string
 	Type         string // e.g. future options: web-ping, ssh-ping, query
 	Interval     int
-	Alerts       []Alert
+	Alerts       []Notifier
 	Log          *log.Logger
 	service      *Service
 	failCount    int
@@ -50,7 +50,7 @@ func NewCheck(config CheckConfig) *Check {
 	return &Check{
 		Name:         config.Name,
 		Interval:     config.Interval,
-		Alerts:       make([]Alert, 0),
+		Alerts:       make([]Notifier, 0),
 		Log:          log.New(os.Stdout, config.Name+" ", log.Ldate|log.Ltime),
 		EventHistory: list.New(),
 		Checker:      checker,
@@ -63,10 +63,10 @@ func (c *Check) AddAlerts(names []string) {
 	}
 }
 
-func getAlert(service *Service, name string) Alert {
-	alert, ok := service.Alerts[name]
+func getAlert(service *Service, name string) Notifier {
+	alert, ok := service.Notifiers[name]
 	if !ok {
-		panic("Alert has not been registered!")
+		panic("Notifier has not been registered!")
 	}
 	return alert
 }

@@ -43,7 +43,7 @@ func (a Gmail) Name() string {
 	return a.name
 }
 
-func (a Gmail) Trigger(msg Message) error {
+func (a Gmail) Notify(msg Message) error {
 
 	body := "To: " + strings.Join(a.notificationAddresses, ",") +
 		"\r\nSubject: " + msg.ShortMessage() +

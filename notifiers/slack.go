@@ -38,7 +38,7 @@ func (a SlackWebhook) Name() string {
 	return a.name
 }
 
-func (a SlackWebhook) Trigger(msg Message) error {
+func (a SlackWebhook) Notify(msg Message) error {
 
 	var payloadChannel string
 	var payloadUsername string

@@ -7,13 +7,13 @@ import (
 )
 
 type Service struct {
-	checks []*Check
-	Alerts map[string]Alert
-	wg     sync.WaitGroup
+	checks    []*Check
+	Notifiers map[string]Notifier
+	wg        sync.WaitGroup
 }
 
 func NewService() *Service {
-	return &Service{Alerts: make(map[string]Alert)}
+	return &Service{Notifiers: make(map[string]Notifier)}
 }
 
 func (s *Service) RegisterCheck(config CheckConfig) {

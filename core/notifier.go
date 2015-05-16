@@ -11,13 +11,13 @@ func (s *Service) RegisterNotification(config notifiers.Config) error {
 	if err != nil {
 		return err
 	}
-	s.Alerts[notifier.Name()] = notifier
+	s.Notifiers[notifier.Name()] = notifier
 	return nil
 }
 
-func NewNotifier(config notifiers.Config) (Alert, error) {
+func NewNotifier(config notifiers.Config) (Notifier, error) {
 
-	var notifier Alert
+	var notifier Notifier
 	var err error
 
 	switch config.Type {

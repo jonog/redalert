@@ -48,7 +48,7 @@ func (a Twilio) Name() string {
 	return "Twilio"
 }
 
-func (a Twilio) Trigger(msg Message) (err error) {
+func (a Twilio) Notify(msg Message) (err error) {
 
 	for _, num := range a.phoneNumbers {
 		err = SendSMS(a.accountSid, a.authToken, num, a.twilioNumber, msg.ShortMessage())

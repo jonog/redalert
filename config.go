@@ -24,5 +24,5 @@ func ReadConfigFile() (*Config, error) {
 }
 
 func ConfigureStdErr(s *core.Service) {
-	s.Alerts["stderr"] = notifiers.NewStandardError()
+	s.Notifiers["stderr"] = notifiers.NewStandardError()
 }

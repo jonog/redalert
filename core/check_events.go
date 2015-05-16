@@ -18,7 +18,7 @@ func (c *Check) triggerAlerts(event *Event) {
 
 		var err error
 		for _, alert := range c.Alerts {
-			err = alert.Trigger(event)
+			err = alert.Notify(event)
 			if err != nil {
 				c.Log.Println(red, "CRITICAL: Failure triggering alert ["+alert.Name()+"]: ", err.Error())
 			}
