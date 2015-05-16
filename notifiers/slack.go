@@ -1,42 +1,44 @@
-package alerts
+package notifiers
 
 import (
 	"bytes"
 	"encoding/json"
 	"errors"
 	"net/http"
-
-	"github.com/jonog/redalert/core"
 )
 
-type SlackConfig struct {
-	WebhookURL string `json:"webhook_url"`
-	Channel    string `json:"channel"`
-	Username   string `json:"username"`
-	IconEmoji  string `json:"icon_emoji"`
-}
-
 type SlackWebhook struct {
+	name      string
 	url       string
 	channel   string
 	username  string
 	iconEmoji string
 }
 
-func NewSlackWebhook(config *SlackConfig) SlackWebhook {
-	return SlackWebhook{
-		url:       config.WebhookURL,
-		channel:   config.Channel,
-		username:  config.Username,
-		iconEmoji: config.IconEmoji,
+func NewSlackNotifier(config Config) (SlackWebhook, error) {
+
+	if config.Type != "slack" {
+		return SlackWebhook{}, errors.New("slack: invalid config type")
 	}
+
+	if config.Config["webhook_url"] == "" {
+		return SlackWebhook{}, errors.New("slack: invalid webhook_url")
+	}
+
+	return SlackWebhook{
+		name:      config.Name,
+		url:       config.Config["webhook_url"],
+		channel:   config.Config["channel"],
+		username:  config.Config["username"],
+		iconEmoji: config.Config["icon_emoji"],
+	}, nil
 }
 
 func (a SlackWebhook) Name() string {
-	return "SlackWebhook"
+	return a.name
 }
 
-func (a SlackWebhook) Trigger(event *core.Event) error {
+func (a SlackWebhook) Notify(msg Message) error {
 
 	var payloadChannel string
 	var payloadUsername string
@@ -63,7 +65,7 @@ func (a SlackWebhook) Trigger(event *core.Event) error {
 	message := SlackPayload{
 		Channel:   payloadChannel,
 		Username:  payloadUsername,
-		Text:      event.ShortMessage(),
+		Text:      msg.ShortMessage(),
 		Parse:     "full",
 		IconEmoji: payloadIconEmoji,
 	}
@@ -82,7 +84,6 @@ func (a SlackWebhook) Trigger(event *core.Event) error {
 		return errors.New("Not OK")
 	}
 
-	event.Check.Log.Println("Slack alert successfully triggered.")
 	return nil
 }
 

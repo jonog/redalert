@@ -31,7 +31,7 @@ Configure servers to monitor & alert settings via `config.json`:
          "type": "web-ping",
          "address":"http://server2.com/healthcheck",
          "interval":10,
-         "alerts":["stderr", "gmail", "slack", "twilio"]
+         "alerts":["stderr", "email", "chat", "sms"]
       },
       {  
          "name":"Server 3",
@@ -39,26 +39,46 @@ Configure servers to monitor & alert settings via `config.json`:
          "address":"http://server3.com/healthcheck",
          "interval":10,
          "alerts":["stderr"]
+      },
+      {
+         "name": "scollector-metrics",
+         "type": "scollector",
+         "host": "hostname",
+         "interval": 15,
+         "alerts": ["stderr"]
       }
    ],
-   "gmail": {
-      "user": "",
-      "pass": "",
-      "notification_addresses": []
-   },
-   "slack": {
-      "webhook_url": "",
-      "channel": "#general",
-      "username": "redalert",
-      "icon_emoji": ":rocket:"
-   },
-   "twilio": {
-      "account_sid": "",
-      "auth_token": "",
-      "twilio_number": "",
-      "notification_numbers": []
-   }
-
+   "notifications": [
+      {
+         "name": "email",
+         "type": "gmail",
+         "config": {
+            "user": "",
+            "pass": "",
+            "notification_addresses": ""      
+         }
+      },
+      {
+         "name": "chat",
+         "type": "slack",
+         "config": {
+            "webhook_url": "",
+            "channel": "#general",
+            "username": "redalert",
+            "icon_emoji": ":rocket:"  
+         }
+      },
+      {
+         "name": "sms",
+         "type": "twilio",
+         "config": {
+            "account_sid": "",
+            "auth_token": "",
+            "twilio_number": "",
+            "notification_numbers": ""    
+         }
+      }
+   ]
 }
 ```
 
