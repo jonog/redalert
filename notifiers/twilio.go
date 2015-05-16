@@ -1,20 +1,11 @@
-package alerts
+package notifiers
 
 import (
 	"errors"
 	"net/http"
 	"net/url"
 	"strings"
-
-	"github.com/jonog/redalert/core"
 )
-
-type TwilioConfig struct {
-	AccountSID          string   `json:"account_sid"`
-	AuthToken           string   `json:"auth_token"`
-	TwilioNumber        string   `json:"twilio_number"`
-	NotificationNumbers []string `json:"notification_numbers"`
-}
 
 type Twilio struct {
 	accountSid   string
@@ -23,29 +14,49 @@ type Twilio struct {
 	twilioNumber string
 }
 
-func NewTwilio(config *TwilioConfig) Twilio {
-	return Twilio{
-		accountSid:   config.AccountSID,
-		authToken:    config.AuthToken,
-		phoneNumbers: config.NotificationNumbers,
-		twilioNumber: config.TwilioNumber,
+func NewTwilioNotifier(config Config) (Twilio, error) {
+
+	if config.Type != "twilio" {
+		return Twilio{}, errors.New("twilio: invalid config type")
 	}
+
+	if config.Config["account_sid"] == "" {
+		return Twilio{}, errors.New("twilio: invalid account_sid")
+	}
+
+	if config.Config["auth_token"] == "" {
+		return Twilio{}, errors.New("twilio: invalid auth_token")
+	}
+
+	if config.Config["twilio_number"] == "" {
+		return Twilio{}, errors.New("twilio: invalid twilio_number")
+	}
+
+	if config.Config["notification_numbers"] == "" {
+		return Twilio{}, errors.New("twilio: invalid notification_numbers")
+	}
+
+	return Twilio{
+		accountSid:   config.Config["account_sid"],
+		authToken:    config.Config["auth_token"],
+		phoneNumbers: strings.Split(config.Config["notification_numbers"], ","),
+		twilioNumber: config.Config["twilio_number"],
+	}, nil
 }
 
 func (a Twilio) Name() string {
 	return "Twilio"
 }
 
-func (a Twilio) Trigger(event *core.Event) (err error) {
+func (a Twilio) Trigger(msg Message) (err error) {
 
-	msg := event.ShortMessage()
 	for _, num := range a.phoneNumbers {
-		err = SendSMS(a.accountSid, a.authToken, num, a.twilioNumber, msg)
+		err = SendSMS(a.accountSid, a.authToken, num, a.twilioNumber, msg.ShortMessage())
 		if err != nil {
 			return
 		}
 	}
-	event.Check.Log.Println("Twilio alert successfully triggered.")
+
 	return nil
 
 }

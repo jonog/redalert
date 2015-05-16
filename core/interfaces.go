@@ -1,9 +1,12 @@
 package core
 
-import "github.com/jonog/redalert/checks"
+import (
+	"github.com/jonog/redalert/checks"
+	"github.com/jonog/redalert/notifiers"
+)
 
 type Alert interface {
-	Trigger(*Event) error
+	Trigger(notifiers.Message) error
 	Name() string
 }
 

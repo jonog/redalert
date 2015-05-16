@@ -17,12 +17,12 @@ func main() {
 
 	service := core.NewService()
 
-	// Setup Alerts
+	// Setup Notifications
 
 	ConfigureStdErr(service)
-	ConfigureGmail(service, config.Gmail)
-	ConfigureSlack(service, config.Slack)
-	ConfigureTwilio(service, config.Twilio)
+	for _, notificationConfig := range config.Notifications {
+		service.RegisterNotification(notificationConfig)
+	}
 
 	// Setup Checks
 
