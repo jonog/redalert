@@ -36,22 +36,23 @@ type Check struct {
 
 func NewCheck(config CheckConfig) *Check {
 
+	logger := log.New(os.Stdout, config.Name+" ", log.Ldate|log.Ltime)
+
 	var checker Checker
 	switch config.Type {
 	case "web-ping":
-		id := config.Name + " (" + config.Address + ")"
-		checker = checks.NewWebPinger(id, config.Address)
+		checker = checks.NewWebPinger(config.Address, logger)
 	case "scollector":
 		checker = checks.NewSCollector(config.Host)
 	default:
-		panic("unknown type")
+		panic("unknown check type")
 	}
 
 	return &Check{
 		Name:         config.Name,
 		Interval:     config.Interval,
 		Alerts:       make([]Notifier, 0),
-		Log:          log.New(os.Stdout, config.Name+" ", log.Ldate|log.Ltime),
+		Log:          logger,
 		EventHistory: list.New(),
 		Checker:      checker,
 	}

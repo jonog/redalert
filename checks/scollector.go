@@ -18,6 +18,8 @@ func NewSCollector(host string) *SCollector {
 
 func (sc *SCollector) Check() (map[string]float64, error) {
 
+	// Take a snapshot of data streaming into metrics receiver @ /api/put
+
 	_, exists := GlobalSCollector[Host(sc.Host)]
 	if !exists {
 		GlobalSCollector[Host(sc.Host)] = make(map[string]float64)

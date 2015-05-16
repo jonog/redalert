@@ -2,8 +2,8 @@ package checks
 
 import (
 	"errors"
-	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -17,8 +17,8 @@ var (
 )
 
 type WebPinger struct {
-	Identifier string
-	Address    string
+	Address string
+	log     *log.Logger
 }
 
 var WebPingerMetrics = map[string]MetricInfo{
@@ -27,8 +27,8 @@ var WebPingerMetrics = map[string]MetricInfo{
 	},
 }
 
-func NewWebPinger(identifier, address string) *WebPinger {
-	return &WebPinger{identifier, address}
+func NewWebPinger(address string, logger *log.Logger) *WebPinger {
+	return &WebPinger{address, logger}
 }
 
 var GlobalClient = http.Client{
@@ -54,18 +54,18 @@ func (wp *WebPinger) ping() (map[string]float64, error) {
 	metrics["latency"] = float64(0)
 
 	startTime := time.Now()
-	fmt.Println(wp.Identifier, " : Pinging")
+	wp.log.Println("GET", wp.Address)
 
 	req, err := http.NewRequest("GET", wp.Address, nil)
 	if err != nil {
-		fmt.Println(wp.Identifier, " : FAIL ", red, "OK", reset)
+		wp.log.Println("FAIL ", red, "OK", reset)
 		return metrics, errors.New("web-ping: failed parsing url in http.NewRequest " + err.Error())
 	}
 
 	req.Header.Add("User-Agent", "Redalert/1.0")
 	resp, err := GlobalClient.Do(req)
 	if err != nil {
-		fmt.Println(wp.Identifier, " : FAIL ", red, "OK", reset)
+		wp.log.Println("FAIL ", red, "OK", reset)
 		return metrics, errors.New("web-ping: failed client.Do " + err.Error())
 	}
 
@@ -76,7 +76,7 @@ func (wp *WebPinger) ping() (map[string]float64, error) {
 	latency := endTime.Sub(startTime)
 	metrics["latency"] = float64(latency.Seconds() * 1e3)
 
-	fmt.Println(wp.Identifier, " : Analytics ", white, metrics, reset)
+	wp.log.Println("Latency", white, metrics, reset)
 
 	if err != nil {
 		return metrics, errors.New("web-ping: failed reading body " + err.Error())
@@ -86,7 +86,7 @@ func (wp *WebPinger) ping() (map[string]float64, error) {
 		return metrics, errors.New("web-ping: non-200 status code. status code was " + strconv.Itoa(resp.StatusCode))
 	}
 
-	fmt.Println(wp.Identifier, " : Analytics ", green, "OK", reset)
+	wp.log.Println("Status", green, "200 OK", reset)
 
 	return metrics, nil
 }

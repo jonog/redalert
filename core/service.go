@@ -13,7 +13,9 @@ type Service struct {
 }
 
 func NewService() *Service {
-	return &Service{Notifiers: make(map[string]Notifier)}
+	return &Service{
+		Notifiers: make(map[string]Notifier),
+	}
 }
 
 func (s *Service) RegisterCheck(config CheckConfig) {
