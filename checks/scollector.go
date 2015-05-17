@@ -16,7 +16,7 @@ func NewSCollector(host string) *SCollector {
 	return &SCollector{host}
 }
 
-func (sc *SCollector) Check() (map[string]float64, error) {
+func (sc *SCollector) Check() (Metrics, error) {
 
 	// Take a snapshot of data streaming into metrics receiver @ /api/put
 
@@ -25,7 +25,7 @@ func (sc *SCollector) Check() (map[string]float64, error) {
 		GlobalSCollector[Host(sc.Host)] = make(map[string]float64)
 	}
 
-	output := make(map[string]float64)
+	output := Metrics(make(map[string]float64))
 	for key, val := range GlobalSCollector[Host(sc.Host)] {
 		output[key] = val
 	}

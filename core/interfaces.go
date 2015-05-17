@@ -11,7 +11,7 @@ type Notifier interface {
 }
 
 type Checker interface {
-	Check() (map[string]float64, error)
+	Check() (checks.Metrics, error)
 	MetricInfo(string) checks.MetricInfo
 	RedAlertMessage() string
 	GreenAlertMessage() string

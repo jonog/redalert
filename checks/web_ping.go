@@ -35,7 +35,7 @@ var GlobalClient = http.Client{
 	Timeout: time.Duration(10 * time.Second),
 }
 
-func (wp *WebPinger) Check() (map[string]float64, error) {
+func (wp *WebPinger) Check() (Metrics, error) {
 
 	metrics, err := wp.ping()
 	if err != nil {
@@ -48,9 +48,9 @@ func (wp *WebPinger) Check() (map[string]float64, error) {
 	return metrics, nil
 }
 
-func (wp *WebPinger) ping() (map[string]float64, error) {
+func (wp *WebPinger) ping() (Metrics, error) {
 
-	metrics := make(map[string]float64)
+	metrics := Metrics(make(map[string]float64))
 	metrics["latency"] = float64(0)
 
 	startTime := time.Now()
