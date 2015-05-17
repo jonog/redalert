@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"os"
 
 	"github.com/jonog/redalert/core"
@@ -21,13 +22,19 @@ func main() {
 
 	ConfigureStdErr(service)
 	for _, notificationConfig := range config.Notifications {
-		service.RegisterNotification(notificationConfig)
+		err = service.RegisterNotification(notificationConfig)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	// Setup Checks
 
 	for _, checkConfig := range config.Checks {
-		service.RegisterCheck(checkConfig)
+		err = service.RegisterCheck(checkConfig)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	service.Start()

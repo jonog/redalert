@@ -18,13 +18,6 @@ func NewService() *Service {
 	}
 }
 
-func (s *Service) RegisterCheck(config CheckConfig) {
-	check := NewCheck(config)
-	check.service = s
-	check.AddAlerts(config.Alerts)
-	s.checks = append(s.checks, check)
-}
-
 // Start starts the monitoring system, by starting each check.
 // The service runs until a signal is received to stop the service.
 func (s *Service) Start() {

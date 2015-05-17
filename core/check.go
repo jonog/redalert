@@ -2,6 +2,7 @@ package core
 
 import (
 	"container/list"
+	"errors"
 	"log"
 	"os"
 
@@ -34,7 +35,21 @@ type Check struct {
 	Checker      Checker
 }
 
-func NewCheck(config CheckConfig) *Check {
+func (s *Service) RegisterCheck(config CheckConfig) error {
+	check, err := NewCheck(config)
+	if err != nil {
+		return err
+	}
+	check.service = s
+	err = check.AddAlerts(config.Alerts)
+	if err != nil {
+		return err
+	}
+	s.checks = append(s.checks, check)
+	return nil
+}
+
+func NewCheck(config CheckConfig) (*Check, error) {
 
 	logger := log.New(os.Stdout, config.Name+" ", log.Ldate|log.Ltime)
 
@@ -45,7 +60,7 @@ func NewCheck(config CheckConfig) *Check {
 	case "scollector":
 		checker = checks.NewSCollector(config.Host)
 	default:
-		panic("unknown check type")
+		return nil, errors.New("redalert: unknown notifier")
 	}
 
 	return &Check{
@@ -55,21 +70,26 @@ func NewCheck(config CheckConfig) *Check {
 		Log:          logger,
 		EventHistory: list.New(),
 		Checker:      checker,
-	}
+	}, nil
 }
 
-func (c *Check) AddAlerts(names []string) {
+func (c *Check) AddAlerts(names []string) error {
 	for _, name := range names {
-		c.Alerts = append(c.Alerts, getAlert(c.service, name))
+		alert, err := getAlert(c.service, name)
+		if err != nil {
+			return err
+		}
+		c.Alerts = append(c.Alerts, alert)
 	}
+	return nil
 }
 
-func getAlert(service *Service, name string) Notifier {
+func getAlert(service *Service, name string) (Notifier, error) {
 	alert, ok := service.Notifiers[name]
 	if !ok {
-		panic("Notifier has not been registered!")
+		return nil, errors.New("redalert: notifier requested has not be registered. name: " + name)
 	}
-	return alert
+	return alert, nil
 }
 
 func (c *Check) incrFailCount() {
