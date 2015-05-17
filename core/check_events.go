@@ -20,9 +20,9 @@ func (c *Check) triggerAlerts(event *Event) {
 		for _, alert := range c.Alerts {
 
 			if event.isRedAlert() {
-				c.Log.Println(red, "Sending red alert via", alert.Name(), "for", c.Name, reset)
+				c.Log.Println(red, "Sending red alert via", alert.Name(), reset)
 			} else if event.isGreenAlert() {
-				c.Log.Println(green, "Sending green alert via", alert.Name(), "for", c.Name, reset)
+				c.Log.Println(green, "Sending green alert via", alert.Name(), reset)
 			}
 
 			err = alert.Notify(event)
