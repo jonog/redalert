@@ -4,12 +4,13 @@ import (
 	"encoding/json"
 	"io/ioutil"
 
+	"github.com/jonog/redalert/checks"
 	"github.com/jonog/redalert/core"
 	"github.com/jonog/redalert/notifiers"
 )
 
 type Config struct {
-	Checks        []core.CheckConfig `json:"checks"`
+	Checks        []checks.Config    `json:"checks"`
 	Notifications []notifiers.Config `json:"notifications"`
 }
 

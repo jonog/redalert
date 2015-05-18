@@ -10,6 +10,8 @@ type Notifier interface {
 	Name() string
 }
 
+// The Checker implements a type of status check / mechanism of data collection
+// which may be used for triggering alerts
 type Checker interface {
 	Check() (checks.Metrics, error)
 	MetricInfo(string) checks.MetricInfo

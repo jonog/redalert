@@ -6,7 +6,7 @@ import (
 	"github.com/jonog/redalert/notifiers"
 )
 
-func (s *Service) RegisterNotification(config notifiers.Config) error {
+func (s *Service) RegisterNotifier(config notifiers.Config) error {
 	notifier, err := NewNotifier(config)
 	if err != nil {
 		return err

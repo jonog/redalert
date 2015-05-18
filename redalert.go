@@ -22,7 +22,7 @@ func main() {
 
 	ConfigureStdErr(service)
 	for _, notificationConfig := range config.Notifications {
-		err = service.RegisterNotification(notificationConfig)
+		err = service.RegisterNotifier(notificationConfig)
 		if err != nil {
 			log.Fatal(err)
 		}

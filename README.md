@@ -24,28 +24,28 @@ Configure servers to monitor & alert settings via `config.json`:
          "type": "web-ping",
          "address":"http://server1.com/healthcheck",
          "interval":10,
-         "alerts":["stderr"]
+         "send_alerts": ["stderr"]
       },
       {  
          "name":"Server 2",
          "type": "web-ping",
          "address":"http://server2.com/healthcheck",
          "interval":10,
-         "alerts":["stderr", "email", "chat", "sms"]
+         "send_alerts": ["stderr", "email", "chat", "sms"]
       },
       {  
          "name":"Server 3",
          "type": "web-ping",
          "address":"http://server3.com/healthcheck",
          "interval":10,
-         "alerts":["stderr"]
+         "send_alerts": ["stderr"]
       },
       {
          "name": "scollector-metrics",
          "type": "scollector",
          "host": "hostname",
          "interval": 15,
-         "alerts": ["stderr"]
+         "send_alerts": ["stderr"]
       }
    ],
    "notifications": [
