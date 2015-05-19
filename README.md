@@ -1,9 +1,9 @@
 ### Redalert
 
-![](https://cloud.githubusercontent.com/assets/1314353/7707829/7e18fe10-fe84-11e4-9762-322544d1142b.png)
-
 For monitoring your infrastructure and sending notifications if stuff is not ok.
-(e.g. pinging your websites/APIs via HTTP GET at specified intervals, and alerting you if there is downtime). 
+(e.g. pinging your websites/APIs via HTTP GET at specified intervals, and alerting you if there is downtime).
+
+![](https://cloud.githubusercontent.com/assets/1314353/7707829/7e18fe10-fe84-11e4-9762-322544d1142b.png)
 
 #### Features:
 * Alert notifications available on several channels:
