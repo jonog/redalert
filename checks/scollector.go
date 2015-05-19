@@ -18,8 +18,8 @@ type SCollector struct {
 	Host string
 }
 
-var NewSCollector = func(config Config, logger *log.Logger) Checker {
-	return Checker(&SCollector{config.Host})
+var NewSCollector = func(config Config, logger *log.Logger) (Checker, error) {
+	return Checker(&SCollector{config.Host}), nil
 }
 
 func (sc *SCollector) Check() (Metrics, error) {

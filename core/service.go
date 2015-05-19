@@ -4,17 +4,19 @@ import (
 	"os"
 	"os/signal"
 	"sync"
+
+	"github.com/jonog/redalert/notifiers"
 )
 
 type Service struct {
 	checks    []*Check
-	Notifiers map[string]Notifier
+	Notifiers map[string]notifiers.Notifier
 	wg        sync.WaitGroup
 }
 
 func NewService() *Service {
 	return &Service{
-		Notifiers: make(map[string]Notifier),
+		Notifiers: make(map[string]notifiers.Notifier),
 	}
 }
 

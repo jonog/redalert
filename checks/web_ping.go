@@ -31,8 +31,8 @@ var WebPingerMetrics = map[string]MetricInfo{
 	},
 }
 
-var NewWebPinger = func(config Config, logger *log.Logger) Checker {
-	return Checker(&WebPinger{config.Address, logger})
+var NewWebPinger = func(config Config, logger *log.Logger) (Checker, error) {
+	return Checker(&WebPinger{config.Address, logger}), nil
 }
 
 var GlobalClient = http.Client{

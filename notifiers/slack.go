@@ -7,6 +7,10 @@ import (
 	"net/http"
 )
 
+func init() {
+	registerNotifier("slack", NewSlackNotifier)
+}
+
 type SlackWebhook struct {
 	name      string
 	url       string
@@ -15,23 +19,23 @@ type SlackWebhook struct {
 	iconEmoji string
 }
 
-func NewSlackNotifier(config Config) (SlackWebhook, error) {
+var NewSlackNotifier = func(config Config) (Notifier, error) {
 
 	if config.Type != "slack" {
-		return SlackWebhook{}, errors.New("slack: invalid config type")
+		return nil, errors.New("slack: invalid config type")
 	}
 
 	if config.Config["webhook_url"] == "" {
-		return SlackWebhook{}, errors.New("slack: invalid webhook_url")
+		return nil, errors.New("slack: invalid webhook_url")
 	}
 
-	return SlackWebhook{
+	return Notifier(SlackWebhook{
 		name:      config.Name,
 		url:       config.Config["webhook_url"],
 		channel:   config.Config["channel"],
 		username:  config.Config["username"],
 		iconEmoji: config.Config["icon_emoji"],
-	}, nil
+	}), nil
 }
 
 func (a SlackWebhook) Name() string {

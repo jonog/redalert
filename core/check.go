@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/jonog/redalert/checks"
+	"github.com/jonog/redalert/notifiers"
 )
 
 var MaxEventsStored = 100
@@ -15,7 +16,7 @@ type Check struct {
 	Type     string // e.g. future options: web-ping, ssh-ping, query
 	Interval int
 
-	Notifiers []Notifier
+	Notifiers []notifiers.Notifier
 
 	Log *log.Logger
 
@@ -53,7 +54,7 @@ func NewCheck(config checks.Config) (*Check, error) {
 	return &Check{
 		Name:      config.Name,
 		Interval:  config.Interval,
-		Notifiers: make([]Notifier, 0),
+		Notifiers: make([]notifiers.Notifier, 0),
 		Log:       logger,
 		Store:     NewMemoryList(MaxEventsStored),
 		Checker:   checker,
@@ -71,7 +72,7 @@ func (c *Check) AddNotifiers(names []string) error {
 	return nil
 }
 
-func getNotifier(service *Service, name string) (Notifier, error) {
+func getNotifier(service *Service, name string) (notifiers.Notifier, error) {
 	notifier, ok := service.Notifiers[name]
 	if !ok {
 		return nil, errors.New("redalert: notifier requested has not be registered. name: " + name)

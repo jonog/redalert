@@ -2,6 +2,12 @@ package core
 
 import "container/list"
 
+type EventStorage interface {
+	Store(*Event) error
+	Last() (*Event, error)
+	GetRecent() ([]*Event, error)
+}
+
 type MemoryList struct {
 	maxEvents int
 	lastEvent *Event

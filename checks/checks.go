@@ -37,9 +37,9 @@ type Config struct {
 	Host string `json:"host"`
 }
 
-var registry = make(map[string]func(Config, *log.Logger) Checker)
+var registry = make(map[string]func(Config, *log.Logger) (Checker, error))
 
-func registerChecker(name string, constructorFn func(Config, *log.Logger) Checker) {
+func registerChecker(name string, constructorFn func(Config, *log.Logger) (Checker, error)) {
 	registry[name] = constructorFn
 }
 
@@ -48,5 +48,5 @@ func New(config Config, logger *log.Logger) (Checker, error) {
 	if !ok {
 		return nil, errors.New("checks: checker unavailable: " + config.Type)
 	}
-	return checkerFn(config, logger), nil
+	return checkerFn(config, logger)
 }

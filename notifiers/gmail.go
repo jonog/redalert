@@ -6,6 +6,10 @@ import (
 	"strings"
 )
 
+func init() {
+	registerNotifier("gmail", NewGmailNotifier)
+}
+
 type Gmail struct {
 	name                  string
 	user                  string
@@ -13,30 +17,30 @@ type Gmail struct {
 	notificationAddresses []string
 }
 
-func NewGmailNotifier(config Config) (Gmail, error) {
+var NewGmailNotifier = func(config Config) (Notifier, error) {
 
 	if config.Type != "gmail" {
-		return Gmail{}, errors.New("gmail: invalid config type")
+		return nil, errors.New("gmail: invalid config type")
 	}
 
 	if config.Config["user"] == "" {
-		return Gmail{}, errors.New("gmail: invalid user")
+		return nil, errors.New("gmail: invalid user")
 	}
 
 	if config.Config["pass"] == "" {
-		return Gmail{}, errors.New("gmail: invalid pass")
+		return nil, errors.New("gmail: invalid pass")
 	}
 
 	if config.Config["notification_addresses"] == "" {
-		return Gmail{}, errors.New("gmail: invalid notification addresses")
+		return nil, errors.New("gmail: invalid notification addresses")
 	}
 
-	return Gmail{
+	return Notifier(Gmail{
 		name: config.Name,
 		user: config.Config["user"],
 		pass: config.Config["pass"],
 		notificationAddresses: strings.Split(config.Config["notification_addresses"], ","),
-	}, nil
+	}), nil
 }
 
 func (a Gmail) Name() string {

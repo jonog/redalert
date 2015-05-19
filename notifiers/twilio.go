@@ -7,6 +7,10 @@ import (
 	"strings"
 )
 
+func init() {
+	registerNotifier("twilio", NewTwilioNotifier)
+}
+
 type Twilio struct {
 	accountSid   string
 	authToken    string
@@ -14,34 +18,34 @@ type Twilio struct {
 	twilioNumber string
 }
 
-func NewTwilioNotifier(config Config) (Twilio, error) {
+var NewTwilioNotifier = func(config Config) (Notifier, error) {
 
 	if config.Type != "twilio" {
-		return Twilio{}, errors.New("twilio: invalid config type")
+		return nil, errors.New("twilio: invalid config type")
 	}
 
 	if config.Config["account_sid"] == "" {
-		return Twilio{}, errors.New("twilio: invalid account_sid")
+		return nil, errors.New("twilio: invalid account_sid")
 	}
 
 	if config.Config["auth_token"] == "" {
-		return Twilio{}, errors.New("twilio: invalid auth_token")
+		return nil, errors.New("twilio: invalid auth_token")
 	}
 
 	if config.Config["twilio_number"] == "" {
-		return Twilio{}, errors.New("twilio: invalid twilio_number")
+		return nil, errors.New("twilio: invalid twilio_number")
 	}
 
 	if config.Config["notification_numbers"] == "" {
-		return Twilio{}, errors.New("twilio: invalid notification_numbers")
+		return nil, errors.New("twilio: invalid notification_numbers")
 	}
 
-	return Twilio{
+	return Notifier(Twilio{
 		accountSid:   config.Config["account_sid"],
 		authToken:    config.Config["auth_token"],
 		phoneNumbers: strings.Split(config.Config["notification_numbers"], ","),
 		twilioNumber: config.Config["twilio_number"],
-	}, nil
+	}), nil
 }
 
 func (a Twilio) Name() string {
