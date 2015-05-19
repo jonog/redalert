@@ -1,0 +1,22 @@
+{
+	"ImportPath": "github.com/jonog/redalert",
+	"GoVersion": "go1.4",
+	"Packages": [
+		"./..."
+	],
+	"Deps": [
+		{
+			"ImportPath": "bitbucket.org/kardianos/osext",
+			"Comment": "null-15",
+			"Rev": "44140c5fc69ecf1102c5ef451d73cd98ef59b178"
+		},
+		{
+			"ImportPath": "github.com/GeertJohan/go.rice",
+			"Rev": "1ce4ccd14ddb9e6a4142e9da2668d105ca0bcb3a"
+		},
+		{
+			"ImportPath": "github.com/daaku/go.zipexe",
+			"Rev": "4de5c18ca1fc5294fee64721094ca90c46d26405"
+		}
+	]
+}
