@@ -21,7 +21,8 @@ type Check struct {
 
 	failCount int
 
-	Store EventStorage
+	service *Service
+	Store   EventStorage
 
 	Checker Checker
 }
