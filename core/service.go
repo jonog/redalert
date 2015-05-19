@@ -11,13 +11,13 @@ import (
 
 type Service struct {
 	checks    []*Check
-	Notifiers map[string]notifiers.Notifier
+	notifiers map[string]notifiers.Notifier
 	wg        sync.WaitGroup
 }
 
 func NewService() *Service {
 	return &Service{
-		Notifiers: make(map[string]notifiers.Notifier),
+		notifiers: make(map[string]notifiers.Notifier),
 	}
 }
 
@@ -70,6 +70,6 @@ func (s *Service) RegisterNotifier(config notifiers.Config) error {
 	if err != nil {
 		return err
 	}
-	s.Notifiers[notifier.Name()] = notifier
+	s.notifiers[notifier.Name()] = notifier
 	return nil
 }

@@ -61,7 +61,7 @@ func (c *Check) AddNotifiers(names []string) error {
 }
 
 func getNotifier(service *Service, name string) (notifiers.Notifier, error) {
-	notifier, ok := service.Notifiers[name]
+	notifier, ok := service.notifiers[name]
 	if !ok {
 		return nil, errors.New("redalert: notifier requested has not be registered. name: " + name)
 	}
