@@ -17,7 +17,7 @@ func main() {
 
 	config, err := readConfig()
 	if err != nil {
-		panic("Missing or invalid config")
+		log.Fatal("Missing or invalid config.json")
 	}
 
 	service := core.NewService()
