@@ -2,6 +2,7 @@ package core
 
 import (
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -43,4 +44,17 @@ func (e *Event) ShortMessage() string {
 
 func (e *Event) DisplayMetric(metric string) string {
 	return strconv.FormatFloat(e.Data[metric], 'f', 1, 64)
+}
+
+func (c *Check) RecentMetrics(metric string) string {
+	events, err := c.Store.GetRecent()
+	if err != nil {
+		c.Log.Println("ERROR: retrieving recent events")
+		return ""
+	}
+	var output []string
+	for _, event := range events {
+		output = append([]string{event.DisplayMetric(metric)}, output...)
+	}
+	return strings.Join(output, ",")
 }

@@ -50,7 +50,7 @@ func (c *Check) run(stopChan chan bool) {
 			if err != nil {
 
 				event = NewRedAlert(c, checkData)
-				c.storeEvent(event)
+				c.Store.Store(event)
 
 				c.Log.Println(red, "ERROR:", err, reset)
 				c.triggerAlerts(event)
@@ -66,10 +66,15 @@ func (c *Check) run(stopChan chan bool) {
 			// Trigger GreenAlert if check is successful and was previously failing
 			if err == nil {
 
-				isRedalertRecovery := c.LastEvent != nil && c.LastEvent.isRedAlert()
+				lastEvent, storeErr := c.Store.Last()
+				if storeErr != nil {
+					c.Log.Println(red, "ERROR: retrieving event from store", reset)
+				}
+
+				isRedalertRecovery := lastEvent != nil && lastEvent.isRedAlert()
 
 				event = NewGreenAlert(c, checkData)
-				c.storeEvent(event)
+				c.Store.Store(event)
 
 				if isRedalertRecovery {
 					c.Log.Println(green, "RECOVERY: ", reset)

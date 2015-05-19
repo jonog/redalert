@@ -18,3 +18,9 @@ type Checker interface {
 	RedAlertMessage() string
 	GreenAlertMessage() string
 }
+
+type EventStorage interface {
+	Store(*Event) error
+	Last() (*Event, error)
+	GetRecent() ([]*Event, error)
+}
