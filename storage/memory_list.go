@@ -1,16 +1,14 @@
-package core
+package storage
 
-import "container/list"
+import (
+	"container/list"
 
-type EventStorage interface {
-	Store(*Event) error
-	Last() (*Event, error)
-	GetRecent() ([]*Event, error)
-}
+	"github.com/jonog/redalert/events"
+)
 
 type MemoryList struct {
 	maxEvents int
-	lastEvent *Event
+	lastEvent *events.Event
 	history   *list.List
 }
 
@@ -18,7 +16,7 @@ func NewMemoryList(capacity int) *MemoryList {
 	return &MemoryList{capacity, nil, list.New()}
 }
 
-func (l *MemoryList) Store(event *Event) error {
+func (l *MemoryList) Store(event *events.Event) error {
 	l.lastEvent = event
 	l.history.PushFront(event)
 	if l.history.Len() > l.maxEvents {
@@ -27,17 +25,17 @@ func (l *MemoryList) Store(event *Event) error {
 	return nil
 }
 
-func (l *MemoryList) Last() (*Event, error) {
+func (l *MemoryList) Last() (*events.Event, error) {
 	return l.lastEvent, nil
 }
 
-func (l *MemoryList) GetRecent() ([]*Event, error) {
-	var events []*Event
+func (l *MemoryList) GetRecent() ([]*events.Event, error) {
+	var es []*events.Event
 	for e := l.history.Front(); e != nil; e = e.Next() {
-		event := e.Value.(*Event)
+		event := e.Value.(*events.Event)
 		if event != nil {
-			events = append(events, event)
+			es = append(es, event)
 		}
 	}
-	return events, nil
+	return es, nil
 }

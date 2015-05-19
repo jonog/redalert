@@ -5,6 +5,7 @@ import (
 	"os/signal"
 	"sync"
 
+	"github.com/jonog/redalert/checks"
 	"github.com/jonog/redalert/notifiers"
 )
 
@@ -48,4 +49,27 @@ func (s *Service) KeepRunning() {
 
 func (s *Service) Checks() []*Check {
 	return s.checks
+}
+
+func (s *Service) RegisterCheck(config checks.Config) error {
+	check, err := NewCheck(config)
+	if err != nil {
+		return err
+	}
+	check.service = s
+	err = check.AddNotifiers(config.SendAlerts)
+	if err != nil {
+		return err
+	}
+	s.checks = append(s.checks, check)
+	return nil
+}
+
+func (s *Service) RegisterNotifier(config notifiers.Config) error {
+	notifier, err := notifiers.New(config)
+	if err != nil {
+		return err
+	}
+	s.Notifiers[notifier.Name()] = notifier
+	return nil
 }

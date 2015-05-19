@@ -7,18 +7,13 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/jonog/redalert/utils"
 )
 
 func init() {
 	registerChecker("web-ping", NewWebPinger)
 }
-
-var (
-	green = string([]byte{27, 91, 57, 55, 59, 52, 50, 109})
-	red   = string([]byte{27, 91, 57, 55, 59, 52, 49, 109})
-	reset = string([]byte{27, 91, 48, 109})
-	white = string([]byte{27, 91, 57, 48, 59, 52, 55, 109})
-)
 
 type WebPinger struct {
 	Address string
@@ -78,7 +73,7 @@ func (wp *WebPinger) ping() (Metrics, error) {
 	latency := endTime.Sub(startTime)
 	metrics["latency"] = float64(latency.Seconds() * 1e3)
 
-	wp.log.Println("Latency", white, metrics, reset)
+	wp.log.Println("Latency", utils.White, metrics, utils.Reset)
 
 	if err != nil {
 		return metrics, errors.New("web-ping: failed reading body " + err.Error())

@@ -4,9 +4,11 @@ import (
 	"errors"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/jonog/redalert/checks"
 	"github.com/jonog/redalert/notifiers"
+	"github.com/jonog/redalert/storage"
 )
 
 var MaxEventsStored = 100
@@ -23,23 +25,9 @@ type Check struct {
 	failCount int
 
 	service *Service
-	Store   EventStorage
+	Store   storage.EventStorage
 
 	Checker checks.Checker
-}
-
-func (s *Service) RegisterCheck(config checks.Config) error {
-	check, err := NewCheck(config)
-	if err != nil {
-		return err
-	}
-	check.service = s
-	err = check.AddNotifiers(config.SendAlerts)
-	if err != nil {
-		return err
-	}
-	s.checks = append(s.checks, check)
-	return nil
 }
 
 func NewCheck(config checks.Config) (*Check, error) {
@@ -56,7 +44,7 @@ func NewCheck(config checks.Config) (*Check, error) {
 		Interval:  config.Interval,
 		Notifiers: make([]notifiers.Notifier, 0),
 		Log:       logger,
-		Store:     NewMemoryList(MaxEventsStored),
+		Store:     storage.NewMemoryList(MaxEventsStored),
 		Checker:   checker,
 	}, nil
 }
@@ -86,4 +74,17 @@ func (c *Check) incrFailCount() {
 
 func (c *Check) resetFailCount() {
 	c.failCount = 0
+}
+
+func (c *Check) RecentMetrics(metric string) string {
+	events, err := c.Store.GetRecent()
+	if err != nil {
+		c.Log.Println("ERROR: retrieving recent events")
+		return ""
+	}
+	var output []string
+	for _, event := range events {
+		output = append([]string{event.DisplayMetric(metric)}, output...)
+	}
+	return strings.Join(output, ",")
 }
