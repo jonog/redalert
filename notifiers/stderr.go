@@ -5,16 +5,20 @@ import (
 	"os"
 )
 
+func init() {
+	registerNotifier("stderr", NewStandardError)
+}
+
 type StandardError struct {
 	name string
 	log  *log.Logger
 }
 
-func NewStandardError() StandardError {
-	return StandardError{
+var NewStandardError = func(config Config) (Notifier, error) {
+	return Notifier(StandardError{
 		name: "stderr",
 		log:  log.New(os.Stderr, "", log.Ldate|log.Ltime),
-	}
+	}), nil
 }
 
 func (a StandardError) Name() string {

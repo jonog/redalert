@@ -1,17 +1,21 @@
 package main
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"log"
 	"os"
 
+	"github.com/jonog/redalert/checks"
 	"github.com/jonog/redalert/core"
+	"github.com/jonog/redalert/notifiers"
 
 	"github.com/jonog/redalert/web"
 )
 
 func main() {
 
-	config, err := ReadConfigFile()
+	config, err := readConfig()
 	if err != nil {
 		panic("Missing or invalid config")
 	}
@@ -20,7 +24,10 @@ func main() {
 
 	// Setup Notifications
 
-	ConfigureStdErr(service)
+	config.Notifications = append(config.Notifications, notifiers.Config{
+		Name: "stderr",
+		Type: "stderr",
+	})
 	for _, notificationConfig := range config.Notifications {
 		err = service.RegisterNotifier(notificationConfig)
 		if err != nil {
@@ -50,4 +57,19 @@ func getPort() string {
 		return "8888"
 	}
 	return os.Getenv("RA_PORT")
+}
+
+type Config struct {
+	Checks        []checks.Config    `json:"checks"`
+	Notifications []notifiers.Config `json:"notifications"`
+}
+
+func readConfig() (*Config, error) {
+	file, err := ioutil.ReadFile("config.json")
+	if err != nil {
+		return nil, err
+	}
+	var config Config
+	err = json.Unmarshal(file, &config)
+	return &config, err
 }
