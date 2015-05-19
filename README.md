@@ -10,7 +10,7 @@ For monitoring your infrastructure and sending notifications if stuff is not ok.
   * sending email (`gmail`)
   * sending SMS (`twilio`)
   * posting a message to Slack (`slack`)
-  * messaging on `stderr`
+  * unix stream (`stderr`)
 * Provides ping status & latency info to `stdout`.
 * Has a linear back-off after failed pings (see notes below).
 * Includes a web UI as indicated by the screenshot above. (visit localhost:8888/, configure port via env RA_PORT)
