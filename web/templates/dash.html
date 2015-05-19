@@ -26,13 +26,13 @@
 	  </div>
 
 	  {{range $element := .Checks }}
-    	<div class="server {{ $element.LastEvent.Type }}">
+    	<div class="server {{ $element.Store.Last.Type }}">
         <div class="status-check-name">{{ $element.Name }}</div>
         <div class="status-metrics">
-          {{ range $key, $val := $element.LastEvent.Data }}
+          {{ range $key, $val := $element.Store.Last.Data }}
               <p class="metric">
                 <span class="name">{{$key}}</span>
-                <span class="data">{{ $element.LastEvent.DisplayMetric $key }}</span>
+                <span class="data">{{ $element.Store.Last.DisplayMetric $key }}</span>
                 <span class="unit">{{ ($element.Checker.MetricInfo $key).Unit }}</span>
                 <span class="inlinesparkline">{{ $element.RecentMetrics $key }}</span>
               </p>
