@@ -24,7 +24,7 @@ type Check struct {
 	service *Service
 	Store   EventStorage
 
-	Checker Checker
+	Checker checks.Checker
 }
 
 func (s *Service) RegisterCheck(config checks.Config) error {
@@ -45,14 +45,9 @@ func NewCheck(config checks.Config) (*Check, error) {
 
 	logger := log.New(os.Stdout, config.Name+" ", log.Ldate|log.Ltime)
 
-	var checker Checker
-	switch config.Type {
-	case "web-ping":
-		checker = checks.NewWebPinger(config.Address, logger)
-	case "scollector":
-		checker = checks.NewSCollector(config.Host)
-	default:
-		return nil, errors.New("redalert: unknown notifier")
+	checker, err := checks.New(config, logger)
+	if err != nil {
+		return nil, err
 	}
 
 	return &Check{

@@ -9,6 +9,10 @@ import (
 	"time"
 )
 
+func init() {
+	registerChecker("web-ping", NewWebPinger)
+}
+
 var (
 	green = string([]byte{27, 91, 57, 55, 59, 52, 50, 109})
 	red   = string([]byte{27, 91, 57, 55, 59, 52, 49, 109})
@@ -27,8 +31,8 @@ var WebPingerMetrics = map[string]MetricInfo{
 	},
 }
 
-func NewWebPinger(address string, logger *log.Logger) *WebPinger {
-	return &WebPinger{address, logger}
+var NewWebPinger = func(config Config, logger *log.Logger) Checker {
+	return Checker(&WebPinger{config.Address, logger})
 }
 
 var GlobalClient = http.Client{

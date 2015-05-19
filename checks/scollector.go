@@ -1,9 +1,15 @@
 package checks
 
-// TODO:
-// add mutex to handle concurrent read/writes
+import "log"
+
+func init() {
+	registerChecker("scollector", NewSCollector)
+}
 
 var GlobalSCollector map[Host]CurrentMetrics = make(map[Host]CurrentMetrics)
+
+// TODO:
+// add mutex to handle concurrent read/writes
 
 type Host string
 type CurrentMetrics map[string]float64
@@ -12,8 +18,8 @@ type SCollector struct {
 	Host string
 }
 
-func NewSCollector(host string) *SCollector {
-	return &SCollector{host}
+var NewSCollector = func(config Config, logger *log.Logger) Checker {
+	return Checker(&SCollector{config.Host})
 }
 
 func (sc *SCollector) Check() (Metrics, error) {

@@ -1,5 +1,29 @@
 package checks
 
+import (
+	"errors"
+	"log"
+)
+
+// The Checker implements a type of status check / mechanism of data collection
+// which may be used for triggering alerts
+type Checker interface {
+	Check() (Metrics, error)
+	MetricInfo(string) MetricInfo
+	RedAlertMessage() string
+	GreenAlertMessage() string
+}
+
+type MetricInfo struct {
+	Unit string
+}
+
+type Metrics map[string]float64
+
+/////////////////
+// Initialisation
+/////////////////
+
 type Config struct {
 	Name       string   `json:"name"`
 	Type       string   `json:"type"`
@@ -13,8 +37,16 @@ type Config struct {
 	Host string `json:"host"`
 }
 
-type MetricInfo struct {
-	Unit string
+var registry = make(map[string]func(Config, *log.Logger) Checker)
+
+func registerChecker(name string, constructorFn func(Config, *log.Logger) Checker) {
+	registry[name] = constructorFn
 }
 
-type Metrics map[string]float64
+func New(config Config, logger *log.Logger) (Checker, error) {
+	checkerFn, ok := registry[config.Type]
+	if !ok {
+		return nil, errors.New("checks: checker unavailable: " + config.Type)
+	}
+	return checkerFn(config, logger), nil
+}
