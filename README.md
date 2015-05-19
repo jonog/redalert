@@ -3,19 +3,24 @@
 ![](https://cloud.githubusercontent.com/assets/1314353/7707829/7e18fe10-fe84-11e4-9762-322544d1142b.png)
 
 For monitoring your infrastructure and sending notifications if stuff is not ok.
-(e.g. pinging your websites/APIs via HTTP GET at specified intervals, and alerting you if there is downtime). Currently supports:
-* sending email (via gmail)
-* sending SMS (via Twilio)
-* posting a message to Slack
-* messaging on `stderr`
+(e.g. pinging your websites/APIs via HTTP GET at specified intervals, and alerting you if there is downtime). 
 
 #### Features:
-Alert options: ["stderr", "gmail", "slack", "twilio"]
-Provides ping status & latency info to `stdout`.
-Has a linear back-off after failed pings (see notes below).
-Provides a web status UI (visit localhost:8888/, configure port via env RA_PORT)
-Provides an alert when a failing server has recovered (i.e. a successful ping, following a failing ping).
+* Alert notifications available on several channels:
+  * sending email (`gmail`)
+  * sending SMS (`twilio`)
+  * posting a message to Slack (`slack`)
+  * messaging on `stderr`
+* Provides ping status & latency info to `stdout`.
+* Has a linear back-off after failed pings (see notes below).
+* Includes a web UI as indicated by the screenshot above. (visit localhost:8888/, configure port via env RA_PORT)
+* Triggers a failure alert (`redalert`) when a check is failing, and a recovery alert (`greenalert`) when the check has recovered (e.g. a successful ping, following a failing ping).
 
+#### Coming soon:
+* Server metrics
+* Metric threshold alerting (i.e. metric beyond threshold / outside range)
+
+#### Screenshots:
 ![](https://cloud.githubusercontent.com/assets/1314353/5157264/edb21476-733a-11e4-8452-4b96b443f7ee.jpg)
 
 #### Getting started:
