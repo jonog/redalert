@@ -1,13 +1,14 @@
 package core
 
 import (
-	"container/list"
 	"errors"
 	"log"
 	"os"
 
 	"github.com/jonog/redalert/checks"
 )
+
+var MaxEventsStored = 100
 
 type Check struct {
 	Name     string
@@ -16,12 +17,11 @@ type Check struct {
 
 	Notifiers []Notifier
 
-	Log     *log.Logger
-	service *Service
+	Log *log.Logger
 
-	failCount    int
-	LastEvent    *Event
-	EventHistory *list.List
+	failCount int
+
+	Store EventStorage
 
 	Checker Checker
 }
@@ -55,12 +55,12 @@ func NewCheck(config checks.Config) (*Check, error) {
 	}
 
 	return &Check{
-		Name:         config.Name,
-		Interval:     config.Interval,
-		Notifiers:    make([]Notifier, 0),
-		Log:          logger,
-		EventHistory: list.New(),
-		Checker:      checker,
+		Name:      config.Name,
+		Interval:  config.Interval,
+		Notifiers: make([]Notifier, 0),
+		Log:       logger,
+		Store:     NewMemoryList(MaxEventsStored),
+		Checker:   checker,
 	}, nil
 }
 
