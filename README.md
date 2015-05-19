@@ -1,5 +1,9 @@
 ### Redalert
-For monitoring a series of servers at specified intervals & triggering alerts if there is downtime. Currently supports:
+
+![](https://cloud.githubusercontent.com/assets/1314353/7707829/7e18fe10-fe84-11e4-9762-322544d1142b.png)
+
+For monitoring your infrastructure and sending notifications if stuff is not ok.
+(e.g. pinging your websites/APIs via HTTP GET at specified intervals, and alerting you if there is downtime). Currently supports:
 * sending email (via gmail)
 * sending SMS (via Twilio)
 * posting a message to Slack
