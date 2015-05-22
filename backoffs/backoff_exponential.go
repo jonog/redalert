@@ -14,7 +14,7 @@ func NewExponentialBackoff(interval, multiplier int) *ExponentialBackoff {
 	b := new(ExponentialBackoff)
 	b.Interval = interval
 
-	if multiplier < 0 {
+	if multiplier <= 0 {
 		multiplier = 1
 	}
 
