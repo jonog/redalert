@@ -42,8 +42,8 @@ func (c *Check) run(stopChan chan bool) {
 		var event *events.Event
 		var checkData map[string]float64
 
-		originalDelay := time.Second * time.Duration(c.Interval)
-		delay := time.Second * time.Duration(c.Interval)
+		originalDelay := c.Backoff.Init()
+		delay := c.Backoff.Init()
 
 		for {
 
@@ -59,7 +59,7 @@ func (c *Check) run(stopChan chan bool) {
 				// increase fail count and delay between checks
 				c.incrFailCount()
 				if c.failCount > 0 {
-					delay = time.Second * time.Duration(c.failCount*c.Interval)
+					delay = c.Backoff.Next(c.failCount)
 				}
 
 			}
