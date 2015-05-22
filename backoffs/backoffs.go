@@ -21,6 +21,7 @@ const (
 	BackoffTypeExponential = "exponential"
 )
 
+// Creates new Backoff instance based on provided configuration
 func BackoffFactory(cfg BackoffConfig) Backoff {
 	switch cfg.Type {
 	case BackoffTypeConstant:
