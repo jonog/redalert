@@ -36,8 +36,11 @@ type Config struct {
 	// used for web-ping
 	Address string `json:"address"`
 
-	// used for scollector
+	// used for scollector, remote-docker
 	Host string `json:"host"`
+
+	// used for remote-docker
+	User string `json:"user"`
 
 	Triggers []Trigger `json:"triggers"`
 }
