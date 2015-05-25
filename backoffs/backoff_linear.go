@@ -4,23 +4,23 @@ import (
 	"time"
 )
 
-type LinearBackoff struct {
+type Linear struct {
 	Interval int
 }
 
 // Linear backoff multiplies initial interval by failed request count
-func NewLinearBackoff(interval int) *LinearBackoff {
-	b := new(LinearBackoff)
+func NewLinear(interval int) *Linear {
+	b := new(Linear)
 	b.Interval = interval
 	return b
 }
 
 // Returns initial interval
-func (b *LinearBackoff) Init() time.Duration {
+func (b *Linear) Init() time.Duration {
 	return time.Second * time.Duration(b.Interval)
 }
 
 // Returns next interval based on failed requests count
-func (b *LinearBackoff) Next(failCount int) time.Duration {
+func (b *Linear) Next(failCount int) time.Duration {
 	return time.Second * time.Duration(failCount*b.Interval)
 }

@@ -4,14 +4,14 @@ import (
 	"time"
 )
 
-type ExponentialBackoff struct {
+type Exponential struct {
 	Interval   int
 	Multiplier int
 }
 
 // Exponential backoff multiplies initial interval by failed request count and specified multiplier
-func NewExponentialBackoff(interval, multiplier int) *ExponentialBackoff {
-	b := new(ExponentialBackoff)
+func NewExponential(interval, multiplier int) *Exponential {
+	b := new(Exponential)
 	b.Interval = interval
 
 	if multiplier <= 0 {
@@ -23,11 +23,11 @@ func NewExponentialBackoff(interval, multiplier int) *ExponentialBackoff {
 }
 
 // Returns initial interval
-func (b *ExponentialBackoff) Init() time.Duration {
+func (b *Exponential) Init() time.Duration {
 	return time.Second * time.Duration(b.Interval)
 }
 
 // Returns next interval based on failed requests count
-func (b *ExponentialBackoff) Next(failCount int) time.Duration {
+func (b *Exponential) Next(failCount int) time.Duration {
 	return time.Second * time.Duration(failCount*b.Interval*b.Multiplier)
 }

@@ -4,33 +4,44 @@ import (
 	"time"
 )
 
+const DefaultInterval = 10
+
 type Backoff interface {
 	Init() time.Duration
 	Next(failCount int) time.Duration
 }
 
-type BackoffConfig struct {
+type Config struct {
 	Type       string `json:"type"`
-	Interval   int    `json:"interval"`
+	Interval   *int   `json:"interval"`
 	Multiplier int    `json:"multiplier,omitempty"`
 }
 
 const (
-	BackoffTypeConstant    = "constant"
-	BackoffTypeLinear      = "linear"
-	BackoffTypeExponential = "exponential"
+	TypeConstant    = "constant"
+	TypeLinear      = "linear"
+	TypeExponential = "exponential"
 )
 
 // Creates new Backoff instance based on provided configuration
-func BackoffFactory(cfg BackoffConfig) Backoff {
+func New(cfg Config) Backoff {
+
+	// if no interval is provided (nil), set to default value
+	var interval int
+	if cfg.Interval == nil {
+		interval = DefaultInterval
+	} else {
+		interval = *cfg.Interval
+	}
+
 	switch cfg.Type {
-	case BackoffTypeConstant:
-		return NewConstantBackoff(cfg.Interval)
-	case BackoffTypeLinear:
-		return NewLinearBackoff(cfg.Interval)
-	case BackoffTypeExponential:
-		return NewExponentialBackoff(cfg.Interval, cfg.Multiplier)
+	case TypeConstant:
+		return NewConstant(interval)
+	case TypeLinear:
+		return NewLinear(interval)
+	case TypeExponential:
+		return NewExponential(interval, cfg.Multiplier)
 	default:
-		return NewConstantBackoff(cfg.Interval)
+		return NewConstant(interval)
 	}
 }

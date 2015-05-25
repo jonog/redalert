@@ -27,10 +27,10 @@ type Metrics map[string]float64
 /////////////////
 
 type Config struct {
-	Name       string                 `json:"name"`
-	Type       string                 `json:"type"`
-	SendAlerts []string               `json:"send_alerts"`
-	Backoff    backoffs.BackoffConfig `json:"backoff"`
+	Name       string          `json:"name"`
+	Type       string          `json:"type"`
+	SendAlerts []string        `json:"send_alerts"`
+	Backoff    backoffs.Config `json:"backoff"`
 
 	// used for web-ping
 	Address string `json:"address"`

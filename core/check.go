@@ -41,7 +41,7 @@ func NewCheck(config checks.Config) (*Check, error) {
 
 	return &Check{
 		Name:      config.Name,
-		Backoff:   backoffs.BackoffFactory(config.Backoff),
+		Backoff:   backoffs.New(config.Backoff),
 		Notifiers: make([]notifiers.Notifier, 0),
 		Log:       logger,
 		Store:     storage.NewMemoryList(MaxEventsStored),
