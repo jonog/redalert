@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/jonog/redalert/backoffs"
 	"github.com/jonog/redalert/checks"
 	"github.com/jonog/redalert/notifiers"
 	"github.com/jonog/redalert/storage"
@@ -14,9 +15,9 @@ import (
 var MaxEventsStored = 100
 
 type Check struct {
-	Name     string
-	Type     string // e.g. future options: web-ping, ssh-ping, query
-	Interval int
+	Name    string
+	Type    string // e.g. future options: web-ping, ssh-ping, query
+	Backoff backoffs.Backoff
 
 	Notifiers []notifiers.Notifier
 
@@ -31,7 +32,6 @@ type Check struct {
 }
 
 func NewCheck(config checks.Config) (*Check, error) {
-
 	logger := log.New(os.Stdout, config.Name+" ", log.Ldate|log.Ltime)
 
 	checker, err := checks.New(config, logger)
@@ -41,7 +41,7 @@ func NewCheck(config checks.Config) (*Check, error) {
 
 	return &Check{
 		Name:      config.Name,
-		Interval:  config.Interval,
+		Backoff:   backoffs.BackoffFactory(config.Backoff),
 		Notifiers: make([]notifiers.Notifier, 0),
 		Log:       logger,
 		Store:     storage.NewMemoryList(MaxEventsStored),

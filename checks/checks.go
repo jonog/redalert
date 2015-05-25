@@ -3,6 +3,8 @@ package checks
 import (
 	"errors"
 	"log"
+
+	"github.com/jonog/redalert/backoffs"
 )
 
 // The Checker implements a type of status check / mechanism of data collection
@@ -25,10 +27,10 @@ type Metrics map[string]float64
 /////////////////
 
 type Config struct {
-	Name       string   `json:"name"`
-	Type       string   `json:"type"`
-	Interval   int      `json:"interval"`
-	SendAlerts []string `json:"send_alerts"`
+	Name       string                 `json:"name"`
+	Type       string                 `json:"type"`
+	SendAlerts []string               `json:"send_alerts"`
+	Backoff    backoffs.BackoffConfig `json:"backoff"`
 
 	// used for web-ping
 	Address string `json:"address"`
