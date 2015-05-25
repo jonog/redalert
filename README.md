@@ -12,7 +12,7 @@ For monitoring your infrastructure and sending notifications if stuff is not ok.
   * posting a message to Slack (`slack`)
   * unix stream (`stderr`)
 * Provides ping status & latency info to `stdout`.
-* Has a linear back-off after failed pings (see notes below).
+* Adjustable back-off after failed pings (constant, linear, exponential - see notes below).
 * Includes a web UI as indicated by the screenshot above. (visit localhost:8888/, configure port via env RA_PORT)
 * Triggers a failure alert (`redalert`) when a check is failing, and a recovery alert (`greenalert`) when the check has recovered (e.g. a successful ping, following a failing ping).
 
@@ -32,29 +32,39 @@ Configure servers to monitor & alert settings via `config.json`:
          "name":"Server 1",
          "type": "web-ping",
          "address":"http://server1.com/healthcheck",
-         "interval":10,
-         "send_alerts": ["stderr"]
+         "backoff": {
+            "type": "constant",
+            "interval": 10
+         },
+         "alerts":["stderr"]
       },
       {  
          "name":"Server 2",
          "type": "web-ping",
          "address":"http://server2.com/healthcheck",
-         "interval":10,
-         "send_alerts": ["stderr", "email", "chat", "sms"]
+         "backoff": {
+            "type": "linear",
+            "interval": 10
+         },
+         "alerts":["stderr", "email", "chat", "sms"]
       },
       {  
          "name":"Server 3",
          "type": "web-ping",
          "address":"http://server3.com/healthcheck",
-         "interval":10,
-         "send_alerts": ["stderr"]
+         "backoff": {
+            "type": "exponential",
+            "interval": 10,
+            "multiplier": 2
+         },
+         "alerts":["stderr"]
       },
       {
          "name": "scollector-metrics",
          "type": "scollector",
          "host": "hostname",
          "interval": 15,
-         "send_alerts": ["stderr"]
+         "alerts": ["stderr"]
       }
    ],
    "notifications": [
@@ -99,9 +109,17 @@ go build
 ```
 
 
-#### Linear back-off after failure
+#### Backoffs
+Backoff defaults to `constant`, and Interval defaults to 10 seconds, if none is provided.
+
+##### Constant
+Pinging interval will remain constant. i.e. will not provide any back-off after failure. 
+
+##### Linear
 The pinging interval will be adjusted to X * pinging interval where X is the number of times the pinger has failed. E.g. after 1 failure, the pinging interval will not be changed, but a server (with pinging interval of 10s) which has failed ping once will only be pinged after 20s, then 30s, 40s etc.
 When a failing server is successfully pinged, the pinging frequency returns to the originally configured value.
+
+##### Exponential
 
 #### Note for Gmail:
 If there are errors sending email via gmail - enable `Access for less secure apps` under Account permissions @ https://www.google.com/settings/u/2/security
@@ -116,8 +134,7 @@ Rocket emoji via https://github.com/twitter/twemoji
 * Push events to a time-series database
 * Distinguish between an error performing a check & a failing check. i.e. Check should return two errors.
 * Safely handle concurrent read/writes in key data structures accessed in different goroutines.
-* Change server config on the fly / interface out storage of config.
-* Alternative backoff configurations (e.g. no backoff / exponential backoff after X attempts)
+* Change server config on the fly / interface out configuration details.
 * Improved handling/recovering from any errors detected in redalert
 
 ### TODO UI
