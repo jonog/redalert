@@ -110,16 +110,16 @@ go build
 
 
 #### Backoffs
-Backoff defaults to `constant`, and Interval defaults to 10 seconds, if none is provided.
+When a server check fails - the next check will be delayed according to the back-off algorithm. By default, there is no delay (i.e. `constant` back-off), with a default interval of 10 seconds between checks. When a failing server returns to normal, the check frequency returns to its original value.
 
 ##### Constant
 Pinging interval will remain constant. i.e. will not provide any back-off after failure. 
 
 ##### Linear
-The pinging interval will be adjusted to X * pinging interval where X is the number of times the pinger has failed. E.g. after 1 failure, the pinging interval will not be changed, but a server (with pinging interval of 10s) which has failed ping once will only be pinged after 20s, then 30s, 40s etc.
-When a failing server is successfully pinged, the pinging frequency returns to the originally configured value.
+The pinging interval upon failure will be extended linearly. i.e. `failure count x pinging interval`.
 
 ##### Exponential
+With each failure, the subsequent check will be delayed by the last delayed amount, times a multiplier, resulting in time between checks exponentially increasing. The `multiplier` is set to 2 by default.
 
 #### Note for Gmail:
 If there are errors sending email via gmail - enable `Access for less secure apps` under Account permissions @ https://www.google.com/settings/u/2/security
