@@ -1,6 +1,7 @@
 package backoffs
 
 import (
+	"math"
 	"time"
 )
 
@@ -9,16 +10,21 @@ type Exponential struct {
 	Multiplier int
 }
 
-// Exponential backoff multiplies initial interval by failed request count and specified multiplier
-func NewExponential(interval, multiplier int) *Exponential {
+const DefaultMultiplier = 2
+
+// Exponential backoff provides a backoff implementation where the next delay upon failure is a
+// multiplier of the previous delay
+func NewExponential(interval int, multiplier *int) *Exponential {
 	b := new(Exponential)
 	b.Interval = interval
 
-	if multiplier <= 0 {
-		multiplier = 1
+	// if multiplier is not provided or invalid, set to default value
+	if multiplier == nil || *multiplier < 1 {
+		b.Multiplier = DefaultMultiplier
+	} else {
+		b.Multiplier = *multiplier
 	}
 
-	b.Multiplier = multiplier
 	return b
 }
 
@@ -28,6 +34,9 @@ func (b *Exponential) Init() time.Duration {
 }
 
 // Returns next interval based on failed requests count
-func (b *Exponential) Next(failCount int) time.Duration {
-	return time.Second * time.Duration(failCount*b.Interval*b.Multiplier)
+func (b *Exponential) Next(failCountInt int) time.Duration {
+	interval := float64(b.Interval)
+	multiplier := float64(b.Multiplier)
+	failCount := float64(failCountInt)
+	return time.Second * time.Duration(interval*math.Pow(multiplier, failCount))
 }

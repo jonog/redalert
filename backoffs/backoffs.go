@@ -14,7 +14,7 @@ type Backoff interface {
 type Config struct {
 	Type       string `json:"type"`
 	Interval   *int   `json:"interval"`
-	Multiplier int    `json:"multiplier,omitempty"`
+	Multiplier *int   `json:"multiplier,omitempty"`
 }
 
 const (
