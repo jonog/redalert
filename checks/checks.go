@@ -20,7 +20,7 @@ type MetricInfo struct {
 	Unit string
 }
 
-type Metrics map[string]float64
+type Metrics map[string]*float64
 
 /////////////////
 // Initialisation

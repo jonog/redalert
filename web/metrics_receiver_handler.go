@@ -35,18 +35,18 @@ func metricsReceiverHandler(c *appCtx, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, metric := range metrics {
+	for idx, _ := range metrics {
 
-		host, exists := metric.Tags["host"]
+		host, exists := metrics[idx].Tags["host"]
 		if !exists || host == "" {
 			continue
 		}
 
 		_, exists = checks.GlobalSCollector[checks.Host(host)]
 		if !exists {
-			checks.GlobalSCollector[checks.Host(host)] = make(map[string]float64)
+			checks.GlobalSCollector[checks.Host(host)] = make(map[string]*float64)
 		}
-		checks.GlobalSCollector[checks.Host(host)][metric.Metric] = metric.Value
+		checks.GlobalSCollector[checks.Host(host)][metrics[idx].Metric] = &metrics[idx].Value
 	}
 
 	w.WriteHeader(204)

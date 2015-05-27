@@ -40,7 +40,7 @@ func (c *Check) run(stopChan chan bool) {
 
 		var err error
 		var event *events.Event
-		var checkData map[string]float64
+		var checkData map[string]*float64
 
 		originalDelay := c.Backoff.Init()
 		delay := c.Backoff.Init()

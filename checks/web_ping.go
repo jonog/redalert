@@ -49,8 +49,12 @@ func (wp *WebPinger) Check() (Metrics, error) {
 
 func (wp *WebPinger) ping() (Metrics, error) {
 
-	metrics := Metrics(make(map[string]float64))
-	metrics["latency"] = float64(0)
+	metrics := Metrics(make(map[string]*float64))
+
+	latency := float64(0)
+	defer func() {
+		metrics["latency"] = &latency
+	}()
 
 	startTime := time.Now()
 	wp.log.Println("GET", wp.Address)
@@ -70,10 +74,10 @@ func (wp *WebPinger) ping() (Metrics, error) {
 	resp.Body.Close()
 
 	endTime := time.Now()
-	latency := endTime.Sub(startTime)
-	metrics["latency"] = float64(latency.Seconds() * 1e3)
+	latencyCalc := endTime.Sub(startTime)
+	latency = float64(latencyCalc.Seconds() * 1e3)
 
-	wp.log.Println("Latency", utils.White, metrics, utils.Reset)
+	wp.log.Println("Latency", utils.White, latency, utils.Reset)
 
 	if err != nil {
 		return metrics, errors.New("web-ping: failed reading body " + err.Error())

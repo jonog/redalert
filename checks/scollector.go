@@ -12,7 +12,7 @@ var GlobalSCollector map[Host]CurrentMetrics = make(map[Host]CurrentMetrics)
 // add mutex to handle concurrent read/writes
 
 type Host string
-type CurrentMetrics map[string]float64
+type CurrentMetrics map[string]*float64
 
 type SCollector struct {
 	Host string
@@ -28,10 +28,10 @@ func (sc *SCollector) Check() (Metrics, error) {
 
 	_, exists := GlobalSCollector[Host(sc.Host)]
 	if !exists {
-		GlobalSCollector[Host(sc.Host)] = make(map[string]float64)
+		GlobalSCollector[Host(sc.Host)] = make(map[string]*float64)
 	}
 
-	output := Metrics(make(map[string]float64))
+	output := Metrics(make(map[string]*float64))
 	for key, val := range GlobalSCollector[Host(sc.Host)] {
 		output[key] = val
 	}
