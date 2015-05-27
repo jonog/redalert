@@ -29,7 +29,13 @@ func main() {
 		Type: "stderr",
 	})
 	for _, notificationConfig := range config.Notifications {
-		err = service.RegisterNotifier(notificationConfig)
+
+		notifier, err := notifiers.New(notificationConfig)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		err = service.RegisterNotifier(notifier)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -38,7 +44,13 @@ func main() {
 	// Setup Checks
 
 	for _, checkConfig := range config.Checks {
-		err = service.RegisterCheck(checkConfig)
+
+		check, err := core.NewCheck(checkConfig)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		err = service.RegisterCheck(check, checkConfig.SendAlerts)
 		if err != nil {
 			log.Fatal(err)
 		}

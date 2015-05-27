@@ -25,8 +25,7 @@ type Check struct {
 
 	failCount int
 
-	service *Service
-	Store   storage.EventStorage
+	Store storage.EventStorage
 
 	Checker checks.Checker
 }
@@ -49,9 +48,9 @@ func NewCheck(config checks.Config) (*Check, error) {
 	}, nil
 }
 
-func (c *Check) AddNotifiers(names []string) error {
+func (c *Check) AddNotifiers(service *Service, names []string) error {
 	for _, name := range names {
-		notifier, err := getNotifier(c.service, name)
+		notifier, err := getNotifier(service, name)
 		if err != nil {
 			return err
 		}

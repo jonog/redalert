@@ -12,8 +12,6 @@ import (
 
 func (c *Check) Start() {
 
-	c.service.wg.Add(1)
-
 	var wg sync.WaitGroup
 	wg.Add(1)
 
@@ -30,7 +28,6 @@ func (c *Check) Start() {
 	}()
 
 	wg.Wait()
-	c.service.wg.Done()
 
 }
 
