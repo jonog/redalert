@@ -3,7 +3,7 @@ package checks
 import "log"
 
 func init() {
-	registerChecker("scollector", NewSCollector)
+	Register("scollector", NewSCollector)
 }
 
 var GlobalSCollector map[Host]CurrentMetrics = make(map[Host]CurrentMetrics)

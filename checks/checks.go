@@ -41,7 +41,7 @@ type Config struct {
 
 var registry = make(map[string]func(Config, *log.Logger) (Checker, error))
 
-func registerChecker(name string, constructorFn func(Config, *log.Logger) (Checker, error)) {
+func Register(name string, constructorFn func(Config, *log.Logger) (Checker, error)) {
 	registry[name] = constructorFn
 }
 

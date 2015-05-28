@@ -12,7 +12,7 @@ import (
 )
 
 func init() {
-	registerChecker("web-ping", NewWebPinger)
+	Register("web-ping", NewWebPinger)
 }
 
 type WebPinger struct {
