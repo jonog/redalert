@@ -1,8 +1,10 @@
 package core
 
 import (
+	"fmt"
 	"os"
 	"os/signal"
+	"strings"
 	"sync"
 	"time"
 
@@ -39,7 +41,6 @@ func (c *Check) run(stopChan chan bool) {
 		var event *events.Event
 		var checkData map[string]*float64
 
-		originalDelay := c.Backoff.Init()
 		delay := c.Backoff.Init()
 
 		for {
@@ -50,11 +51,11 @@ func (c *Check) run(stopChan chan bool) {
 			if err != nil {
 
 				// Trigger RedAlert as check has failed
-				event.SetType("redalert")
+				event.AddTag("redalert")
 				c.Log.Println(utils.Red, "redalert", err, utils.Reset)
 
 				// increase fail count and delay between checks
-				c.incrFailCount()
+				c.incrFailCount("redalert")
 				if c.failCount > 0 {
 					delay = c.Backoff.Next(c.failCount)
 				}
@@ -71,13 +72,13 @@ func (c *Check) run(stopChan chan bool) {
 				// Trigger GreenAlert if check is successful and was previously failing
 				isRedalertRecovery := lastEvent != nil && lastEvent.IsRedAlert()
 				if isRedalertRecovery {
-					event.SetType("greenalert")
+					event.AddTag("greenalert")
 					c.Log.Println(utils.Green, "greenalert", utils.Reset)
-				}
 
-				// reset fail count & delay between checks
-				delay = originalDelay
-				c.resetFailCount()
+					// reset fail count & delay between checks
+					delay = c.Backoff.Init()
+					c.resetFailCount("redalert")
+				}
 
 			}
 
@@ -96,26 +97,46 @@ func (c *Check) run(stopChan chan bool) {
 
 func (c *Check) processNotifications(event *events.Event) {
 
-	if event.Type == "" {
-		return
+	msgPrefix := c.Name + " :: (" + c.Type + " - " + c.Checker.MessageContext() + ") "
+
+	// Process Threshold Notifications
+
+	for _, trigger := range c.Triggers {
+		fmt.Println("trigger: ", trigger)
+		if trigger.MeetsCriteria(event.Data) {
+			msg := msgPrefix + trigger.Metric + " (" + fmt.Sprintf("%f", *event.Data[trigger.Metric]) + ") " + " has met alert criteria, " + trigger.Criteria
+			fmt.Println("trigger msg:", msg)
+
+			for _, notifier := range c.Notifiers {
+				err := notifier.Notify(AlertMessage{msg})
+				if err != nil {
+					c.Log.Println(utils.Red, "CRITICAL: Failure triggering alert ["+notifier.Name()+"]: ", err.Error())
+				}
+			}
+
+		}
 	}
 
-	// TODO:
-	// threshold notifications
+	// Process Redalert/Greenalert (Failure / Recovery)
+
+	if len(event.Tags) == 0 {
+		return
+	}
 
 	go func() {
 
 		var err error
 		for _, notifier := range c.Notifiers {
 
-			c.Log.Println(utils.White, "Sending "+event.Type+" via "+notifier.Name(), utils.Reset)
+			c.Log.Println(utils.White, "Sending "+strings.Join(event.Tags, ", ")+" via "+notifier.Name(), utils.Reset)
 
 			var msg string
-			switch event.Type {
-			case "redalert":
-				msg = c.Checker.RedAlertMessage()
-			case "greenalert":
-				msg = c.Checker.GreenAlertMessage()
+			if event.HasTag("redalert") {
+				msg = msgPrefix + "fail"
+			} else if event.HasTag("greenalert") {
+				msg = msgPrefix + "recovery"
+			} else {
+				continue
 			}
 
 			err = notifier.Notify(AlertMessage{msg})
