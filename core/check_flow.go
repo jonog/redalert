@@ -55,9 +55,9 @@ func (c *Check) run(stopChan chan bool) {
 				c.Log.Println(utils.Red, "redalert", err, utils.Reset)
 
 				// increase fail count and delay between checks
-				c.incrFailCount("redalert")
-				if c.failCount > 0 {
-					delay = c.Backoff.Next(c.failCount)
+				failCount := c.incrFailCount("redalert")
+				if failCount > 0 {
+					delay = c.Backoff.Next(failCount)
 				}
 
 			}

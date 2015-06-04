@@ -23,7 +23,6 @@ type Check struct {
 
 	Log *log.Logger
 
-	failCount  int
 	failCounts map[string]int
 
 	Store storage.EventStorage
@@ -73,8 +72,9 @@ func getNotifier(service *Service, name string) (notifiers.Notifier, error) {
 	return notifier, nil
 }
 
-func (c *Check) incrFailCount(trigger string) {
+func (c *Check) incrFailCount(trigger string) int {
 	c.failCounts[trigger]++
+	return c.failCounts[trigger]
 }
 
 func (c *Check) resetFailCount(trigger string) {
