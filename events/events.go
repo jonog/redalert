@@ -1,7 +1,6 @@
 package events
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -48,12 +47,9 @@ func (e *Event) DisplayMetric(metric string) string {
 }
 
 func (e *Event) DisplayTags() string {
+	// required as used in template
 	if e == nil {
 		return ""
 	}
-	// if e.Tags == nil {
-	// 	return ""
-	// }
-	fmt.Println(e)
 	return strings.Join(e.Tags, " ")
 }
