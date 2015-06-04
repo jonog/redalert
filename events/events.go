@@ -14,7 +14,7 @@ type Event struct {
 }
 
 func NewEvent(data map[string]*float64) *Event {
-	return &Event{Time: time.Now(), Data: data, Tags: []string{}}
+	return &Event{Time: time.Now(), Data: data, Tags: make([]string, 0)}
 }
 
 func (e *Event) AddTag(t string) {
@@ -47,5 +47,9 @@ func (e *Event) DisplayMetric(metric string) string {
 }
 
 func (e *Event) DisplayTags() string {
+	// required as used in template
+	if e == nil {
+		return ""
+	}
 	return strings.Join(e.Tags, " ")
 }

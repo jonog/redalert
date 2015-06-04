@@ -38,6 +38,17 @@
          }
       },
       {
+         "name": "production-docker-host",
+         "type": "remote-docker",
+         "host": "ec2-xx-xxx-xx-xxx.ap-southeast-1.compute.amazonaws.com",
+         "user": "ubuntu",
+         "send_alerts": ["stderr"],
+         "backoff": {
+            "type": "linear",
+            "interval": 5
+         }
+      },
+      {
          "name": "scollector-metrics",
          "type": "scollector",
          "host": "hostname",

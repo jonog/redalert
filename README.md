@@ -5,6 +5,11 @@ For monitoring your infrastructure and sending notifications if stuff is not ok.
 
 ![](https://cloud.githubusercontent.com/assets/1314353/7707829/7e18fe10-fe84-11e4-9762-322544d1142b.png)
 
+#### Checks
+* *Website monitoring* & latency measurement (check type: `web-ping`)
+* *Server metrics* from local machine (check type: `scollector`)
+* *Docker container metrics* from remote host (check type: `remote-docker`)
+
 #### Features:
 * Alert notifications available on several channels:
   * sending email (`gmail`)
@@ -16,9 +21,6 @@ For monitoring your infrastructure and sending notifications if stuff is not ok.
 * Includes a web UI as indicated by the screenshot above. (visit localhost:8888/, configure port via env RA_PORT)
 * Triggers a failure alert (`redalert`) when a check is failing, and a recovery alert (`greenalert`) when the check has recovered (e.g. a successful ping, following a failing ping).
 * Triggers an alert when specified metric is above/below threshold.
-
-#### Coming soon:
-* Server metrics
 
 #### Screenshots:
 ![](https://cloud.githubusercontent.com/assets/1314353/5157264/edb21476-733a-11e4-8452-4b96b443f7ee.jpg)
@@ -63,6 +65,17 @@ Configure servers to monitor & alert settings via `config.json`:
             "type": "exponential",
             "interval": 10,
             "multiplier": 2
+         }
+      },
+      {
+         "name": "production-docker-host",
+         "type": "remote-docker",
+         "host": "ec2-xx-xxx-xx-xxx.ap-southeast-1.compute.amazonaws.com",
+         "user": "ubuntu",
+         "send_alerts": ["stderr"],
+         "backoff": {
+            "type": "linear",
+            "interval": 5
          }
       },
       {
@@ -137,6 +150,7 @@ If there are errors sending email via gmail - enable `Access for less secure app
 Rocket emoji via https://github.com/twitter/twemoji
 
 ### TODO
+* Refinements to `docker-remote` checker (see TODOs in implementation)
 * Set alerts based on metric threshold values for N intervals / based on calculation
 * Integrate more checks (db query, expvars, remote command via ssh, consul)
 * Integrate more notifiers (webhooks, msgqueue)
