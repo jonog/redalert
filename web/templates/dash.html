@@ -26,7 +26,7 @@
 	  </div>
 
 	  {{range $element := .Checks }}
-    	<div class="server {{ $element.Store.Last.Type }}">
+    	<div class="server {{ $element.Store.Last.DisplayTags }}">
         <div class="status-check-name">{{ $element.Name }}</div>
         <div class="status-metrics">
           {{ range $key, $val := $element.Store.Last.Data }}

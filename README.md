@@ -15,10 +15,10 @@ For monitoring your infrastructure and sending notifications if stuff is not ok.
 * Adjustable back-off after failed pings (constant, linear, exponential - see notes below).
 * Includes a web UI as indicated by the screenshot above. (visit localhost:8888/, configure port via env RA_PORT)
 * Triggers a failure alert (`redalert`) when a check is failing, and a recovery alert (`greenalert`) when the check has recovered (e.g. a successful ping, following a failing ping).
+* Triggers an alert when specified metric is above/below threshold.
 
 #### Coming soon:
 * Server metrics
-* Metric threshold alerting (i.e. metric beyond threshold / outside range)
 
 #### Screenshots:
 ![](https://cloud.githubusercontent.com/assets/1314353/5157264/edb21476-733a-11e4-8452-4b96b443f7ee.jpg)
@@ -36,7 +36,13 @@ Configure servers to monitor & alert settings via `config.json`:
          "backoff": {
             "type": "constant",
             "interval": 10
-         }
+         },
+         "triggers": [
+            {
+               "metric": "latency",
+               "criteria": ">100"
+            }
+         ]
       },
       {  
          "name":"Server 2",
@@ -131,7 +137,7 @@ If there are errors sending email via gmail - enable `Access for less secure app
 Rocket emoji via https://github.com/twitter/twemoji
 
 ### TODO
-* Set alerts based on metric threshold values / calculated values
+* Set alerts based on metric threshold values for N intervals / based on calculation
 * Integrate more checks (db query, expvars, remote command via ssh, consul)
 * Integrate more notifiers (webhooks, msgqueue)
 * Push events to a time-series database

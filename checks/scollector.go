@@ -43,10 +43,6 @@ func (sc *SCollector) MetricInfo(metric string) MetricInfo {
 	return MetricInfo{Unit: ""}
 }
 
-func (sc *SCollector) RedAlertMessage() string {
-	return "Uhoh fail on " + sc.Host
-}
-
-func (sc *SCollector) GreenAlertMessage() string {
-	return "Woo-hoo, successful check on " + sc.Host
+func (sc *SCollector) MessageContext() string {
+	return sc.Host
 }

@@ -94,10 +94,6 @@ func (wp *WebPinger) MetricInfo(metric string) MetricInfo {
 	return WebPingerMetrics[metric]
 }
 
-func (wp *WebPinger) RedAlertMessage() string {
-	return "Uhoh, failed ping to " + wp.Address
-}
-
-func (wp *WebPinger) GreenAlertMessage() string {
-	return "Woo-hoo, successful ping to " + wp.Address
+func (wp *WebPinger) MessageContext() string {
+	return wp.Address
 }

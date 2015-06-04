@@ -23,11 +23,13 @@ type Check struct {
 
 	Log *log.Logger
 
-	failCount int
+	failCounts map[string]int
 
 	Store storage.EventStorage
 
 	Checker checks.Checker
+
+	Triggers []checks.Trigger
 }
 
 func NewCheck(config checks.Config) (*Check, error) {
@@ -39,12 +41,15 @@ func NewCheck(config checks.Config) (*Check, error) {
 	}
 
 	return &Check{
-		Name:      config.Name,
-		Backoff:   backoffs.New(config.Backoff),
-		Notifiers: make([]notifiers.Notifier, 0),
-		Log:       logger,
-		Store:     storage.NewMemoryList(MaxEventsStored),
-		Checker:   checker,
+		Name:       config.Name,
+		Type:       config.Type,
+		Backoff:    backoffs.New(config.Backoff),
+		Notifiers:  make([]notifiers.Notifier, 0),
+		Log:        logger,
+		Store:      storage.NewMemoryList(MaxEventsStored),
+		Checker:    checker,
+		failCounts: make(map[string]int),
+		Triggers:   config.Triggers,
 	}, nil
 }
 
@@ -67,12 +72,13 @@ func getNotifier(service *Service, name string) (notifiers.Notifier, error) {
 	return notifier, nil
 }
 
-func (c *Check) incrFailCount() {
-	c.failCount++
+func (c *Check) incrFailCount(trigger string) int {
+	c.failCounts[trigger]++
+	return c.failCounts[trigger]
 }
 
-func (c *Check) resetFailCount() {
-	c.failCount = 0
+func (c *Check) resetFailCount(trigger string) {
+	c.failCounts[trigger] = 0
 }
 
 func (c *Check) RecentMetrics(metric string) string {

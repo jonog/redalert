@@ -8,7 +8,13 @@
          "backoff": {
             "type": "constant",
             "interval": 10
-         }
+         },
+         "triggers": [
+            {
+               "metric": "latency",
+               "criteria": ">100"
+            }
+         ]
       },
       {  
          "name":"Server 2",
