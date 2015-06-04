@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 	"net"
 	"os"
@@ -15,7 +14,7 @@ import (
 )
 
 func init() {
-	registerChecker("remote-docker", NewDockerRemoteDocker)
+	Register("remote-docker", NewDockerRemoteDocker)
 }
 
 type RemoteDocker struct {
@@ -45,30 +44,26 @@ func runCommand(client *ssh.Client, cmd string) (string, error) {
 		return "", nil
 	}
 	output := b.String()
-	fmt.Println(output)
 	return output, nil
 }
 
 func parseAndUnmarshal(raw string, data interface{}) error {
-	fmt.Println(raw)
+
 	httpRawSplit := strings.Split(raw, "\n\r\n")
 	if len(httpRawSplit) < 2 {
 		return errors.New("invalid format")
 	}
+
 	jsonStr := httpRawSplit[1]
 	return json.Unmarshal([]byte(jsonStr), data)
 }
 
-func parseAndUnmarshal2(raw string, data interface{}) error {
-	return json.Unmarshal([]byte(raw), data)
-}
-
 func (r *RemoteDocker) Check() (Metrics, error) {
 
-	output := Metrics(make(map[string]float64))
+	output := Metrics(make(map[string]*float64))
 
 	// TODO:
-	// setup auths via ssh.Password / public key
+	// add SSH auth options involving password / key
 
 	sshAgent, err := net.Dial("unix", os.Getenv("SSH_AUTH_SOCK"))
 	if err != nil {
@@ -107,11 +102,12 @@ func (r *RemoteDocker) Check() (Metrics, error) {
 
 	for _, c := range containers {
 
-		cmd := `(timeout 2 <<<'GET /containers/` + c.Id + `/stats HTTP/1.0'$'\r'$'\n' socat -t 2 - UNIX-CONNECT:/var/run/docker.sock | cat) | tail -1`
+		cmd := `(timeout 2 <<<'GET /containers/` + c.Id + `/stats HTTP/1.0'$'\r'$'\n' socat -t 2 - UNIX-CONNECT:/var/run/docker.sock | cat) | tail -2`
 
 		sshOutput, err := runCommand(client, cmd)
 		if err != nil {
-			log.Fatal(err)
+			r.log.Println("ERROR: ", err)
+			continue
 		}
 
 		if len(sshOutput) == 0 {
@@ -119,19 +115,42 @@ func (r *RemoteDocker) Check() (Metrics, error) {
 			continue
 		}
 
-		var containerStats ContainerStats
-		err = json.Unmarshal([]byte(sshOutput), &containerStats)
-		if err != nil {
-			log.Fatal(err)
+		readings := strings.Split(sshOutput, "\n")
+		if len(readings) < 2 {
+			r.log.Println("ERROR: two readings were not obtained from docker remote API")
+			continue
 		}
 
+		var containerStats1 ContainerStats
+		err = json.Unmarshal([]byte(readings[0]), &containerStats1)
+		if err != nil {
+			r.log.Println("ERROR: ", err)
+			continue
+		}
+		var containerStats2 ContainerStats
+		err = json.Unmarshal([]byte(readings[1]), &containerStats2)
+		if err != nil {
+			r.log.Println("ERROR: ", err)
+			continue
+		}
+
+		// TODO: improve logic for picking the container name
 		containerName := c.Names[len(c.Names)-1]
 
-		output[containerName+"_memory"] = float64(containerStats.MemoryStats.Usage / 1000000.0)
+		// TODO: collect all the metrics
+		containerMemory := float64(containerStats2.MemoryStats.Usage / 1000000.0)
+		output[containerName+"_memory"] = &containerMemory
+
+		cpuUsageDelta := float64(containerStats2.CpuStats.CpuUsage.TotalUsage) - float64(containerStats1.CpuStats.CpuUsage.TotalUsage)
+		systemCpuUsageDelta := float64(containerStats2.CpuStats.SystemCpuUsage) - float64(containerStats1.CpuStats.SystemCpuUsage)
+		cpuUsagePercent := cpuUsageDelta * 100 / systemCpuUsageDelta
+
+		output[containerName+"_cpu"] = &cpuUsagePercent
 
 	}
 
-	output["container_count"] = float64(len(containers))
+	containerCount := float64(len(containers))
+	output["container_count"] = &containerCount
 
 	return output, nil
 }
@@ -140,12 +159,8 @@ func (r *RemoteDocker) MetricInfo(metric string) MetricInfo {
 	return MetricInfo{Unit: ""}
 }
 
-func (r *RemoteDocker) RedAlertMessage() string {
-	return "Uhoh fail on "
-}
-
-func (r *RemoteDocker) GreenAlertMessage() string {
-	return "Woo-hoo, successful check on "
+func (r *RemoteDocker) MessageContext() string {
+	return "docker host - " + r.Host
 }
 
 type Container struct {
@@ -180,7 +195,7 @@ type ContainerStats struct {
 	MemoryStats struct {
 		Stats struct {
 			TotalRss int `json:"total_rss"`
-			// TODO: there's a lot more mem stats
+			// TODO: add additional mem stats
 		} `json:"stats"`
 		MaxUsage int `json:"max_usage"`
 		Usage    int `json:"usage"`
@@ -194,5 +209,6 @@ type ContainerStats struct {
 			TotalUsage        int   `json:"total_usage"`
 			UsageInKernelmode int   `json:"usage_in_kernelmode"`
 		} `json:"cpu_usage"`
+		SystemCpuUsage int `json:"system_cpu_usage"`
 	} `json:"cpu_stats"`
 }

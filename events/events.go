@@ -1,6 +1,7 @@
 package events
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -14,7 +15,7 @@ type Event struct {
 }
 
 func NewEvent(data map[string]*float64) *Event {
-	return &Event{Time: time.Now(), Data: data, Tags: []string{}}
+	return &Event{Time: time.Now(), Data: data, Tags: make([]string, 0)}
 }
 
 func (e *Event) AddTag(t string) {
@@ -47,5 +48,12 @@ func (e *Event) DisplayMetric(metric string) string {
 }
 
 func (e *Event) DisplayTags() string {
+	if e == nil {
+		return ""
+	}
+	// if e.Tags == nil {
+	// 	return ""
+	// }
+	fmt.Println(e)
 	return strings.Join(e.Tags, " ")
 }
