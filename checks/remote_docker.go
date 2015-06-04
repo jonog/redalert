@@ -102,7 +102,7 @@ func (r *RemoteDocker) Check() (Metrics, error) {
 
 	for _, c := range containers {
 
-		cmd := `(timeout 2 <<<'GET /containers/` + c.Id + `/stats HTTP/1.0'$'\r'$'\n' socat -t 2 - UNIX-CONNECT:/var/run/docker.sock | cat) | tail -2`
+		cmd := `(timeout 3 <<<'GET /containers/` + c.Id + `/stats HTTP/1.0'$'\r'$'\n' socat -t 2 - UNIX-CONNECT:/var/run/docker.sock | cat) | tail -2`
 
 		sshOutput, err := runCommand(client, cmd)
 		if err != nil {
