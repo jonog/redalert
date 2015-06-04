@@ -102,19 +102,19 @@ func (c *Check) processNotifications(event *events.Event) {
 	// Process Threshold Notifications
 
 	for _, trigger := range c.Triggers {
-		fmt.Println("trigger: ", trigger)
-		if trigger.MeetsCriteria(event.Data) {
-			msg := msgPrefix + trigger.Metric + " (" + fmt.Sprintf("%f", *event.Data[trigger.Metric]) + ") " + " has met alert criteria, " + trigger.Criteria
-			fmt.Println("trigger msg:", msg)
 
-			for _, notifier := range c.Notifiers {
-				err := notifier.Notify(AlertMessage{msg})
-				if err != nil {
-					c.Log.Println(utils.Red, "CRITICAL: Failure triggering alert ["+notifier.Name()+"]: ", err.Error())
-				}
-			}
-
+		if !trigger.MeetsCriteria(event.Data) {
+			continue
 		}
+
+		msg := msgPrefix + trigger.Metric + " (" + fmt.Sprintf("%f", *event.Data[trigger.Metric]) + ") " + " has met alert criteria, " + trigger.Criteria
+		for _, notifier := range c.Notifiers {
+			err := notifier.Notify(AlertMessage{msg})
+			if err != nil {
+				c.Log.Println(utils.Red, "CRITICAL: Failure triggering threshold alert ["+notifier.Name()+"]: ", err.Error())
+			}
+		}
+
 	}
 
 	// Process Redalert/Greenalert (Failure / Recovery)
