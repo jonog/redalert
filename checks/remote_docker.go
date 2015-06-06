@@ -9,6 +9,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/jonog/redalert/utils"
+
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"
 )
@@ -20,13 +22,21 @@ func init() {
 type RemoteDocker struct {
 	User string
 	Host string
+	Tool string
 	log  *log.Logger
 }
 
 var NewDockerRemoteDocker = func(config Config, logger *log.Logger) (Checker, error) {
+
+	tool := utils.StringDefault(config.Tool, "nc")
+	if !utils.FindStringInArray(tool, []string{"nc", "socat"}) {
+		return nil, errors.New("checks: unknown tool in remote docker config")
+	}
+
 	return Checker(&RemoteDocker{
 		User: config.User,
 		Host: config.Host,
+		Tool: tool,
 		log:  logger,
 	}), nil
 }
@@ -58,6 +68,26 @@ func parseAndUnmarshal(raw string, data interface{}) error {
 	return json.Unmarshal([]byte(jsonStr), data)
 }
 
+func (r *RemoteDocker) dockerAPISocketAccess() string {
+	if r.Tool == "nc" {
+		return "nc -U /var/run/docker.sock"
+	}
+	if r.Tool == "socat" {
+		return "socat - UNIX-CONNECT:/var/run/docker.sock"
+	}
+	return ""
+}
+
+func (r *RemoteDocker) dockerAPIStreamSocketAccess() string {
+	if r.Tool == "nc" {
+		return "nc -U /var/run/docker.sock"
+	}
+	if r.Tool == "socat" {
+		return "socat -t 2 - UNIX-CONNECT:/var/run/docker.sock"
+	}
+	return ""
+}
+
 func (r *RemoteDocker) Check() (Metrics, error) {
 
 	output := Metrics(make(map[string]*float64))
@@ -83,7 +113,7 @@ func (r *RemoteDocker) Check() (Metrics, error) {
 	// TODO:
 	// give user choice of nc -U or socat
 
-	sshOutput, err := runCommand(client, `echo -e "GET /containers/json HTTP/1.0\r\n" | socat - UNIX-CONNECT:/var/run/docker.sock`)
+	sshOutput, err := runCommand(client, `echo -e "GET /containers/json HTTP/1.0\r\n" | `+r.dockerAPISocketAccess())
 	if err != nil {
 		return output, nil
 	}
@@ -102,7 +132,7 @@ func (r *RemoteDocker) Check() (Metrics, error) {
 
 	for _, c := range containers {
 
-		cmd := `(timeout 3 <<<'GET /containers/` + c.Id + `/stats HTTP/1.0'$'\r'$'\n' socat -t 2 - UNIX-CONNECT:/var/run/docker.sock | cat) | tail -2`
+		cmd := `(timeout 3 <<<'GET /containers/` + c.Id + `/stats HTTP/1.0'$'\r'$'\n' ` + r.dockerAPIStreamSocketAccess() + ` | cat) | tail -2`
 
 		sshOutput, err := runCommand(client, cmd)
 		if err != nil {

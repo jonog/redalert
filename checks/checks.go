@@ -41,6 +41,7 @@ type Config struct {
 
 	// used for remote-docker
 	User string `json:"user"`
+	Tool string `json:"tool"`
 
 	Triggers []Trigger `json:"triggers"`
 }
