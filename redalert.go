@@ -1,34 +1,48 @@
 package main
 
 import (
-	"encoding/json"
-	"io/ioutil"
 	"log"
 	"os"
 
-	"github.com/jonog/redalert/checks"
 	"github.com/jonog/redalert/core"
 	"github.com/jonog/redalert/notifiers"
+	"github.com/jonog/redalert/storage"
 
 	"github.com/jonog/redalert/web"
 )
 
 func main() {
 
-	config, err := readConfig()
+	configStore, err := storage.NewConfigFile("config.json")
 	if err != nil {
 		log.Fatal("Missing or invalid config.json")
 	}
 
 	service := core.NewService()
 
-	// Setup Notifications
+	// Setup StdErr Notifications
 
-	config.Notifications = append(config.Notifications, notifiers.Config{
+	stdErrNotifier, err := notifiers.New(notifiers.Config{
 		Name: "stderr",
 		Type: "stderr",
 	})
-	for _, notificationConfig := range config.Notifications {
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = service.RegisterNotifier(stdErrNotifier)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Load Notifications
+
+	savedNotifications, err := configStore.Notifications()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, notificationConfig := range savedNotifications {
 
 		notifier, err := notifiers.New(notificationConfig)
 		if err != nil {
@@ -41,9 +55,14 @@ func main() {
 		}
 	}
 
-	// Setup Checks
+	// Load Checks
 
-	for _, checkConfig := range config.Checks {
+	savedChecks, err := configStore.Checks()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, checkConfig := range savedChecks {
 
 		check, err := core.NewCheck(checkConfig)
 		if err != nil {
@@ -69,19 +88,4 @@ func getPort() string {
 		return "8888"
 	}
 	return os.Getenv("RA_PORT")
-}
-
-type Config struct {
-	Checks        []checks.Config    `json:"checks"`
-	Notifications []notifiers.Config `json:"notifications"`
-}
-
-func readConfig() (*Config, error) {
-	file, err := ioutil.ReadFile("config.json")
-	if err != nil {
-		return nil, err
-	}
-	var config Config
-	err = json.Unmarshal(file, &config)
-	return &config, err
 }
