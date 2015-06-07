@@ -136,7 +136,7 @@ func (r *RemoteDocker) Check() (Metrics, error) {
 
 		sshOutput, err := runCommand(client, cmd)
 		if err != nil {
-			r.log.Println("ERROR: ", err)
+			r.log.Println("ERROR: unable to successfully ssh to obtain container stats", err)
 			continue
 		}
 
@@ -154,13 +154,13 @@ func (r *RemoteDocker) Check() (Metrics, error) {
 		var containerStats1 ContainerStats
 		err = json.Unmarshal([]byte(readings[0]), &containerStats1)
 		if err != nil {
-			r.log.Println("ERROR: ", err)
+			r.log.Println("ERROR: unmarshalling container stats json (1st reading)", err)
 			continue
 		}
 		var containerStats2 ContainerStats
 		err = json.Unmarshal([]byte(readings[1]), &containerStats2)
 		if err != nil {
-			r.log.Println("ERROR: ", err)
+			r.log.Println("ERROR: unmarshalling container stats json (2nd reading)", err)
 			continue
 		}
 
