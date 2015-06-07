@@ -172,13 +172,13 @@ func (r *RemoteDocker) Check() (Metrics, error) {
 
 		// TODO: collect all the metrics
 		containerMemory := float64(containerStats2.MemoryStats.Usage / 1000000.0)
-		output[containerName+"_memory"] = &containerMemory
+		output[containerName+".memory"] = &containerMemory
 
 		cpuUsageDelta := float64(containerStats2.CpuStats.CpuUsage.TotalUsage) - float64(containerStats1.CpuStats.CpuUsage.TotalUsage)
 		systemCpuUsageDelta := float64(containerStats2.CpuStats.SystemCpuUsage) - float64(containerStats1.CpuStats.SystemCpuUsage)
 		cpuUsagePercent := cpuUsageDelta * 100 / systemCpuUsageDelta
 
-		output[containerName+"_cpu"] = &cpuUsagePercent
+		output[containerName+".cpu"] = &cpuUsagePercent
 
 	}
 
