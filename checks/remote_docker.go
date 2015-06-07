@@ -164,8 +164,11 @@ func (r *RemoteDocker) Check() (Metrics, error) {
 			continue
 		}
 
-		// TODO: improve logic for picking the container name
-		containerName := c.Names[len(c.Names)-1]
+		containerName, err := getContainerName(c.Names)
+		if err != nil {
+			r.log.Println("ERROR: establishing container name", err)
+			continue
+		}
 
 		// TODO: collect all the metrics
 		containerMemory := float64(containerStats2.MemoryStats.Usage / 1000000.0)
@@ -183,6 +186,20 @@ func (r *RemoteDocker) Check() (Metrics, error) {
 	output["container_count"] = &containerCount
 
 	return output, nil
+}
+
+func getContainerName(names []string) string {
+
+	// remove prefix '/'
+	for _, name := range names {
+		namePrefixRemoved := name[1:]
+
+		// find container without '/' within name
+		if len(strings.Split(namePrefixRemoved, "/")) == 1 {
+			return namePrefixRemoved
+		}
+	}
+	return ""
 }
 
 func (r *RemoteDocker) MetricInfo(metric string) MetricInfo {
