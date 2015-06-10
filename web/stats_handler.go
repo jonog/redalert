@@ -6,7 +6,7 @@ import (
 	"github.com/jonog/redalert/events"
 )
 
-type CheckResponse struct {
+type checkPublic struct {
 	Id     string          `json:"id"`
 	Name   string          `json:"name"`
 	Events []*events.Event `json:"events"`
@@ -15,7 +15,7 @@ type CheckResponse struct {
 func statsHandler(c *appCtx, w http.ResponseWriter, r *http.Request) {
 
 	checks := c.service.Checks()
-	displayChecks := make([]CheckResponse, len(checks))
+	publicChecks := make([]checkPublic, len(checks))
 
 	for idx, check := range checks {
 		events, err := check.Store.GetRecent()
@@ -23,12 +23,12 @@ func statsHandler(c *appCtx, w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
-		displayChecks[idx] = CheckResponse{
+		publicChecks[idx] = checkPublic{
 			Id:     check.Id,
 			Name:   check.Name,
 			Events: events,
 		}
 	}
 
-	Respond(w, displayChecks, 200)
+	Respond(w, publicChecks, 200)
 }
