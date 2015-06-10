@@ -22,7 +22,7 @@ func Run(service *core.Service, port string) {
 	http.Handle("/", appHandler{context, dashboardHandler})
 	http.Handle("/api/put", appHandler{context, metricsReceiverHandler})
 
-	http.Handle("/stats", appHandler{context, statsHandler})
+	http.Handle("/v1/stats", appHandler{context, statsHandler})
 
 	fmt.Println("Listening on port ", port, " ...")
 	err := http.ListenAndServe(":"+port, nil)
