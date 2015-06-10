@@ -1,6 +1,7 @@
 package web
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -21,6 +22,8 @@ func Run(service *core.Service, port string) {
 	http.Handle("/", appHandler{context, dashboardHandler})
 	http.Handle("/api/put", appHandler{context, metricsReceiverHandler})
 
+	http.Handle("/v1/stats", appHandler{context, statsHandler})
+
 	fmt.Println("Listening on port ", port, " ...")
 	err := http.ListenAndServe(":"+port, nil)
 	if err != nil {
@@ -39,4 +42,15 @@ type appHandler struct {
 
 func (ah appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ah.h(ah.appCtx, w, r)
+}
+
+func Respond(w http.ResponseWriter, data interface{}, code int) {
+	response, err := json.Marshal(data)
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	w.Write(response)
 }

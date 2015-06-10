@@ -7,10 +7,9 @@ import (
 )
 
 type Event struct {
-	Time time.Time
-	Data map[string]*float64
-	// TODO: change to map[string]struct{}
-	Tags []string
+	Time time.Time           `json:"time"`
+	Data map[string]*float64 `json:"data"`
+	Tags []string            `json:"tags"`
 }
 
 func NewEvent(data map[string]*float64) *Event {

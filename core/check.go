@@ -6,6 +6,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/nu7hatch/gouuid"
+
 	"github.com/jonog/redalert/backoffs"
 	"github.com/jonog/redalert/checks"
 	"github.com/jonog/redalert/notifiers"
@@ -15,6 +17,7 @@ import (
 var MaxEventsStored = 100
 
 type Check struct {
+	Id      string
 	Name    string
 	Type    string // e.g. future options: web-ping, ssh-ping, query
 	Backoff backoffs.Backoff
@@ -35,12 +38,18 @@ type Check struct {
 func NewCheck(config checks.Config) (*Check, error) {
 	logger := log.New(os.Stdout, config.Name+" ", log.Ldate|log.Ltime)
 
+	u4, err := uuid.NewV4()
+	if err != nil {
+		return nil, err
+	}
+
 	checker, err := checks.New(config, logger)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Check{
+		Id:         u4.String(),
 		Name:       config.Name,
 		Type:       config.Type,
 		Backoff:    backoffs.New(config.Backoff),

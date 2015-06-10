@@ -37,5 +37,11 @@ func (l *MemoryList) GetRecent() ([]*events.Event, error) {
 			es = append(es, event)
 		}
 	}
+
+	// if no events, return empty array
+	if len(es) == 0 {
+		return make([]*events.Event, 0), nil
+	}
+
 	return es, nil
 }
