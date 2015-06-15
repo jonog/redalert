@@ -110,9 +110,6 @@ func (r *RemoteDocker) Check() (Metrics, error) {
 		return output, nil
 	}
 
-	// TODO:
-	// give user choice of nc -U or socat
-
 	sshOutput, err := runCommand(client, `echo -e "GET /containers/json HTTP/1.0\r\n" | `+r.dockerAPISocketAccess())
 	if err != nil {
 		return output, nil
