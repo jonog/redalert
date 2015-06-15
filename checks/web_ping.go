@@ -1,6 +1,7 @@
 package checks
 
 import (
+	"encoding/json"
 	"errors"
 	"io/ioutil"
 	"log"
@@ -26,8 +27,20 @@ var WebPingerMetrics = map[string]MetricInfo{
 	},
 }
 
+type WebPingerConfig struct {
+	Address string `json:"address"`
+}
+
 var NewWebPinger = func(config Config, logger *log.Logger) (Checker, error) {
-	return Checker(&WebPinger{config.Address, logger}), nil
+	var webPingerConfig WebPingerConfig
+	err := json.Unmarshal([]byte(config.Config), &webPingerConfig)
+	if err != nil {
+		return nil, err
+	}
+	if webPingerConfig.Address == "" {
+		return nil, errors.New("web-ping: address to ping cannot be blank")
+	}
+	return Checker(&WebPinger{webPingerConfig.Address, logger}), nil
 }
 
 var GlobalClient = http.Client{

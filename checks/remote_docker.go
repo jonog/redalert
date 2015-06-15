@@ -26,16 +26,36 @@ type RemoteDocker struct {
 	log  *log.Logger
 }
 
+type RemoteDockerConfig struct {
+	User string `json:"user"`
+	Host string `json:"host"`
+	Tool string `json:"tool"`
+}
+
 var NewDockerRemoteDocker = func(config Config, logger *log.Logger) (Checker, error) {
 
-	tool := utils.StringDefault(config.Tool, "nc")
+	var remoteDockerConfig RemoteDockerConfig
+	err := json.Unmarshal([]byte(config.Config), &remoteDockerConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	tool := utils.StringDefault(remoteDockerConfig.Tool, "nc")
 	if !utils.FindStringInArray(tool, []string{"nc", "socat"}) {
 		return nil, errors.New("checks: unknown tool in remote docker config")
 	}
 
+	if remoteDockerConfig.User == "" {
+		return nil, errors.New("remote-docker: user cannot be blank")
+	}
+
+	if remoteDockerConfig.Host == "" {
+		return nil, errors.New("remote-docker: host cannot be blank")
+	}
+
 	return Checker(&RemoteDocker{
-		User: config.User,
-		Host: config.Host,
+		User: remoteDockerConfig.User,
+		Host: remoteDockerConfig.Host,
 		Tool: tool,
 		log:  logger,
 	}), nil
