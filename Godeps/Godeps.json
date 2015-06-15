@@ -17,6 +17,24 @@
 		{
 			"ImportPath": "github.com/daaku/go.zipexe",
 			"Rev": "4de5c18ca1fc5294fee64721094ca90c46d26405"
+		},
+		{
+			"ImportPath": "github.com/lib/pq",
+			"Comment": "go1.0-cutoff-8-g3e3efe5",
+			"Rev": "3e3efe51a0c4b23e817075438703cb15bd58c1a8"
+		},
+		{
+			"ImportPath": "github.com/nu7hatch/gouuid",
+			"Rev": "179d4d0c4d8d407a32af483c2354df1d2c91e6c3"
+		},
+		{
+			"ImportPath": "golang.org/x/crypto/ssh",
+			"Rev": "1351f936d976c60a0a48d728281922cf63eafb8d"
+		},
+		{
+			"ImportPath": "gopkg.in/gorp.v1",
+			"Comment": "v1.7.1",
+			"Rev": "c87af80f3cc5036b55b83d77171e156791085e2e"
 		}
 	]
 }
