@@ -36,7 +36,9 @@ Configure servers to monitor & alert settings via `config.json`:
       {  
          "name":"Server 1",
          "type": "web-ping",
-         "address":"http://server1.com/healthcheck",
+         "config": {
+            "address":"http://server1.com/healthcheck"
+         },
          "send_alerts": ["stderr"],
          "backoff": {
             "type": "constant",
@@ -52,7 +54,9 @@ Configure servers to monitor & alert settings via `config.json`:
       {  
          "name":"Server 2",
          "type": "web-ping",
-         "address":"http://server2.com/healthcheck",
+         "config": {
+            "address":"http://server2.com/healthcheck"
+         },
          "send_alerts": ["stderr", "email", "chat", "sms"],
          "backoff": {
             "type": "linear",
@@ -62,7 +66,9 @@ Configure servers to monitor & alert settings via `config.json`:
       {  
          "name":"Server 3",
          "type": "web-ping",
-         "address":"http://server3.com/healthcheck",
+         "config": {
+            "address":"http://server3.com/healthcheck"
+         },
          "send_alerts": ["stderr"],
          "backoff": {
             "type": "exponential",
@@ -73,8 +79,10 @@ Configure servers to monitor & alert settings via `config.json`:
       {
          "name": "production-docker-host",
          "type": "remote-docker",
-         "host": "ec2-xx-xxx-xx-xxx.ap-southeast-1.compute.amazonaws.com",
-         "user": "ubuntu",
+         "config": {
+            "host": "ec2-xx-xxx-xx-xxx.ap-southeast-1.compute.amazonaws.com",
+            "user": "ubuntu"
+         },
          "send_alerts": ["stderr"],
          "backoff": {
             "type": "linear",
@@ -84,7 +92,9 @@ Configure servers to monitor & alert settings via `config.json`:
       {
          "name": "scollector-metrics",
          "type": "scollector",
-         "host": "hostname",
+         "config": {
+            "host": "hostname"
+         },
          "send_alerts": ["stderr"],
          "backoff": {
             "type": "constant",

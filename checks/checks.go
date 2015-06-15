@@ -1,6 +1,7 @@
 package checks
 
 import (
+	"encoding/json"
 	"errors"
 	"log"
 	"regexp"
@@ -32,18 +33,8 @@ type Config struct {
 	Type       string          `json:"type"`
 	SendAlerts []string        `json:"send_alerts"`
 	Backoff    backoffs.Config `json:"backoff"`
-
-	// used for web-ping
-	Address string `json:"address"`
-
-	// used for scollector, remote-docker
-	Host string `json:"host"`
-
-	// used for remote-docker
-	User string `json:"user"`
-	Tool string `json:"tool"`
-
-	Triggers []Trigger `json:"triggers"`
+	Config     json.RawMessage `json:"config"`
+	Triggers   []Trigger       `json:"triggers"`
 }
 
 type Trigger struct {

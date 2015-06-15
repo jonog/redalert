@@ -1,6 +1,10 @@
 package checks
 
-import "log"
+import (
+	"encoding/json"
+	"errors"
+	"log"
+)
 
 func init() {
 	Register("scollector", NewSCollector)
@@ -18,8 +22,20 @@ type SCollector struct {
 	Host string
 }
 
+type SCollectorConfig struct {
+	Host string `json:"host"`
+}
+
 var NewSCollector = func(config Config, logger *log.Logger) (Checker, error) {
-	return Checker(&SCollector{config.Host}), nil
+	var sCollectorConfig SCollectorConfig
+	err := json.Unmarshal([]byte(config.Config), &sCollectorConfig)
+	if err != nil {
+		return nil, err
+	}
+	if sCollectorConfig.Host == "" {
+		return nil, errors.New("scollector: host to collect stats via scollector cannot be blank")
+	}
+	return Checker(&SCollector{sCollectorConfig.Host}), nil
 }
 
 func (sc *SCollector) Check() (Metrics, error) {
