@@ -9,6 +9,7 @@ For monitoring your infrastructure and sending notifications if stuff is not ok.
 * *Website monitoring* & latency measurement (check type: `web-ping`)
 * *Server metrics* from local machine (check type: `scollector`)
 * *Docker container metrics* from remote host (check type: `remote-docker`)
+* *Postgres counts/stats* via SQL queries (check type: `postgres`)
 
 #### Features
 * Alert notifications available on several channels:
@@ -99,6 +100,24 @@ Configure servers to monitor & alert settings via `config.json`:
          "backoff": {
             "type": "constant",
             "interval": 15
+         }
+      },
+      {
+         "name": "production-db",
+         "type": "postgres",
+         "config": {
+            "connection_url": "postgres://user:pass@localhost:5432/dbname?sslmode=disable",
+            "metric_queries": [
+               {
+                  "metric": "client_count",
+                  "query": "select count(*) from clients"
+               }
+            ]
+         },
+         "send_alerts": ["stderr"],
+         "backoff": {
+            "type": "linear",
+            "interval": 120
          }
       }
    ],

@@ -67,6 +67,24 @@
             "type": "constant",
             "interval": 15
          }
+      },
+      {
+         "name": "production-db",
+         "type": "postgres",
+         "config": {
+            "connection_url": "postgres://user:pass@localhost:5432/dbname?sslmode=disable",
+            "metric_queries": [
+               {
+                  "metric": "client_count",
+                  "query": "select count(*) from clients"
+               }
+            ]
+         },
+         "send_alerts": ["stderr"],
+         "backoff": {
+            "type": "linear",
+            "interval": 120
+         }
       }
    ],
    "notifications": [
