@@ -47,6 +47,7 @@ func (p *Postgres) Check() (Metrics, error) {
 	if err != nil {
 		return output, err
 	}
+	defer db.Db.Close()
 
 	for _, mq := range p.MetricQueries {
 		count, err := query(db, mq.Query)
