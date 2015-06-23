@@ -18,9 +18,9 @@ type Message interface {
 /////////////////
 
 type Config struct {
-	Name   string
-	Type   string
-	Config map[string]string
+	Name   string            `json:"name"`
+	Type   string            `json:"type"`
+	Config map[string]string `json:"config"`
 }
 
 var registry = make(map[string]func(Config) (Notifier, error))
