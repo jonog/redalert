@@ -34,7 +34,7 @@ type RemoteDockerConfig struct {
 	User     string `json:"user"`
 	Password string `json:"password"`
 	Host     string `json:"host"`
-	Key      string `json:"host"`
+	Key      string `json:"key"`
 	Tool     string `json:"tool"`
 }
 
