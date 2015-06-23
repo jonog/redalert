@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"os"
 
@@ -11,11 +12,48 @@ import (
 	"github.com/jonog/redalert/web"
 )
 
+var configStorageType string
+var configFilename string
+var configDbURL string
+
+func init() {
+	flag.StringVar(&configStorageType, "config", "file", "choice of config store: [file, db]")
+	flag.StringVar(&configFilename, "config_file", "config.json", "path to json config")
+	flag.StringVar(&configDbURL, "config_db", "postgres://user:pass@host/db_name", "connection url for config db")
+}
+
 func main() {
 
-	configStore, err := storage.NewConfigFile("config.json")
-	if err != nil {
-		log.Fatal("Missing or invalid config.json")
+	flag.Parse()
+
+	// `sync` command
+	if len(flag.Args()) == 1 && flag.Args()[0] == "sync" {
+		syncConfigFileToDB(configFilename, configDbURL)
+		return
+	}
+
+	if configStorageType != "file" && configStorageType != "db" {
+		log.Fatal("Invalid config store option.")
+	}
+
+	var configStore storage.ConfigStorage
+	var err error
+
+	switch configStorageType {
+	case "file":
+		log.Println("Config via file")
+		configStore, err = storage.NewConfigFile(configFilename)
+		if err != nil {
+			log.Fatal("Missing or invalid config.json")
+		}
+	case "db":
+		log.Println("Config via db")
+		configStore, err = storage.NewConfigDB(configDbURL)
+		if err != nil {
+			log.Fatal("Unable to initialise db via :", configDbURL)
+		}
+	default:
+		log.Fatal("Invalid config storage option: ", configStorageType)
 	}
 
 	service := core.NewService()
