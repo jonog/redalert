@@ -181,19 +181,15 @@ If there are errors sending email via gmail - enable `Access for less secure app
 #### Credits:
 Rocket emoji via https://github.com/twitter/twemoji
 
-### TODO
-* Build out stats API & document endpoints (i.e. `/v1/stats`)
-* Refinements to `docker-remote` checker (see TODOs in implementation)
-* Set alerts based on metric threshold values for N intervals / based on calculation
-* Integrate more checks (db query, expvars, remote command via ssh, consul)
-* Integrate more notifiers (webhooks, msgqueue)
-* Push events to a time-series database
-* Distinguish between an error performing a check & a failing check. i.e. Check should return two errors.
-* Safely handle concurrent read/writes in key data structures accessed in different goroutines.
-* Change server config on the fly / interface out configuration details.
-* Improved handling/recovering from any errors detected in redalert
-
-### TODO UI
-* Tags/searchable to handle more metrics/ categorising dashboards
-* Live updates via websockets/poll
-* More charts
+### TODO / Roadmap
+ - [ ] Build out stats API & document endpoints (i.e. `/v1/stats`)
+ - [ ] Alerts based on calculated values
+ - [ ] Add more checks (expvars, local/remote command, consul)
+ - [ ] Add more notifiers (webhooks, msgqueue)
+ - [ ] Push events into a time-series DB (e.g. influx, elasticsearch)
+ - [ ] Distinguish between an error performing a check & a failing check
+ - [ ] Safely handle concurrent read/writes in key data structures accessed in different goroutines.
+ - [ ] Persist server configuration to file/DB
+ - [ ] Tags/searchable to handle more metrics/ categorising dashboards
+ - [ ] Live updates via websockets/poll
+ - [ ] More charts
