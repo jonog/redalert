@@ -159,7 +159,7 @@ func (t TypeConverter) FromDb(target interface{}) (gorp.CustomScanner, bool) {
 			b := []byte(*s)
 			st, ok := target.(*json.RawMessage)
 			if !ok {
-				return errors.New(fmt.Sprint("FromDb: Unable to convert target to *CustomStringType: ", reflect.TypeOf(target)))
+				return errors.New(fmt.Sprint("FromDb: Unable to convert target to *json.RawMessage: ", reflect.TypeOf(target)))
 			}
 			*st = json.RawMessage(b)
 			return nil
