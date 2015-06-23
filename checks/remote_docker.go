@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"io/ioutil"
 	"log"
 	"net"
 	"os"
@@ -20,16 +22,20 @@ func init() {
 }
 
 type RemoteDocker struct {
-	User string
-	Host string
-	Tool string
-	log  *log.Logger
+	User     string
+	Password string
+	Host     string
+	Key      string
+	Tool     string
+	log      *log.Logger
 }
 
 type RemoteDockerConfig struct {
-	User string `json:"user"`
-	Host string `json:"host"`
-	Tool string `json:"tool"`
+	User     string `json:"user"`
+	Password string `json:"password"`
+	Host     string `json:"host"`
+	Key      string `json:"host"`
+	Tool     string `json:"tool"`
 }
 
 var NewDockerRemoteDocker = func(config Config, logger *log.Logger) (Checker, error) {
@@ -54,10 +60,12 @@ var NewDockerRemoteDocker = func(config Config, logger *log.Logger) (Checker, er
 	}
 
 	return Checker(&RemoteDocker{
-		User: remoteDockerConfig.User,
-		Host: remoteDockerConfig.Host,
-		Tool: tool,
-		log:  logger,
+		User:     remoteDockerConfig.User,
+		Password: remoteDockerConfig.Password,
+		Host:     remoteDockerConfig.Host,
+		Key:      remoteDockerConfig.Key,
+		Tool:     tool,
+		log:      logger,
 	}), nil
 }
 
@@ -112,44 +120,60 @@ func (r *RemoteDocker) Check() (Metrics, error) {
 
 	output := Metrics(make(map[string]*float64))
 
-	// TODO:
-	// add SSH auth options involving password / key
+	auths := []ssh.AuthMethod{}
 
-	sshAgent, err := net.Dial("unix", os.Getenv("SSH_AUTH_SOCK"))
-	if err != nil {
-		return output, nil
+	if r.Password != "" {
+		r.log.Println("ssh via password is an enabled option")
+		auths = append(auths, ssh.Password(r.Password))
 	}
-	auth := ssh.PublicKeysCallback(agent.NewClient(sshAgent).Signers)
-	defer sshAgent.Close()
+
+	if os.Getenv("SSH_AUTH_SOCK") != "" {
+		if sshAgent, err := net.Dial("unix", os.Getenv("SSH_AUTH_SOCK")); err == nil {
+			r.log.Println("ssh via ssh-agent is an enabled option")
+			auths = append(auths, ssh.PublicKeysCallback(agent.NewClient(sshAgent).Signers))
+			defer sshAgent.Close()
+		}
+	}
+
+	if r.Key != "" {
+		if pubkey, err := getKey(r.Key); err == nil {
+			r.log.Println("ssh via public key is an enabled option")
+			auths = append(auths, ssh.PublicKeys(pubkey))
+		}
+	}
+
+	if len(auths) == 0 {
+		return output, errors.New("remote-docker: no SSH authentication methods available")
+	}
 
 	client, err := ssh.Dial("tcp", r.Host+":"+"22", &ssh.ClientConfig{
 		User: r.User,
-		Auth: []ssh.AuthMethod{auth},
+		Auth: auths,
 	})
 	if err != nil {
-		return output, nil
+		return output, fmt.Errorf("remote-docker: error dialing ssh. err: %v", err)
 	}
+	defer client.Close()
 
 	sshOutput, err := runCommand(client, `echo -e "GET /containers/json HTTP/1.0\r\n" | `+r.dockerAPISocketAccess())
 	if err != nil {
-		return output, nil
+		return output, fmt.Errorf("remote-docker: error getting container list. err: %v", err)
 	}
 
 	if len(sshOutput) == 0 {
 		r.log.Println("ERROR: cannot get list of containers from docker remote API")
-		return output, nil
+		return output, errors.New("remote-docker: no data obtained when retrieving container list")
 	}
 
 	var containers []Container
 	err = parseAndUnmarshal(sshOutput, &containers)
 	if err != nil {
-		return output, nil
-
+		return output, errors.New("remote-docker: unable to parse container list")
 	}
 
 	for _, c := range containers {
 
-		cmd := `(timeout 3 <<<'GET /containers/` + c.Id + `/stats HTTP/1.0'$'\r'$'\n' ` + r.dockerAPIStreamSocketAccess() + ` | cat) | tail -2`
+		cmd := `<<<'GET /containers/` + c.Id + `/stats HTTP/1.0'$'\r'$'\n' ` + r.dockerAPIStreamSocketAccess() + ` | head -6 | tail -2`
 
 		sshOutput, err := runCommand(client, cmd)
 		if err != nil {
@@ -203,6 +227,18 @@ func (r *RemoteDocker) Check() (Metrics, error) {
 	output["container_count"] = &containerCount
 
 	return output, nil
+}
+
+func getKey(filename string) (ssh.Signer, error) {
+	buf, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+	pubkey, err := ssh.ParsePrivateKey(buf)
+	if err != nil {
+		return nil, err
+	}
+	return pubkey, nil
 }
 
 func getContainerName(names []string) (string, error) {
