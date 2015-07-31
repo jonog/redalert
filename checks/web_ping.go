@@ -18,6 +18,7 @@ func init() {
 
 type WebPinger struct {
 	Address string
+	Headers map[string]string
 	log     *log.Logger
 }
 
@@ -28,7 +29,8 @@ var WebPingerMetrics = map[string]MetricInfo{
 }
 
 type WebPingerConfig struct {
-	Address string `json:"address"`
+	Address string            `json:"address"`
+	Headers map[string]string `json:"headers"`
 }
 
 var NewWebPinger = func(config Config, logger *log.Logger) (Checker, error) {
@@ -40,7 +42,7 @@ var NewWebPinger = func(config Config, logger *log.Logger) (Checker, error) {
 	if webPingerConfig.Address == "" {
 		return nil, errors.New("web-ping: address to ping cannot be blank")
 	}
-	return Checker(&WebPinger{webPingerConfig.Address, logger}), nil
+	return Checker(&WebPinger{webPingerConfig.Address, webPingerConfig.Headers, logger}), nil
 }
 
 var GlobalClient = http.Client{
@@ -78,6 +80,10 @@ func (wp *WebPinger) ping() (Metrics, error) {
 	}
 
 	req.Header.Add("User-Agent", "Redalert/1.0")
+	for k, v := range wp.Headers {
+		req.Header.Add(k, v)
+	}
+
 	resp, err := GlobalClient.Do(req)
 	if err != nil {
 		return metrics, errors.New("web-ping: failed client.Do " + err.Error())

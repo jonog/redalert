@@ -38,7 +38,10 @@ Configure servers to monitor & alert settings via `config.json`:
          "name":"Server 1",
          "type": "web-ping",
          "config": {
-            "address":"http://server1.com/healthcheck"
+            "address":"http://server1.com/healthcheck",
+            "headers": {
+              "X-Api-Key": "ABCD1234"
+            }
          },
          "send_alerts": ["stderr"],
          "backoff": {
@@ -128,7 +131,7 @@ Configure servers to monitor & alert settings via `config.json`:
          "config": {
             "user": "",
             "pass": "",
-            "notification_addresses": ""      
+            "notification_addresses": ""
          }
       },
       {
@@ -148,7 +151,7 @@ Configure servers to monitor & alert settings via `config.json`:
             "account_sid": "",
             "auth_token": "",
             "twilio_number": "",
-            "notification_numbers": ""    
+            "notification_numbers": ""
          }
       }
    ]
@@ -167,7 +170,7 @@ go build
 When a server check fails - the next check will be delayed according to the back-off algorithm. By default, there is no delay (i.e. `constant` back-off), with a default interval of 10 seconds between checks. When a failing server returns to normal, the check frequency returns to its original value.
 
 ##### Constant
-Pinging interval will remain constant. i.e. will not provide any back-off after failure. 
+Pinging interval will remain constant. i.e. will not provide any back-off after failure.
 
 ##### Linear
 The pinging interval upon failure will be extended linearly. i.e. `failure count x pinging interval`.
