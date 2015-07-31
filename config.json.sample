@@ -1,10 +1,13 @@
-{  
-   "checks":[  
-      {  
+{
+   "checks":[
+      {
          "name":"Server 1",
          "type": "web-ping",
          "config": {
-            "address":"http://server1.com/healthcheck"
+            "address":"http://server1.com/healthcheck",
+            "headers": {
+              "X-Api-Key": "ABCD1234"
+            }
          },
          "send_alerts": ["stderr"],
          "backoff": {
@@ -18,7 +21,7 @@
             }
          ]
       },
-      {  
+      {
          "name":"Server 2",
          "type": "web-ping",
          "config": {
@@ -30,7 +33,7 @@
             "interval": 10
          }
       },
-      {  
+      {
          "name":"Server 3",
          "type": "web-ping",
          "config": {
@@ -94,7 +97,7 @@
          "config": {
             "user": "",
             "pass": "",
-            "notification_addresses": ""      
+            "notification_addresses": ""
          }
       },
       {
@@ -104,7 +107,7 @@
             "webhook_url": "",
             "channel": "#general",
             "username": "redalert",
-            "icon_emoji": ":rocket:"  
+            "icon_emoji": ":rocket:"
          }
       },
       {
@@ -114,7 +117,7 @@
             "account_sid": "",
             "auth_token": "",
             "twilio_number": "",
-            "notification_numbers": ""    
+            "notification_numbers": ""
          }
       }
    ]
