@@ -28,6 +28,10 @@
 			"Rev": "179d4d0c4d8d407a32af483c2354df1d2c91e6c3"
 		},
 		{
+			"ImportPath": "github.com/rs/cors",
+			"Rev": "abddb2fca308f1d4a4ab6350ba89b3785613f774"
+		},
+		{
 			"ImportPath": "golang.org/x/crypto/ssh",
 			"Rev": "1351f936d976c60a0a48d728281922cf63eafb8d"
 		},

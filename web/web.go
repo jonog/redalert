@@ -2,11 +2,12 @@ package web
 
 import (
 	"encoding/json"
-	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/GeertJohan/go.rice"
 	"github.com/jonog/redalert/core"
+	"github.com/rs/cors"
 )
 
 func Run(service *core.Service, port string) {
@@ -18,16 +19,22 @@ func Run(service *core.Service, port string) {
 	box := rice.MustFindBox("static")
 	fs := http.FileServer(box.HTTPBox())
 
-	http.Handle("/static/", http.StripPrefix("/static/", fs))
-	http.Handle("/", appHandler{context, dashboardHandler})
-	http.Handle("/api/put", appHandler{context, metricsReceiverHandler})
+	mux := http.NewServeMux()
 
-	http.Handle("/v1/stats", appHandler{context, statsHandler})
+	mux.Handle("/static/", http.StripPrefix("/static/", fs))
+	mux.Handle("/", appHandler{context, dashboardHandler})
+	mux.Handle("/api/put", appHandler{context, metricsReceiverHandler})
 
-	fmt.Println("Listening on port ", port, " ...")
-	err := http.ListenAndServe(":"+port, nil)
+	mux.Handle("/v1/stats", appHandler{context, statsHandler})
+
+	mux.HandleFunc("/healthcheck", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("OK"))
+	})
+
+	handler := cors.Default().Handler(mux)
+	err := http.ListenAndServe(":8888", handler)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 }
 
