@@ -7,26 +7,26 @@ import (
 )
 
 type Event struct {
-	Time time.Time           `json:"time"`
-	Data map[string]*float64 `json:"data"`
-	Tags []string            `json:"tags"`
+	Time    RFCTime             `json:"time"`
+	Metrics map[string]*float64 `json:"data"`
+	Tags    map[string]string   `json:"tags"`
 }
 
-func NewEvent(data map[string]*float64) *Event {
-	return &Event{Time: time.Now(), Data: data, Tags: make([]string, 0)}
+func NewEvent(metrics map[string]*float64) *Event {
+	return &Event{
+		Time:    RFCTime{time.Now()},
+		Metrics: metrics,
+		Tags:    make(map[string]string),
+	}
 }
 
 func (e *Event) AddTag(t string) {
-	e.Tags = append(e.Tags, t)
+	e.Tags[t] = ""
 }
 
 func (e *Event) IsRedAlert() bool {
-	for _, tag := range e.Tags {
-		if tag == "redalert" {
-			return true
-		}
-	}
-	return false
+	_, exists := e.Tags["redalert"]
+	return exists
 }
 
 func (e *Event) HasTag(t string) bool {
@@ -39,10 +39,10 @@ func (e *Event) HasTag(t string) bool {
 }
 
 func (e *Event) DisplayMetric(metric string) string {
-	if e.Data[metric] == nil {
+	if e.Metrics[metric] == nil {
 		return ""
 	}
-	return strconv.FormatFloat(*e.Data[metric], 'f', 1, 64)
+	return strconv.FormatFloat(*e.Metrics[metric], 'f', 1, 64)
 }
 
 func (e *Event) DisplayTags() string {
@@ -50,5 +50,9 @@ func (e *Event) DisplayTags() string {
 	if e == nil {
 		return ""
 	}
-	return strings.Join(e.Tags, " ")
+	var keys []string
+	for tag := range e.Tags {
+		keys = append(keys, tag)
+	}
+	return strings.Join(keys, " ")
 }

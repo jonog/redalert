@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"strings"
 	"sync"
 	"time"
 
@@ -103,11 +102,11 @@ func (c *Check) processNotifications(event *events.Event) {
 
 	for _, trigger := range c.Triggers {
 
-		if !trigger.MeetsCriteria(event.Data) {
+		if !trigger.MeetsCriteria(event.Metrics) {
 			continue
 		}
 
-		msg := msgPrefix + trigger.Metric + " (" + fmt.Sprintf("%f", *event.Data[trigger.Metric]) + ") " + " has met alert criteria, " + trigger.Criteria
+		msg := msgPrefix + trigger.Metric + " (" + fmt.Sprintf("%f", *event.Metrics[trigger.Metric]) + ") " + " has met alert criteria, " + trigger.Criteria
 		for _, notifier := range c.Notifiers {
 			err := notifier.Notify(AlertMessage{msg})
 			if err != nil {
@@ -128,7 +127,7 @@ func (c *Check) processNotifications(event *events.Event) {
 		var err error
 		for _, notifier := range c.Notifiers {
 
-			c.Log.Println(utils.White, "Sending "+strings.Join(event.Tags, ", ")+" via "+notifier.Name(), utils.Reset)
+			c.Log.Println(utils.White, "Sending "+event.DisplayTags()+" via "+notifier.Name(), utils.Reset)
 
 			var msg string
 			if event.HasTag("redalert") {
