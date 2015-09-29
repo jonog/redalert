@@ -1,5 +1,7 @@
 ### Redalert
 
+[![Circle CI](https://circleci.com/gh/jonog/redalert.svg?style=svg)](https://circleci.com/gh/jonog/redalert)
+
 For monitoring your infrastructure and sending notifications if stuff is not ok.
 (e.g. pinging your websites/APIs via HTTP GET at specified intervals, and alerting you if there is downtime).
 
