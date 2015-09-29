@@ -142,3 +142,7 @@ func (c *fakeChecker) RedAlertMessage() string {
 func (c *fakeChecker) GreenAlertMessage() string {
 	return "greenalert"
 }
+
+func (c *fakeChecker) MessageContext() string {
+	return "message_context"
+}
