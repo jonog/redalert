@@ -50,7 +50,7 @@ func (c *Check) run(stopChan chan bool) {
 			if err != nil {
 
 				// Trigger RedAlert as check has failed
-				event.AddTag("redalert")
+				event.MarkRedAlert()
 				c.Log.Println(utils.Red, "redalert", err, utils.Reset)
 
 				// increase fail count and delay between checks
@@ -71,7 +71,7 @@ func (c *Check) run(stopChan chan bool) {
 				// Trigger GreenAlert if check is successful and was previously failing
 				isRedalertRecovery := lastEvent != nil && lastEvent.IsRedAlert()
 				if isRedalertRecovery {
-					event.AddTag("greenalert")
+					event.MarkGreenAlert()
 					c.Log.Println(utils.Green, "greenalert", utils.Reset)
 
 					// reset fail count & delay between checks
@@ -124,7 +124,7 @@ func (c *Check) processNotifications(event *events.Event) {
 
 	go func() {
 
-		if !event.HasTag("redalert") && !event.HasTag("greenalert") {
+		if !event.IsRedAlert() && !event.IsGreenAlert() {
 			return
 		}
 
@@ -134,9 +134,9 @@ func (c *Check) processNotifications(event *events.Event) {
 			c.Log.Println(utils.White, "Sending "+event.DisplayTags()+" via "+notifier.Name(), utils.Reset)
 
 			var msg string
-			if event.HasTag("redalert") {
+			if event.IsRedAlert() {
 				msg = msgPrefix + "fail"
-			} else if event.HasTag("greenalert") {
+			} else if event.IsGreenAlert() {
 				msg = msgPrefix + "recovery"
 			}
 

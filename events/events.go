@@ -6,6 +6,11 @@ import (
 	"time"
 )
 
+const (
+	redalert   = "redalert"
+	greenalert = "greenalert"
+)
+
 type Event struct {
 	Time    RFCTime             `json:"time"`
 	Metrics map[string]*float64 `json:"data"`
@@ -25,17 +30,24 @@ func (e *Event) AddTag(t string) {
 }
 
 func (e *Event) IsRedAlert() bool {
-	_, exists := e.Tags["redalert"]
-	return exists
+	return e.HasTag(redalert)
+}
+
+func (e *Event) MarkRedAlert() {
+	e.AddTag(redalert)
+}
+
+func (e *Event) IsGreenAlert() bool {
+	return e.HasTag(greenalert)
+}
+
+func (e *Event) MarkGreenAlert() {
+	e.AddTag(greenalert)
 }
 
 func (e *Event) HasTag(t string) bool {
-	for tag := range e.Tags {
-		if tag == t {
-			return true
-		}
-	}
-	return false
+	_, exists := e.Tags[t]
+	return exists
 }
 
 func (e *Event) DisplayMetric(metric string) string {
