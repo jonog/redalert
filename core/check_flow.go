@@ -124,6 +124,10 @@ func (c *Check) processNotifications(event *events.Event) {
 
 	go func() {
 
+		if !event.HasTag("redalert") && !event.HasTag("greenalert") {
+			return
+		}
+
 		var err error
 		for _, notifier := range c.Notifiers {
 
@@ -134,8 +138,6 @@ func (c *Check) processNotifications(event *events.Event) {
 				msg = msgPrefix + "fail"
 			} else if event.HasTag("greenalert") {
 				msg = msgPrefix + "recovery"
-			} else {
-				continue
 			}
 
 			err = notifier.Notify(AlertMessage{msg})

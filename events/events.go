@@ -30,7 +30,7 @@ func (e *Event) IsRedAlert() bool {
 }
 
 func (e *Event) HasTag(t string) bool {
-	for _, tag := range e.Tags {
+	for tag := range e.Tags {
 		if tag == t {
 			return true
 		}
