@@ -197,6 +197,14 @@ With each failure, the subsequent check will be delayed by the last delayed amou
 #### Note for Gmail:
 If there are errors sending email via gmail - enable `Access for less secure apps` under Account permissions @ https://www.google.com/settings/u/2/security
 
+#### Development:
+Getting started:
+```
+go get github.com/tools/godep
+go get github.com/onsi/ginkgo/ginkgo
+go get github.com/onsi/gomega
+```
+
 #### Credits:
 Rocket emoji via https://github.com/twitter/twemoji
 
