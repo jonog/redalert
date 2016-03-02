@@ -12,6 +12,7 @@ For monitoring your infrastructure and sending notifications if stuff is not ok.
 * *Server metrics* from local machine (check type: `scollector`)
 * *Docker container metrics* from remote host (check type: `remote-docker`)
 * *Postgres counts/stats* via SQL queries (check type: `postgres`)
+* *TCP connectivity monitoring* & latency measurement (check type: `tcp`)
 
 #### Features
 * Alert notifications available on several channels:
@@ -80,6 +81,19 @@ Configure servers to monitor & alert settings via `config.json`:
             "type": "exponential",
             "interval": 10,
             "multiplier": 2
+         }
+      },
+      {
+         "name":"Docker Redis",
+         "type": "tcp",
+         "config": {
+            "host":"192.168.99.100",
+            "port": 1001
+         },
+         "send_alerts": ["stderr"],
+         "backoff": {
+            "type": "constant",
+            "interval": 10
          }
       },
       {
