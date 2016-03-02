@@ -87,7 +87,7 @@ Configure servers to monitor & alert settings via `config.json`:
          "name":"Docker Redis",
          "type": "tcp",
          "config": {
-            "address":"192.168.99.100",
+            "host":"192.168.99.100",
             "port": 1001
          },
          "send_alerts": ["stderr"],
