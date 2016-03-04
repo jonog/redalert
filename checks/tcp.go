@@ -29,7 +29,7 @@ var TCPMetrics = map[string]MetricInfo{
 }
 
 type TCPConfig struct {
-	Host string `json:"address"`
+	Host string `json:"host"`
 	Port int    `json:"port"`
 }
 
@@ -40,7 +40,7 @@ var NewTCP = func(config Config, logger *log.Logger) (Checker, error) {
 		return nil, err
 	}
 	if tcpConfig.Host == "" {
-		return nil, errors.New("tcp: address to connect to cannot be blank")
+		return nil, errors.New("tcp: host to connect to cannot be blank")
 	}
 	if tcpConfig.Port == 0 {
 		return nil, errors.New("tcp: port to connect to cannot be zero")
