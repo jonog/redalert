@@ -13,6 +13,7 @@ For monitoring your infrastructure and sending notifications if stuff is not ok.
 * *Docker container metrics* from remote host (check type: `remote-docker`)
 * *Postgres counts/stats* via SQL queries (check type: `postgres`)
 * *TCP connectivity monitoring* & latency measurement (check type: `tcp`)
+* *Execute local commands* & capture output (check type: `command`)
 
 #### Features
 * Alert notifications available on several channels:
@@ -35,9 +36,9 @@ An API for stats and management.
 #### Getting started:
 Configure servers to monitor & alert settings via `config.json`:
 ```
-{  
-   "checks":[  
-      {  
+{
+   "checks":[
+      {
          "name":"Server 1",
          "type": "web-ping",
          "config": {
@@ -58,7 +59,7 @@ Configure servers to monitor & alert settings via `config.json`:
             }
          ]
       },
-      {  
+      {
          "name":"Server 2",
          "type": "web-ping",
          "config": {
@@ -70,7 +71,7 @@ Configure servers to monitor & alert settings via `config.json`:
             "interval": 10
          }
       },
-      {  
+      {
          "name":"Server 3",
          "type": "web-ping",
          "config": {
@@ -138,6 +139,31 @@ Configure servers to monitor & alert settings via `config.json`:
             "type": "linear",
             "interval": 120
          }
+      },
+      {
+         "name":"README size",
+         "type": "command",
+         "config": {
+            "command":"cat README.md | wc -l",
+            "output_type": "number"
+         },
+         "send_alerts": ["stderr"],
+         "backoff": {
+            "type": "constant",
+            "interval": 10
+         }
+      },
+      {
+         "name":"List files",
+         "type": "command",
+         "config": {
+            "command":"ls"
+         },
+         "send_alerts": ["stderr"],
+         "backoff": {
+            "type": "constant",
+            "interval": 10
+         }
       }
    ],
    "notifications": [
@@ -157,7 +183,7 @@ Configure servers to monitor & alert settings via `config.json`:
             "webhook_url": "",
             "channel": "#general",
             "username": "redalert",
-            "icon_emoji": ":rocket:"  
+            "icon_emoji": ":rocket:"
          }
       },
       {
@@ -211,7 +237,7 @@ Rocket emoji via https://github.com/twitter/twemoji
 ### TODO / Roadmap
  - [ ] Build out stats API & document endpoints (i.e. `/v1/stats`)
  - [ ] Alerts based on calculated values
- - [ ] Add more checks (expvars, local/remote command, consul)
+ - [ ] Add more checks (expvars, remote command, consul)
  - [ ] Add more notifiers (webhooks, msgqueue)
  - [ ] Push events into a time-series DB (e.g. influx, elasticsearch)
  - [ ] Distinguish between an error performing a check & a failing check
