@@ -101,6 +101,31 @@
             "type": "linear",
             "interval": 120
          }
+      },
+      {
+         "name":"README size",
+         "type": "command",
+         "config": {
+            "command":"cat README.md | wc -l",
+            "output_type": "number"
+         },
+         "send_alerts": ["stderr"],
+         "backoff": {
+            "type": "constant",
+            "interval": 10
+         }
+      },
+      {
+         "name":"List files",
+         "type": "command",
+         "config": {
+            "command":"ls"
+         },
+         "send_alerts": ["stderr"],
+         "backoff": {
+            "type": "constant",
+            "interval": 10
+         }
       }
    ],
    "notifications": [
