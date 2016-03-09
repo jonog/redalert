@@ -30,11 +30,39 @@ For monitoring your infrastructure and sending notifications if stuff is not ok.
 #### Coming soon
 An API for stats and management.
 
-#### Screenshots:
+#### Screenshots
 ![](https://cloud.githubusercontent.com/assets/1314353/5157264/edb21476-733a-11e4-8452-4b96b443f7ee.jpg)
 
-#### Getting started:
-Configure servers to monitor & alert settings via `config.json`:
+#### Getting started
+Run via Docker:
+```
+docker run -d -P -v /path/to/config.json:/config.json jonog/redalert
+```
+
+Configure servers to monitor & alert settings via `config.json`.
+
+#### Simple config.json
+```
+{
+   "checks":[
+      {
+         "name":"Google",
+         "type": "web-ping",
+         "config": {
+            "address":"http://google.com"
+         },
+         "send_alerts": ["stderr"],
+         "backoff": {
+            "type": "constant",
+            "interval": 10
+         }
+      }
+   ],
+   "notifications": []
+}
+```
+
+#### Example Larger config.json
 ```
 {
    "checks":[
@@ -220,10 +248,10 @@ The pinging interval upon failure will be extended linearly. i.e. `failure count
 ##### Exponential
 With each failure, the subsequent check will be delayed by the last delayed amount, times a multiplier, resulting in time between checks exponentially increasing. The `multiplier` is set to 2 by default.
 
-#### Note for Gmail:
+#### Note for Gmail
 If there are errors sending email via gmail - enable `Access for less secure apps` under Account permissions @ https://www.google.com/settings/u/2/security
 
-#### Development:
+#### Development
 Getting started:
 ```
 go get github.com/tools/godep
@@ -231,7 +259,22 @@ go get github.com/onsi/ginkgo/ginkgo
 go get github.com/onsi/gomega
 ```
 
-#### Credits:
+Embedding static web files:
+```
+go get github.com/GeertJohan/go.rice
+go get github.com/GeertJohan/go.rice/rice
+cd web && rice embed-go && cd ..
+```
+
+#### Dockerizing Redalert
+```
+docker run --rm \
+  -v "$(pwd):/src" \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  centurylink/golang-builder
+```
+
+#### Credits
 Rocket emoji via https://github.com/twitter/twemoji
 
 ### TODO / Roadmap
