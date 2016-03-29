@@ -255,8 +255,6 @@ If there are errors sending email via gmail - enable `Access for less secure app
 Getting started:
 ```
 go get github.com/tools/godep
-go get github.com/onsi/ginkgo/ginkgo
-go get github.com/onsi/gomega
 ```
 
 Embedding static web files:
