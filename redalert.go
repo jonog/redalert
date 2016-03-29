@@ -89,6 +89,7 @@ func main() {
 	}
 
 	// Load Checks
+	var checkIdx int
 
 	savedChecks, err := configStore.Checks()
 	if err != nil {
@@ -102,10 +103,11 @@ func main() {
 			log.Fatal(err)
 		}
 
-		err = service.RegisterCheck(check, checkConfig.SendAlerts)
+		err = service.RegisterCheck(check, checkConfig.SendAlerts, checkIdx)
 		if err != nil {
 			log.Fatal(err)
 		}
+		checkIdx++
 	}
 
 	service.Start()

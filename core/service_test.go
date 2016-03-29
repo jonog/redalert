@@ -61,14 +61,14 @@ func TestRegisterCheck(t *testing.T) {
 	if len(service.checks) != 0 {
 		t.Fail()
 	}
-	err = service.RegisterCheck(check, []string{})
+	err = service.RegisterCheck(check, []string{}, 0)
 	if err != nil {
 		t.Fail()
 	}
 	if len(service.checks) != 1 {
 		t.Fail()
 	}
-	if service.checks[0].Name != "myservice" && service.checks[0].Type != "fake" {
+	if service.checks[check.ID].Name != "myservice" && service.checks[check.ID].Type != "fake" {
 		t.Fail()
 	}
 }
@@ -88,14 +88,14 @@ func TestRegisterCheckNotifications(t *testing.T) {
 	if err != nil || check == nil {
 		t.Fail()
 	}
-	err = service.RegisterCheck(check, []string{"my_notifier"})
+	err = service.RegisterCheck(check, []string{"my_notifier"}, 0)
 	if err != nil {
 		t.Fail()
 	}
-	if len(service.checks[0].Notifiers) != 1 {
+	if len(service.checks[check.ID].Notifiers) != 1 {
 		t.Fail()
 	}
-	if service.checks[0].Notifiers[0].Name() != "my_notifier" {
+	if service.checks[check.ID].Notifiers[0].Name() != "my_notifier" {
 		t.Fail()
 	}
 }
