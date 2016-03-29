@@ -1,4 +1,4 @@
-### Redalert
+## Redalert
 
 [![Circle CI](https://circleci.com/gh/jonog/redalert.svg?style=svg)](https://circleci.com/gh/jonog/redalert)
 
@@ -6,6 +6,8 @@ For monitoring your infrastructure and sending notifications if stuff is not ok.
 (e.g. pinging your websites/APIs via HTTP GET at specified intervals, and alerting you if there is downtime).
 
 ![](https://cloud.githubusercontent.com/assets/1314353/7707829/7e18fe10-fe84-11e4-9762-322544d1142b.png)
+
+### Features
 
 #### Checks
 * *Website monitoring* & latency measurement (check type: `web-ping`)
@@ -15,7 +17,7 @@ For monitoring your infrastructure and sending notifications if stuff is not ok.
 * *TCP connectivity monitoring* & latency measurement (check type: `tcp`)
 * *Execute local commands* & capture output (check type: `command`)
 
-#### Features
+#### Dashboard and Alerts
 * Alert notifications available on several channels:
   * sending email (`gmail`)
   * sending SMS (`twilio`)
@@ -27,21 +29,29 @@ For monitoring your infrastructure and sending notifications if stuff is not ok.
 * Triggers a failure alert (`redalert`) when a check is failing, and a recovery alert (`greenalert`) when the check has recovered (e.g. a successful ping, following a failing ping).
 * Triggers an alert when specified metric is above/below threshold.
 
-#### Coming soon
-An API for stats and management.
+#### API
+* Event stats available via `/v1/stats`
 
 #### Screenshots
 ![](https://cloud.githubusercontent.com/assets/1314353/5157264/edb21476-733a-11e4-8452-4b96b443f7ee.jpg)
 
-#### Getting started
+### Getting started
 Run via Docker:
 ```
 docker run -d -P -v /path/to/config.json:/config.json jonog/redalert
 ```
 
+#### General Configuration
+Configure using environment variables
+```
+RA_PORT=3000 (defaults to 8888)
+RA_DISABLE_BRAND=true (defaults to false)
+```
+
+#### Monitoring Configuration
 Configure servers to monitor & alert settings via `config.json`.
 
-#### Simple config.json
+##### Simple config.json
 ```
 {
    "checks":[
@@ -62,7 +72,7 @@ Configure servers to monitor & alert settings via `config.json`.
 }
 ```
 
-#### Example Larger config.json
+##### Example Larger config.json
 ```
 {
    "checks":[
@@ -251,7 +261,9 @@ With each failure, the subsequent check will be delayed by the last delayed amou
 #### Note for Gmail
 If there are errors sending email via gmail - enable `Access for less secure apps` under Account permissions @ https://www.google.com/settings/u/2/security
 
-#### Development
+### Development
+
+#### Setup
 Getting started:
 ```
 go get github.com/tools/godep
@@ -272,7 +284,7 @@ docker run --rm \
   centurylink/golang-builder
 ```
 
-#### Credits
+### Credits
 Rocket emoji via https://github.com/twitter/twemoji
 
 ### TODO / Roadmap
