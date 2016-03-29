@@ -23,10 +23,12 @@
 	<div id="content">
 	  <div class="server" style="display:none;"></div>
 
-	  <div class="brand">
-	  	<img src="/static/images/rocket.png">
-	  	<div class="redalert">REDALERT</div>
-	  </div>
+    {{ if .ShowBrand }}
+  	  <div class="brand">
+  	  	<img src="/static/images/rocket.png">
+  	  	<div class="redalert">REDALERT</div>
+  	  </div>
+    {{ end }}
 
 	  {{range $element := .Checks }}
     	<div class="server {{ $element.Store.Last.DisplayTags }}">

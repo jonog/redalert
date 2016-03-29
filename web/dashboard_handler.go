@@ -3,6 +3,7 @@ package web
 import (
 	"log"
 	"net/http"
+	"os"
 	"text/template"
 
 	"github.com/GeertJohan/go.rice"
@@ -10,8 +11,11 @@ import (
 )
 
 type DashboardInfo struct {
-	Checks []*core.Check
+	Checks    []*core.Check
+	ShowBrand bool
 }
+
+var showBrand = !disableBrand()
 
 func dashboardHandler(c *appCtx, w http.ResponseWriter, r *http.Request) {
 
@@ -43,10 +47,18 @@ func dashboardHandler(c *appCtx, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	info := &DashboardInfo{Checks: c.service.Checks()}
+	info := &DashboardInfo{Checks: c.service.Checks(), ShowBrand: showBrand}
 
 	if err := tmplMessage.Execute(w, info); err != nil {
 		log.Println(err.Error())
 		http.Error(w, http.StatusText(500), 500)
 	}
+}
+
+func disableBrand() bool {
+	toggle := os.Getenv("RA_DISABLE_BRAND")
+	if toggle != "" && toggle != "false" {
+		return true
+	}
+	return false
 }
