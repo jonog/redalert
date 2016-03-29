@@ -6,6 +6,7 @@ import (
 
 	"github.com/jonog/redalert/checks"
 	"github.com/jonog/redalert/notifiers"
+	"github.com/jonog/redalert/storage"
 )
 
 func TestRegisterNotifiers(t *testing.T) {
@@ -53,7 +54,7 @@ func TestRegisterCheck(t *testing.T) {
 	check, err := NewCheck(checks.Config{
 		Name: "myservice",
 		Type: "fake",
-	})
+	}, storage.NewMemoryList(100))
 	if err != nil || check == nil {
 		t.Fail()
 	}
@@ -84,7 +85,7 @@ func TestRegisterCheckNotifications(t *testing.T) {
 		Name:       "myservice",
 		Type:       "fake",
 		SendAlerts: []string{"my_notifier"},
-	})
+	}, storage.NewMemoryList(100))
 	if err != nil || check == nil {
 		t.Fail()
 	}

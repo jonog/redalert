@@ -54,7 +54,10 @@ func (c *Check) run(stopChan chan bool) {
 				c.Log.Println(utils.Red, "redalert", err, utils.Reset)
 
 				// increase fail count and delay between checks
-				failCount := c.incrFailCount("redalert")
+				failCount, storeErr := c.Store.IncrFailCount("redalert")
+				if storeErr != nil {
+					c.Log.Println(utils.Red, "ERROR: storing failure stats", utils.Reset)
+				}
 				if failCount > 0 {
 					delay = c.Backoff.Next(failCount)
 				}
@@ -76,7 +79,11 @@ func (c *Check) run(stopChan chan bool) {
 
 					// reset fail count & delay between checks
 					delay = c.Backoff.Init()
-					c.resetFailCount("redalert")
+					storeErr := c.Store.ResetFailCount("redalert")
+					if storeErr != nil {
+						c.Log.Println(utils.Red, "ERROR: storing failure stats", utils.Reset)
+					}
+
 				}
 
 			}

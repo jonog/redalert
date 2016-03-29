@@ -10,6 +10,8 @@ type EventStorage interface {
 	Store(*events.Event) error
 	Last() (*events.Event, error)
 	GetRecent() ([]*events.Event, error)
+	IncrFailCount(trigger string) (int, error)
+	ResetFailCount(trigger string) error
 }
 
 type ConfigStorage interface {
