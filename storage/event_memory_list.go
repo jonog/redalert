@@ -7,13 +7,14 @@ import (
 )
 
 type MemoryList struct {
-	maxEvents int
-	lastEvent *events.Event
-	history   *list.List
+	maxEvents  int
+	lastEvent  *events.Event
+	history    *list.List
+	failCounts map[string]int
 }
 
 func NewMemoryList(capacity int) *MemoryList {
-	return &MemoryList{capacity, nil, list.New()}
+	return &MemoryList{capacity, nil, list.New(), make(map[string]int)}
 }
 
 func (l *MemoryList) Store(event *events.Event) error {
@@ -44,4 +45,14 @@ func (l *MemoryList) GetRecent() ([]*events.Event, error) {
 	}
 
 	return es, nil
+}
+
+func (l *MemoryList) IncrFailCount(trigger string) (int, error) {
+	l.failCounts[trigger]++
+	return l.failCounts[trigger], nil
+}
+
+func (l *MemoryList) ResetFailCount(trigger string) error {
+	l.failCounts[trigger] = 0
+	return nil
 }

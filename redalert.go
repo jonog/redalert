@@ -51,6 +51,9 @@ func main() {
 		log.Fatal("Invalid config storage option: ", *configStorageType)
 	}
 
+	// Event Storage
+	const MaxEventsStored = 100
+
 	service := core.NewService()
 
 	// Setup StdErr Notifications
@@ -98,7 +101,7 @@ func main() {
 
 	for _, checkConfig := range savedChecks {
 
-		check, err := core.NewCheck(checkConfig)
+		check, err := core.NewCheck(checkConfig, storage.NewMemoryList(MaxEventsStored))
 		if err != nil {
 			log.Fatal(err)
 		}

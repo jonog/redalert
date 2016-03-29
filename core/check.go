@@ -14,8 +14,6 @@ import (
 	"github.com/jonog/redalert/storage"
 )
 
-var MaxEventsStored = 100
-
 type Check struct {
 	ID      string
 	Name    string
@@ -26,8 +24,6 @@ type Check struct {
 
 	Log *log.Logger
 
-	failCounts map[string]int
-
 	Store storage.EventStorage
 
 	Checker checks.Checker
@@ -37,7 +33,7 @@ type Check struct {
 	ConfigRank int
 }
 
-func NewCheck(config checks.Config) (*Check, error) {
+func NewCheck(config checks.Config, eventStorage storage.EventStorage) (*Check, error) {
 	logger := log.New(os.Stdout, config.Name+" ", log.Ldate|log.Ltime)
 
 	u4, err := uuid.NewV4()
@@ -51,16 +47,15 @@ func NewCheck(config checks.Config) (*Check, error) {
 	}
 
 	return &Check{
-		ID:         u4.String(),
-		Name:       config.Name,
-		Type:       config.Type,
-		Backoff:    backoffs.New(config.Backoff),
-		Notifiers:  make([]notifiers.Notifier, 0),
-		Log:        logger,
-		Store:      storage.NewMemoryList(MaxEventsStored),
-		Checker:    checker,
-		failCounts: make(map[string]int),
-		Triggers:   config.Triggers,
+		ID:        u4.String(),
+		Name:      config.Name,
+		Type:      config.Type,
+		Backoff:   backoffs.New(config.Backoff),
+		Notifiers: make([]notifiers.Notifier, 0),
+		Log:       logger,
+		Store:     eventStorage,
+		Checker:   checker,
+		Triggers:  config.Triggers,
 	}, nil
 }
 
@@ -81,15 +76,6 @@ func getNotifier(service *Service, name string) (notifiers.Notifier, error) {
 		return nil, errors.New("redalert: notifier requested has not be registered. name: " + name)
 	}
 	return notifier, nil
-}
-
-func (c *Check) incrFailCount(trigger string) int {
-	c.failCounts[trigger]++
-	return c.failCounts[trigger]
-}
-
-func (c *Check) resetFailCount(trigger string) {
-	c.failCounts[trigger] = 0
 }
 
 func (c *Check) RecentMetrics(metric string) string {
