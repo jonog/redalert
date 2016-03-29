@@ -17,7 +17,7 @@ import (
 var MaxEventsStored = 100
 
 type Check struct {
-	Id      string
+	ID      string
 	Name    string
 	Type    string // e.g. future options: web-ping, ssh-ping, query
 	Backoff backoffs.Backoff
@@ -33,6 +33,8 @@ type Check struct {
 	Checker checks.Checker
 
 	Triggers []checks.Trigger
+
+	ConfigRank int
 }
 
 func NewCheck(config checks.Config) (*Check, error) {
@@ -49,7 +51,7 @@ func NewCheck(config checks.Config) (*Check, error) {
 	}
 
 	return &Check{
-		Id:         u4.String(),
+		ID:         u4.String(),
 		Name:       config.Name,
 		Type:       config.Type,
 		Backoff:    backoffs.New(config.Backoff),

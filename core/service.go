@@ -4,19 +4,21 @@ import (
 	"errors"
 	"os"
 	"os/signal"
+	"sort"
 	"sync"
 
 	"github.com/jonog/redalert/notifiers"
 )
 
 type Service struct {
-	checks    []*Check
+	checks    map[string]*Check
 	notifiers map[string]notifiers.Notifier
 	wg        sync.WaitGroup
 }
 
 func NewService() *Service {
 	return &Service{
+		checks:    make(map[string]*Check),
 		notifiers: make(map[string]notifiers.Notifier),
 	}
 }
@@ -48,8 +50,19 @@ func (s *Service) KeepRunning() {
 }
 
 func (s *Service) Checks() []*Check {
-	return s.checks
+	var checksArr []*Check
+	for id := range s.checks {
+		checksArr = append(checksArr, s.checks[id])
+	}
+	sort.Sort(ChecksArr(checksArr))
+	return checksArr
 }
+
+type ChecksArr []*Check
+
+func (a ChecksArr) Len() int           { return len(a) }
+func (a ChecksArr) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ChecksArr) Less(i, j int) bool { return a[i].ConfigRank < a[j].ConfigRank }
 
 func (s *Service) RegisterNotifier(notifier notifiers.Notifier) error {
 	_, exists := s.notifiers[notifier.Name()]
@@ -60,11 +73,12 @@ func (s *Service) RegisterNotifier(notifier notifiers.Notifier) error {
 	return nil
 }
 
-func (s *Service) RegisterCheck(check *Check, sendAlerts []string) error {
+func (s *Service) RegisterCheck(check *Check, sendAlerts []string, checkIdx int) error {
 	err := check.AddNotifiers(s, sendAlerts)
 	if err != nil {
 		return err
 	}
-	s.checks = append(s.checks, check)
+	s.checks[check.ID] = check
+	check.ConfigRank = checkIdx
 	return nil
 }
