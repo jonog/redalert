@@ -287,5 +287,4 @@ Rocket emoji via https://github.com/twitter/twemoji
  - [ ] Safely handle concurrent read/writes in key data structures accessed in different goroutines.
  - [ ] Persist server configuration to file/DB
  - [ ] Tags/searchable to handle more metrics/ categorising dashboards
- - [ ] Live updates via websockets/poll
  - [ ] More charts
