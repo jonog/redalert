@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package service;
+
+service RedalertService {
+
+  rpc ListChecks(ListChecksRequest) returns (ListChecksResponse) {}
+
+}
+
+message ListChecksRequest {
+}
+
+message ListChecksResponse {
+  repeated Check members = 1;
+}
+
+message Check {
+  string ID = 1;
+  string name = 2;
+  enum Status {
+    UNKNOWN = 0;
+    NORMAL = 1;
+    FAILING = 2;
+    RECOVERED = 3;
+  }
+  Status status = 3;
+}
