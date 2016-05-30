@@ -7,13 +7,13 @@ import (
 	"time"
 
 	"github.com/jonog/redalert/assertions"
-	"github.com/jonog/redalert/data"
 	"github.com/jonog/redalert/events"
 	"github.com/jonog/redalert/utils"
 )
 
 func (c *Check) Start() {
 	c.Enabled = true
+	c.State = Unknown
 
 	c.wait.Add(1)
 
@@ -34,6 +34,7 @@ func (c *Check) Start() {
 
 func (c *Check) Stop() {
 	c.Enabled = false
+	c.State = Disabled
 	c.stopChan <- true
 }
 
@@ -41,63 +42,60 @@ func (c *Check) cleanup() {
 	c.wait.Done()
 }
 
+func (c *Check) handleFailing(ev *events.Event, failMessages []string) int {
+	c.State = Failing
+	failCount := c.Counter.Inc("failing_seq", 1)
+	c.Counter.Inc("failing_all", 1)
+	c.Counter.Reset("successful_seq")
+	c.Tracker.Track("last_failed_at")
+
+	ev.MarkRedAlert(failMessages)
+	c.Log.Println(utils.Red, "redalert", failMessages, utils.Reset)
+
+	return failCount
+}
+
+func (c *Check) handleSuccessful() {
+	c.State = Successful
+	c.Counter.Inc("successful_seq", 1)
+	c.Counter.Inc("successful_all", 1)
+	c.Counter.Reset("failing_seq")
+	c.Tracker.Track("last_successful_at")
+}
+
+func (c *Check) handleRecovery(ev *events.Event) {
+	ev.MarkGreenAlert()
+	c.Log.Println(utils.Green, "greenalert", utils.Reset)
+	c.Counter.Reset("failing")
+}
+
 func (c *Check) run(serviceStop chan bool) {
 
 	go func() {
-
-		var err error
-		var event *events.Event
-		var checkResponse data.CheckResponse
-		var fail bool
-		var failMessages []string
 
 		delay := c.Backoff.Init()
 
 		for {
 
-			checkResponse, err = c.Checker.Check()
-			event = events.NewEvent(checkResponse)
+			checkResponse, err := c.Checker.Check()
+			event := events.NewEvent(checkResponse)
+			prevState := c.State
 
-			fail, failMessages = c.isFailing(err, event)
+			fail, failMessages := c.isFailing(err, event)
 			if fail {
-
-				// Trigger RedAlert as check has failed
-				event.MarkRedAlert(failMessages)
-				c.Log.Println(utils.Red, "redalert", failMessages, utils.Reset)
-
-				// increase fail count and delay between checks
-				failCount, storeErr := c.Store.IncrFailCount("redalert")
-				if storeErr != nil {
-					c.Log.Println(utils.Red, "ERROR: storing failure stats", utils.Reset)
-				}
+				failCount := c.handleFailing(event, failMessages)
 				if failCount > 0 {
 					delay = c.Backoff.Next(failCount)
 				}
-
 			} else {
-
-				lastEvent, storeErr := c.Store.Last()
-				if storeErr != nil {
-					c.Log.Println(utils.Red, "ERROR: retrieving event from store", utils.Reset)
-				}
-
-				// Trigger GreenAlert if check is successful and was previously failing
-				isRedalertRecovery := lastEvent != nil && lastEvent.IsRedAlert()
-				if isRedalertRecovery {
-					event.MarkGreenAlert()
-					c.Log.Println(utils.Green, "greenalert", utils.Reset)
-
-					// reset fail count & delay between checks
+				c.handleSuccessful()
+				if prevState == Failing {
+					c.handleRecovery(event)
 					delay = c.Backoff.Init()
-					storeErr := c.Store.ResetFailCount("redalert")
-					if storeErr != nil {
-						c.Log.Println(utils.Red, "ERROR: storing failure stats", utils.Reset)
-					}
-
 				}
-
 			}
 
+			c.Tracker.Track("last_checked_at")
 			c.Store.Store(event)
 			c.processNotifications(event)
 

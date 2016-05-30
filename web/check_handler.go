@@ -43,7 +43,7 @@ func checkEnableHandler(c *appCtx, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	check.Start()
+	go check.Start()
 
 	w.Write([]byte(`OK`))
 }
