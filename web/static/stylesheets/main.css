@@ -19,7 +19,7 @@ body {
 .server {
   width: 100%;
   float: left;
-  background: #19BC9D;
+  background: #2ecc71;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
@@ -27,15 +27,11 @@ body {
 }
 
 .server:nth-child(2n+1) {
-  background: #2ECB70;
+  background: #27ae60;
 }
 
 .server.redalert {
-  background: #b80000;
-}
-
-.server.redalert:nth-child(2n+1) {
-  background: #f80000;
+  background: #e74c3c;
 }
 
 .server .status-check-name {
