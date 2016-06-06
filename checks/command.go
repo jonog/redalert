@@ -19,10 +19,12 @@ func init() {
 }
 
 type Command struct {
-	Command    string
-	Shell      string
-	OutputType string
-	log        *log.Logger
+	Command          string
+	Shell            string
+	OutputType       string
+	ExpectedExitCode string
+	ExpectedOutput   string
+	log              *log.Logger
 }
 
 var CommandMetrics = map[string]MetricInfo{
@@ -32,9 +34,11 @@ var CommandMetrics = map[string]MetricInfo{
 }
 
 type CommandConfig struct {
-	Command    string `json:"command"`
-	Shell      string `json:"shell"`
-	OutputType string `json:"output_type"`
+	Command          string `json:"command"`
+	Shell            string `json:"shell"`
+	OutputType       string `json:"output_type"`
+	ExpectedExitCode string `json:"expected_exit_code"`
+	ExpectedOutput   string `json:"expected_output"`
 }
 
 var NewCommand = func(config Config, logger *log.Logger) (Checker, error) {
@@ -57,10 +61,15 @@ var NewCommand = func(config Config, logger *log.Logger) (Checker, error) {
 			Unit: "unit",
 		}
 	}
+	if commandConfig.ExpectedExitCode == "" {
+		commandConfig.ExpectedExitCode = "0"
+	}
 	return Checker(&Command{
 		commandConfig.Command,
 		commandConfig.Shell,
 		commandConfig.OutputType,
+		commandConfig.ExpectedExitCode,
+		commandConfig.ExpectedOutput,
 		logger}), nil
 }
 
@@ -72,25 +81,37 @@ func (c *Command) Check() (Metrics, error) {
 	c.log.Println("Run command:", c.Command, "using shell:", c.Shell)
 
 	startTime := time.Now()
-	out, err := exec.Command(c.Shell, "-c", c.Command).Output()
+
+	cmd := exec.Command(c.Shell, "-c", c.Command)
+	out, err := cmd.CombinedOutput()
 	endTime := time.Now()
+
+	exitCode := "0"
+	if err != nil {
+		exitCode = strings.Replace(err.Error(), "exit status ", "", -1)
+	}
+	c.log.Println("Command finished with exit code:", exitCode)
+	outStr := bytes.NewBuffer(out).String()
 
 	executionTimeCalc := endTime.Sub(startTime)
 	executionTime = float64(executionTimeCalc.Seconds() * 1e3)
 	c.log.Println("Execution Time", utils.White, executionTime, utils.Reset)
 	metrics["execution_time"] = &executionTime
 
-	if err != nil {
-		return metrics, errors.New("command: " + err.Error())
+	if c.ExpectedExitCode != "" && c.ExpectedExitCode != exitCode {
+		return metrics, errors.New("command: unexcpected exit code:" + exitCode)
 	}
 
 	if c.OutputType == "number" {
-		numberStr := bytes.NewBuffer(out).String()
-		f, err := strconv.ParseFloat(strings.TrimSpace(numberStr), 64)
+		f, err := strconv.ParseFloat(strings.TrimSpace(outStr), 64)
 		if err != nil {
 			return metrics, errors.New("command: error while parsing number: " + err.Error())
 		}
 		metrics["output"] = &f
+	}
+
+	if c.ExpectedOutput != "" && c.ExpectedOutput != outStr {
+		return metrics, errors.New("command: unexcpected output:" + outStr)
 	}
 
 	c.log.Println("Output: ", fmt.Sprintf("%s", out))

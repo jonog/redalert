@@ -202,6 +202,32 @@ Configure servers to monitor & alert settings via `config.json`.
             "type": "constant",
             "interval": 10
          }
+      },
+      {
+         "name":"compare exit code",
+         "type": "command",
+         "config": {
+            "command": "[ -f /dev/null ]",
+            "expected_exit_code": "1"
+         },
+         "send_alerts": ["stderr"],
+         "backoff": {
+            "type": "constant",
+            "interval": 10
+         }
+      },
+      {
+         "name":"compare output",
+         "type": "command",
+         "config": {
+            "command": "curl -s -o /dev/null -I -w '%{http_code}' http://httpstat.us/408",
+            "expected_output": "408"
+         },
+         "send_alerts": ["stderr"],
+         "backoff": {
+            "type": "constant",
+            "interval": 10
+         }
       }
    ],
    "notifications": [
