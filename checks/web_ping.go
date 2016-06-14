@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/jonog/redalert/data"
 	"github.com/jonog/redalert/utils"
 )
 
@@ -49,22 +50,28 @@ var GlobalClient = http.Client{
 	Timeout: time.Duration(10 * time.Second),
 }
 
-func (wp *WebPinger) Check() (Metrics, error) {
-
-	metrics, err := wp.ping()
+func (wp *WebPinger) Check() (data.CheckResponse, error) {
+	metadata := make(map[string]string)
+	metrics, b, statusCode, err := wp.ping()
 	if err != nil {
 		// if the initial ping fails, retry after 5 seconds
 		// the retry is to avoid noise from intermittent network/connection issues
 		time.Sleep(5 * time.Second)
-		return wp.ping()
+		var secondMetrics map[string]*float64
+		var secondStatusCode int
+		var secondB []byte
+		secondMetrics, secondB, secondStatusCode, err = wp.ping()
+		metadata["status_code"] = strconv.Itoa(secondStatusCode)
+		return data.CheckResponse{Metrics: secondMetrics, Metadata: metadata, Response: secondB}, err
 	}
-
-	return metrics, nil
+	metadata["status_code"] = strconv.Itoa(statusCode)
+	return data.CheckResponse{Metrics: metrics, Metadata: metadata, Response: b}, nil
 }
 
-func (wp *WebPinger) ping() (Metrics, error) {
+func (wp *WebPinger) ping() (data.Metrics, []byte, int, error) {
 
-	metrics := Metrics(make(map[string]*float64))
+	metrics := data.Metrics(make(map[string]*float64))
+	var b []byte
 
 	latency := float64(0)
 	defer func() {
@@ -76,7 +83,7 @@ func (wp *WebPinger) ping() (Metrics, error) {
 
 	req, err := http.NewRequest("GET", wp.Address, nil)
 	if err != nil {
-		return metrics, errors.New("web-ping: failed parsing url in http.NewRequest " + err.Error())
+		return metrics, b, 0, errors.New("web-ping: failed parsing url in http.NewRequest " + err.Error())
 	}
 
 	req.Header.Add("User-Agent", "Redalert/1.0")
@@ -86,10 +93,10 @@ func (wp *WebPinger) ping() (Metrics, error) {
 
 	resp, err := GlobalClient.Do(req)
 	if err != nil {
-		return metrics, errors.New("web-ping: failed client.Do " + err.Error())
+		return metrics, b, 0, errors.New("web-ping: failed client.Do " + err.Error())
 	}
 
-	_, err = ioutil.ReadAll(resp.Body)
+	b, err = ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
 
 	endTime := time.Now()
@@ -99,14 +106,10 @@ func (wp *WebPinger) ping() (Metrics, error) {
 	wp.log.Println("Latency", utils.White, latency, utils.Reset)
 
 	if err != nil {
-		return metrics, errors.New("web-ping: failed reading body " + err.Error())
+		return metrics, b, resp.StatusCode, errors.New("web-ping: failed reading body " + err.Error())
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		return metrics, errors.New("web-ping: non-200 status code. status code was " + strconv.Itoa(resp.StatusCode))
-	}
-
-	return metrics, nil
+	return metrics, b, resp.StatusCode, nil
 }
 
 func (wp *WebPinger) MetricInfo(metric string) MetricInfo {

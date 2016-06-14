@@ -8,6 +8,7 @@ import (
 
 	"github.com/nu7hatch/gouuid"
 
+	"github.com/jonog/redalert/assertions"
 	"github.com/jonog/redalert/backoffs"
 	"github.com/jonog/redalert/checks"
 	"github.com/jonog/redalert/notifiers"
@@ -28,7 +29,7 @@ type Check struct {
 
 	Checker checks.Checker
 
-	Triggers []checks.Trigger
+	Assertions []assertions.Asserter
 
 	ConfigRank int
 }
@@ -46,16 +47,30 @@ func NewCheck(config checks.Config, eventStorage storage.EventStorage) (*Check, 
 		return nil, err
 	}
 
+	asserters := make([]assertions.Asserter, 0)
+	for _, assertionConfig := range config.Assertions {
+		var err error
+		asserter, err := assertions.New(assertionConfig, logger)
+		if err != nil {
+			return nil, err
+		}
+		err = asserter.ValidateConfig()
+		if err != nil {
+			return nil, err
+		}
+		asserters = append(asserters, asserter)
+	}
+
 	return &Check{
-		ID:        u4.String(),
-		Name:      config.Name,
-		Type:      config.Type,
-		Backoff:   backoffs.New(config.Backoff),
-		Notifiers: make([]notifiers.Notifier, 0),
-		Log:       logger,
-		Store:     eventStorage,
-		Checker:   checker,
-		Triggers:  config.Triggers,
+		ID:         u4.String(),
+		Name:       config.Name,
+		Type:       config.Type,
+		Backoff:    backoffs.New(config.Backoff),
+		Notifiers:  make([]notifiers.Notifier, 0),
+		Log:        logger,
+		Store:      eventStorage,
+		Checker:    checker,
+		Assertions: asserters,
 	}, nil
 }
 

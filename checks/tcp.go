@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/jonog/redalert/data"
 	"github.com/jonog/redalert/utils"
 )
 
@@ -48,9 +49,11 @@ var NewTCP = func(config Config, logger *log.Logger) (Checker, error) {
 	return Checker(&TCP{tcpConfig.Host, tcpConfig.Port, logger}), nil
 }
 
-func (t *TCP) Check() (Metrics, error) {
+func (t *TCP) Check() (data.CheckResponse, error) {
 
-	metrics := Metrics(make(map[string]*float64))
+	response := data.CheckResponse{
+		Metrics: data.Metrics(make(map[string]*float64)),
+	}
 	latency := float64(0)
 
 	startTime := time.Now()
@@ -62,14 +65,14 @@ func (t *TCP) Check() (Metrics, error) {
 	latencyCalc := endTime.Sub(startTime)
 	latency = float64(latencyCalc.Seconds() * 1e3)
 	t.log.Println("Latency", utils.White, latency, utils.Reset)
-	metrics["latency"] = &latency
+	response.Metrics["latency"] = &latency
 
 	if err != nil {
-		return metrics, errors.New("tcp: " + formatError(err))
+		return response, errors.New("tcp: " + formatError(err))
 	}
 
 	conn.Close()
-	return metrics, nil
+	return response, nil
 }
 
 func (t *TCP) MetricInfo(metric string) MetricInfo {

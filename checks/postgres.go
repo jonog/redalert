@@ -6,6 +6,7 @@ import (
 	"errors"
 	"log"
 
+	"github.com/jonog/redalert/data"
 	_ "github.com/lib/pq"
 	"gopkg.in/gorp.v1"
 )
@@ -39,26 +40,28 @@ var NewPostgres = func(config Config, logger *log.Logger) (Checker, error) {
 	return Checker(postgres), nil
 }
 
-func (p *Postgres) Check() (Metrics, error) {
+func (p *Postgres) Check() (data.CheckResponse, error) {
 
-	output := Metrics(make(map[string]*float64))
+	response := data.CheckResponse{
+		Metrics: data.Metrics(make(map[string]*float64)),
+	}
 
 	db, err := initDB(p.ConnectionURL)
 	if err != nil {
-		return output, err
+		return response, err
 	}
 	defer db.Db.Close()
 
 	for _, mq := range p.MetricQueries {
 		count, err := query(db, mq.Query)
 		if err != nil {
-			return output, err
+			return response, err
 		}
 		metricVal := float64(count)
-		output[mq.Metric] = &metricVal
+		response.Metrics[mq.Metric] = &metricVal
 	}
 
-	return output, nil
+	return response, nil
 }
 
 func initDB(url string) (*gorp.DbMap, error) {

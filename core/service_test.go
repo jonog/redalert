@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/jonog/redalert/checks"
+	"github.com/jonog/redalert/data"
 	"github.com/jonog/redalert/notifiers"
 	"github.com/jonog/redalert/storage"
 )
@@ -128,8 +129,8 @@ var NewFakeChecker = func(config checks.Config, logger *log.Logger) (checks.Chec
 	return checks.Checker(&fakeChecker{}), nil
 }
 
-func (c *fakeChecker) Check() (checks.Metrics, error) {
-	return checks.Metrics(make(map[string]*float64)), nil
+func (c *fakeChecker) Check() (data.CheckResponse, error) {
+	return data.CheckResponse{Metrics: data.Metrics(make(map[string]*float64))}, nil
 }
 
 func (c *fakeChecker) MetricInfo(metric string) checks.MetricInfo {

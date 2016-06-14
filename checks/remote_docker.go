@@ -11,6 +11,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/jonog/redalert/data"
 	"github.com/jonog/redalert/utils"
 
 	"golang.org/x/crypto/ssh"
@@ -116,9 +117,11 @@ func (r *RemoteDocker) dockerAPIStreamSocketAccess() string {
 	return ""
 }
 
-func (r *RemoteDocker) Check() (Metrics, error) {
+func (r *RemoteDocker) Check() (data.CheckResponse, error) {
 
-	output := Metrics(make(map[string]*float64))
+	response := data.CheckResponse{
+		Metrics: data.Metrics(make(map[string]*float64)),
+	}
 
 	auths := []ssh.AuthMethod{}
 
@@ -143,7 +146,7 @@ func (r *RemoteDocker) Check() (Metrics, error) {
 	}
 
 	if len(auths) == 0 {
-		return output, errors.New("remote-docker: no SSH authentication methods available")
+		return response, errors.New("remote-docker: no SSH authentication methods available")
 	}
 
 	client, err := ssh.Dial("tcp", r.Host+":"+"22", &ssh.ClientConfig{
@@ -151,24 +154,24 @@ func (r *RemoteDocker) Check() (Metrics, error) {
 		Auth: auths,
 	})
 	if err != nil {
-		return output, fmt.Errorf("remote-docker: error dialing ssh. err: %v", err)
+		return response, fmt.Errorf("remote-docker: error dialing ssh. err: %v", err)
 	}
 	defer client.Close()
 
 	sshOutput, err := runCommand(client, `echo -e "GET /containers/json HTTP/1.0\r\n" | `+r.dockerAPISocketAccess())
 	if err != nil {
-		return output, fmt.Errorf("remote-docker: error getting container list. err: %v", err)
+		return response, fmt.Errorf("remote-docker: error getting container list. err: %v", err)
 	}
 
 	if len(sshOutput) == 0 {
 		r.log.Println("ERROR: cannot get list of containers from docker remote API")
-		return output, errors.New("remote-docker: no data obtained when retrieving container list")
+		return response, errors.New("remote-docker: no data obtained when retrieving container list")
 	}
 
 	var containers []Container
 	err = parseAndUnmarshal(sshOutput, &containers)
 	if err != nil {
-		return output, errors.New("remote-docker: unable to parse container list")
+		return response, errors.New("remote-docker: unable to parse container list")
 	}
 
 	for _, c := range containers {
@@ -213,20 +216,20 @@ func (r *RemoteDocker) Check() (Metrics, error) {
 
 		// TODO: collect all the metrics
 		containerMemory := float64(containerStats2.MemoryStats.Usage / 1000000.0)
-		output[containerName+".memory"] = &containerMemory
+		response.Metrics[containerName+".memory"] = &containerMemory
 
 		cpuUsageDelta := float64(containerStats2.CpuStats.CpuUsage.TotalUsage) - float64(containerStats1.CpuStats.CpuUsage.TotalUsage)
 		systemCpuUsageDelta := float64(containerStats2.CpuStats.SystemCpuUsage) - float64(containerStats1.CpuStats.SystemCpuUsage)
 		cpuUsagePercent := cpuUsageDelta * 100 / systemCpuUsageDelta
 
-		output[containerName+".cpu"] = &cpuUsagePercent
+		response.Metrics[containerName+".cpu"] = &cpuUsagePercent
 
 	}
 
 	containerCount := float64(len(containers))
-	output["container_count"] = &containerCount
+	response.Metrics["container_count"] = &containerCount
 
-	return output, nil
+	return response, nil
 }
 
 func getKey(filename string) (ssh.Signer, error) {

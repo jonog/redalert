@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/jonog/redalert/assertions"
 	"github.com/jonog/redalert/backoffs"
 	"github.com/jonog/redalert/checks"
 	"github.com/jonog/redalert/notifiers"
@@ -21,12 +22,12 @@ type ConfigDB struct {
 
 type CheckRecord struct {
 	Id         int64
-	Name       string           `db:"name"`
-	Type       string           `db:"type"`
-	SendAlerts []string         `db:"send_alerts"`
-	Backoff    backoffs.Config  `db:"backoff"`
-	Config     json.RawMessage  `db:"config"`
-	Triggers   []checks.Trigger `db:"triggers"`
+	Name       string              `db:"name"`
+	Type       string              `db:"type"`
+	SendAlerts []string            `db:"send_alerts"`
+	Backoff    backoffs.Config     `db:"backoff"`
+	Config     json.RawMessage     `db:"config"`
+	Assertions []assertions.Config `db:"assertions"`
 }
 
 func (c *ConfigDB) CreateCheckRecord(check checks.Config) (*CheckRecord, error) {
@@ -36,7 +37,7 @@ func (c *ConfigDB) CreateCheckRecord(check checks.Config) (*CheckRecord, error) 
 		SendAlerts: check.SendAlerts,
 		Backoff:    check.Backoff,
 		Config:     check.Config,
-		Triggers:   check.Triggers,
+		Assertions: check.Assertions,
 	}
 	err := c.DB.Insert(record)
 	if err != nil {
@@ -46,7 +47,7 @@ func (c *ConfigDB) CreateCheckRecord(check checks.Config) (*CheckRecord, error) 
 }
 
 func (c *ConfigDB) getAllCheckRecords() (checks []CheckRecord, err error) {
-	_, err = c.DB.Select(&checks, "select id, name, type, send_alerts, backoff, config, triggers from checks")
+	_, err = c.DB.Select(&checks, "select id, name, type, send_alerts, backoff, config, assertions from checks")
 	return checks, err
 }
 
@@ -116,7 +117,7 @@ func (c *ConfigDB) Checks() ([]checks.Config, error) {
 			SendAlerts: record.SendAlerts,
 			Backoff:    record.Backoff,
 			Config:     record.Config,
-			Triggers:   record.Triggers,
+			Assertions: record.Assertions,
 		})
 	}
 	return checkConfigs, nil
@@ -126,7 +127,7 @@ type TypeConverter struct{}
 
 func (t TypeConverter) ToDb(val interface{}) (interface{}, error) {
 	switch t := val.(type) {
-	case map[string]string, []string, backoffs.Config, []checks.Trigger:
+	case map[string]string, []string, backoffs.Config, []assertions.Config:
 		b, err := json.Marshal(t)
 		if err != nil {
 			return "", err
@@ -140,7 +141,7 @@ func (t TypeConverter) ToDb(val interface{}) (interface{}, error) {
 
 func (t TypeConverter) FromDb(target interface{}) (gorp.CustomScanner, bool) {
 	switch target.(type) {
-	case *map[string]string, *[]string, *backoffs.Config, *[]checks.Trigger:
+	case *map[string]string, *[]string, *backoffs.Config, *[]assertions.Config:
 		binder := func(holder, target interface{}) error {
 			s, ok := holder.(*string)
 			if !ok {
