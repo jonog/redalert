@@ -23,20 +23,20 @@ var UnknownTextPlainComparisonErr = errors.New("text/plain asserter: unknown com
 
 func (m *TextPlain) Assert(options Options) (Outcome, error) {
 	current := string(options.CheckResponse.Response)
-	return evaluateTextPlain(m.Identifier, m.Comparison, current, m.Target)
+	return evaluateTextPlain(m.Comparison, current, m.Target)
 }
 
 func (m *TextPlain) ValidateConfig() error {
 	return nil
 }
 
-func evaluateTextPlain(identifier, operator, current, target string) (Outcome, error) {
+func evaluateTextPlain(operator, current, target string) (Outcome, error) {
 	switch operator {
 	case "==", "=", "equals":
 		if current == target {
 			return Outcome{Assertion: true}, nil
 		}
-		return Outcome{Assertion: false, Message: fmt.Sprintf("%s (%s) is not equal to %s", identifier, current, target)}, nil
+		return Outcome{Assertion: false, Message: fmt.Sprintf("(%s) is not equal to %s", current, target)}, nil
 	default:
 		return Outcome{}, UnknownTextPlainComparisonErr
 	}
