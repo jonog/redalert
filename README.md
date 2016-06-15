@@ -80,7 +80,15 @@ Configure servers to monitor & alert settings via `config.json`.
          "backoff": {
             "type": "constant",
             "interval": 10
-         }
+         },
+         "assertions": [
+             {
+                 "comparison": "==",
+                 "identifier": "status_code",
+                 "source": "metadata",
+                 "target": "200"
+             }
+         ]
       }
    ],
    "notifications": []
@@ -92,6 +100,21 @@ Configure servers to monitor & alert settings via `config.json`.
 {
     "checks": [
         {
+            "name": "Demo HTTP Status Check",
+            "type": "web-ping",
+            "config": {
+                "address": "http://httpstat.us/200",
+                "headers": {
+                    "X-Api-Key": "ABCD1234"
+                }
+            },
+            "send_alerts": [
+                "stderr"
+            ],
+            "backoff": {
+                "interval": 10,
+                "type": "constant"
+            },
             "assertions": [
                 {
                     "comparison": "==",
@@ -99,24 +122,24 @@ Configure servers to monitor & alert settings via `config.json`.
                     "source": "metadata",
                     "target": "200"
                 }
+            ]
+        },
+        {
+            "name": "Demo Response Check",
+            "type": "web-ping",
+            "config": {
+                "address": "http://httpstat.us/400"
+            },
+            "send_alerts": [
+                "stderr",
+                "email",
+                "chat",
+                "sms"
             ],
             "backoff": {
                 "interval": 10,
-                "type": "constant"
+                "type": "linear"
             },
-            "config": {
-                "address": "http://httpstat.us/200",
-                "headers": {
-                    "X-Api-Key": "ABCD1234"
-                }
-            },
-            "name": "Demo HTTP Status Check",
-            "send_alerts": [
-                "stderr"
-            ],
-            "type": "web-ping"
-        },
-        {
             "assertions": [
                 {
                     "comparison": "less than",
@@ -135,24 +158,22 @@ Configure servers to monitor & alert settings via `config.json`.
                     "source": "text/plain",
                     "target": "400 Bad Request"
                 }
+            ]
+        },
+        {
+            "name": "Demo Exponential Backoff",
+            "type": "web-ping",
+            "config": {
+                "address": "http://httpstat.us/200"
+            },
+            "send_alerts": [
+                "stderr"
             ],
             "backoff": {
                 "interval": 10,
-                "type": "linear"
+                "multiplier": 2,
+                "type": "exponential"
             },
-            "config": {
-                "address": "http://httpstat.us/400"
-            },
-            "name": "Demo Response Check",
-            "send_alerts": [
-                "stderr",
-                "email",
-                "chat",
-                "sms"
-            ],
-            "type": "web-ping"
-        },
-        {
             "assertions": [
                 {
                     "comparison": "==",
@@ -160,70 +181,55 @@ Configure servers to monitor & alert settings via `config.json`.
                     "source": "metadata",
                     "target": "500"
                 }
-            ],
-            "backoff": {
-                "interval": 10,
-                "multiplier": 2,
-                "type": "exponential"
-            },
-            "config": {
-                "address": "http://httpstat.us/200"
-            },
-            "name": "Demo Exponential Backoff",
-            "send_alerts": [
-                "stderr"
-            ],
-            "type": "web-ping"
+            ]
         },
         {
-            "backoff": {
-                "interval": 10,
-                "type": "constant"
-            },
+            "name": "Docker Redis",
+            "type": "tcp",
             "config": {
                 "host": "192.168.99.100",
                 "port": 1001
             },
-            "name": "Docker Redis",
             "send_alerts": [
                 "stderr"
             ],
-            "type": "tcp"
+            "backoff": {
+                "interval": 10,
+                "type": "constant"
+            }
         },
         {
-            "backoff": {
-                "interval": 5,
-                "type": "linear"
-            },
+            "name": "production-docker-host",
+            "type": "remote-docker",
             "config": {
                 "host": "ec2-xx-xxx-xx-xxx.ap-southeast-1.compute.amazonaws.com",
                 "user": "ubuntu"
             },
-            "name": "production-docker-host",
             "send_alerts": [
                 "stderr"
             ],
-            "type": "remote-docker"
+            "backoff": {
+                "interval": 5,
+                "type": "linear"
+            }
         },
         {
-            "backoff": {
-                "interval": 15,
-                "type": "constant"
-            },
+            "name": "scollector-metrics",
+            "type": "scollector",
             "config": {
                 "host": "hostname"
             },
-            "name": "scollector-metrics",
             "send_alerts": [
                 "stderr"
             ],
-            "type": "scollector"
+            "backoff": {
+                "interval": 15,
+                "type": "constant"
+            }
         },
         {
-            "backoff": {
-                "interval": 120,
-                "type": "linear"
-            },
+            "name": "production-db",
+            "type": "postgres",
             "config": {
                 "connection_url": "postgres://user:pass@localhost:5432/dbname?sslmode=disable",
                 "metric_queries": [
@@ -233,71 +239,73 @@ Configure servers to monitor & alert settings via `config.json`.
                     }
                 ]
             },
-            "name": "production-db",
             "send_alerts": [
                 "stderr"
             ],
-            "type": "postgres"
+            "backoff": {
+                "interval": 120,
+                "type": "linear"
+            }
         },
         {
-            "backoff": {
-                "interval": 10,
-                "type": "constant"
-            },
+            "name": "README size",
+            "type": "command",
             "config": {
                 "command": "cat README.md | wc -l",
                 "output_type": "number"
             },
-            "name": "README size",
             "send_alerts": [
                 "stderr"
             ],
-            "type": "command"
-        },
-        {
             "backoff": {
                 "interval": 10,
                 "type": "constant"
-            },
+            }
+        },
+        {
+            "name": "List files",
+            "type": "command",
             "config": {
                 "command": "ls"
             },
-            "name": "List files",
             "send_alerts": [
                 "stderr"
             ],
-            "type": "command"
+            "backoff": {
+                "interval": 10,
+                "type": "constant"
+            }
         }
     ],
     "notifications": [
         {
+            "name": "email",
+            "type": "gmail",
             "config": {
                 "notification_addresses": "",
                 "pass": "",
                 "user": ""
-            },
-            "name": "email",
-            "type": "gmail"
+            }
         },
         {
+            "name": "chat",
+            "type": "slack",
             "config": {
                 "channel": "#general",
                 "icon_emoji": ":rocket:",
                 "username": "redalert",
                 "webhook_url": ""
-            },
-            "name": "chat",
-            "type": "slack"
+            }
         },
         {
+            "name": "sms",
+            "type": "twilio",
             "config": {
                 "account_sid": "",
                 "auth_token": "",
                 "notification_numbers": "",
                 "twilio_number": ""
-            },
-            "name": "sms",
-            "type": "twilio"
+            }
         }
     ]
 }
