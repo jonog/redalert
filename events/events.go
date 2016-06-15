@@ -4,6 +4,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/jonog/redalert/data"
 )
 
 const (
@@ -12,16 +14,18 @@ const (
 )
 
 type Event struct {
-	Time    RFCTime             `json:"time"`
-	Metrics map[string]*float64 `json:"data"`
-	Tags    map[string]string   `json:"tags"`
+	Time     RFCTime            `json:"time"`
+	Data     data.CheckResponse `json:"data"`
+	Tags     map[string]string  `json:"tags"`
+	Messages []string           `json:"messages"`
 }
 
-func NewEvent(metrics map[string]*float64) *Event {
+func NewEvent(checkData data.CheckResponse) *Event {
 	return &Event{
-		Time:    RFCTime{time.Now()},
-		Metrics: metrics,
-		Tags:    make(map[string]string),
+		Time:     RFCTime{time.Now()},
+		Data:     checkData,
+		Tags:     make(map[string]string),
+		Messages: []string{},
 	}
 }
 
@@ -33,7 +37,8 @@ func (e *Event) IsRedAlert() bool {
 	return e.HasTag(redalert)
 }
 
-func (e *Event) MarkRedAlert() {
+func (e *Event) MarkRedAlert(messages []string) {
+	e.Messages = messages
 	e.AddTag(redalert)
 }
 
@@ -51,10 +56,10 @@ func (e *Event) HasTag(t string) bool {
 }
 
 func (e *Event) DisplayMetric(metric string) string {
-	if e.Metrics[metric] == nil {
+	if e.Data.Metrics[metric] == nil {
 		return ""
 	}
-	return strconv.FormatFloat(*e.Metrics[metric], 'f', 1, 64)
+	return strconv.FormatFloat(*e.Data.Metrics[metric], 'f', 1, 64)
 }
 
 func (e *Event) DisplayTags() string {

@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"log"
+
+	"github.com/jonog/redalert/data"
 )
 
 func init() {
@@ -38,7 +40,7 @@ var NewSCollector = func(config Config, logger *log.Logger) (Checker, error) {
 	return Checker(&SCollector{sCollectorConfig.Host}), nil
 }
 
-func (sc *SCollector) Check() (Metrics, error) {
+func (sc *SCollector) Check() (data.CheckResponse, error) {
 
 	// Take a snapshot of data streaming into metrics receiver @ /api/put
 
@@ -47,12 +49,14 @@ func (sc *SCollector) Check() (Metrics, error) {
 		GlobalSCollector[Host(sc.Host)] = make(map[string]*float64)
 	}
 
-	output := Metrics(make(map[string]*float64))
+	response := data.CheckResponse{
+		Metrics: data.Metrics(make(map[string]*float64)),
+	}
 	for key, val := range GlobalSCollector[Host(sc.Host)] {
-		output[key] = val
+		response.Metrics[key] = val
 	}
 
-	return output, nil
+	return response, nil
 }
 
 func (sc *SCollector) MetricInfo(metric string) MetricInfo {

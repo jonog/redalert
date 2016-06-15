@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/jonog/redalert/data"
 	"github.com/jonog/redalert/utils"
 )
 
@@ -64,9 +65,11 @@ var NewCommand = func(config Config, logger *log.Logger) (Checker, error) {
 		logger}), nil
 }
 
-func (c *Command) Check() (Metrics, error) {
+func (c *Command) Check() (data.CheckResponse, error) {
 
-	metrics := Metrics(make(map[string]*float64))
+	response := data.CheckResponse{
+		Metrics: data.Metrics(make(map[string]*float64)),
+	}
 	executionTime := float64(0)
 
 	c.log.Println("Run command:", c.Command, "using shell:", c.Shell)
@@ -78,23 +81,23 @@ func (c *Command) Check() (Metrics, error) {
 	executionTimeCalc := endTime.Sub(startTime)
 	executionTime = float64(executionTimeCalc.Seconds() * 1e3)
 	c.log.Println("Execution Time", utils.White, executionTime, utils.Reset)
-	metrics["execution_time"] = &executionTime
+	response.Metrics["execution_time"] = &executionTime
 
 	if err != nil {
-		return metrics, errors.New("command: " + err.Error())
+		return response, errors.New("command: " + err.Error())
 	}
 
 	if c.OutputType == "number" {
 		numberStr := bytes.NewBuffer(out).String()
 		f, err := strconv.ParseFloat(strings.TrimSpace(numberStr), 64)
 		if err != nil {
-			return metrics, errors.New("command: error while parsing number: " + err.Error())
+			return response, errors.New("command: error while parsing number: " + err.Error())
 		}
-		metrics["output"] = &f
+		response.Metrics["output"] = &f
 	}
 
 	c.log.Println("Output: ", fmt.Sprintf("%s", out))
-	return metrics, nil
+	return response, nil
 
 }
 

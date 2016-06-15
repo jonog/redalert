@@ -24,10 +24,25 @@ For monitoring your infrastructure and sending notifications if stuff is not ok.
   * posting a message to Slack (`slack`)
   * unix stream (`stderr`)
 * Provides ping status & latency info to `stdout`.
-* Adjustable back-off after failed pings (constant, linear, exponential - see notes below).
+* Adjustable back-off after a check fails (constant, linear, exponential - see notes below).
 * Includes a web UI as indicated by the screenshot above. (visit localhost:8888/, configure port via env RA_PORT)
 * Triggers a failure alert (`redalert`) when a check is failing, and a recovery alert (`greenalert`) when the check has recovered (e.g. a successful ping, following a failing ping).
 * Triggers an alert when specified metric is above/below threshold.
+
+#### Assertions
+* Assertions are used to define criteria for checks to pass or fail:
+* Assert on metrics
+  * source: `metric`
+  * `>` or `greater than`
+  * `>=` or `greater than or equal`
+  * `<` or `less than`
+  * `<=` or `less than or equal`
+  * `==` or `=` or `equals`
+* Assert on metadata
+  * source: `metadata`
+  * `web-ping` returns `status_code`
+* Assert on response (using MIME types)
+  * source: `text/plain`
 
 #### API
 * Event stats available via `/v1/stats`
@@ -75,167 +90,218 @@ Configure servers to monitor & alert settings via `config.json`.
 ##### Example Larger config.json
 ```
 {
-   "checks":[
-      {
-         "name":"Server 1",
-         "type": "web-ping",
-         "config": {
-            "address":"http://server1.com/healthcheck",
-            "headers": {
-              "X-Api-Key": "ABCD1234"
-            }
-         },
-         "send_alerts": ["stderr"],
-         "backoff": {
-            "type": "constant",
-            "interval": 10
-         },
-         "triggers": [
-            {
-               "metric": "latency",
-               "criteria": ">100"
-            }
-         ]
-      },
-      {
-         "name":"Server 2",
-         "type": "web-ping",
-         "config": {
-            "address":"http://server2.com/healthcheck"
-         },
-         "send_alerts": ["stderr", "email", "chat", "sms"],
-         "backoff": {
-            "type": "linear",
-            "interval": 10
-         }
-      },
-      {
-         "name":"Server 3",
-         "type": "web-ping",
-         "config": {
-            "address":"http://server3.com/healthcheck"
-         },
-         "send_alerts": ["stderr"],
-         "backoff": {
-            "type": "exponential",
-            "interval": 10,
-            "multiplier": 2
-         }
-      },
-      {
-         "name":"Docker Redis",
-         "type": "tcp",
-         "config": {
-            "host":"192.168.99.100",
-            "port": 1001
-         },
-         "send_alerts": ["stderr"],
-         "backoff": {
-            "type": "constant",
-            "interval": 10
-         }
-      },
-      {
-         "name": "production-docker-host",
-         "type": "remote-docker",
-         "config": {
-            "host": "ec2-xx-xxx-xx-xxx.ap-southeast-1.compute.amazonaws.com",
-            "user": "ubuntu"
-         },
-         "send_alerts": ["stderr"],
-         "backoff": {
-            "type": "linear",
-            "interval": 5
-         }
-      },
-      {
-         "name": "scollector-metrics",
-         "type": "scollector",
-         "config": {
-            "host": "hostname"
-         },
-         "send_alerts": ["stderr"],
-         "backoff": {
-            "type": "constant",
-            "interval": 15
-         }
-      },
-      {
-         "name": "production-db",
-         "type": "postgres",
-         "config": {
-            "connection_url": "postgres://user:pass@localhost:5432/dbname?sslmode=disable",
-            "metric_queries": [
-               {
-                  "metric": "client_count",
-                  "query": "select count(*) from clients"
-               }
-            ]
-         },
-         "send_alerts": ["stderr"],
-         "backoff": {
-            "type": "linear",
-            "interval": 120
-         }
-      },
-      {
-         "name":"README size",
-         "type": "command",
-         "config": {
-            "command":"cat README.md | wc -l",
-            "output_type": "number"
-         },
-         "send_alerts": ["stderr"],
-         "backoff": {
-            "type": "constant",
-            "interval": 10
-         }
-      },
-      {
-         "name":"List files",
-         "type": "command",
-         "config": {
-            "command":"ls"
-         },
-         "send_alerts": ["stderr"],
-         "backoff": {
-            "type": "constant",
-            "interval": 10
-         }
-      }
-   ],
-   "notifications": [
-      {
-         "name": "email",
-         "type": "gmail",
-         "config": {
-            "user": "",
-            "pass": "",
-            "notification_addresses": ""
-         }
-      },
-      {
-         "name": "chat",
-         "type": "slack",
-         "config": {
-            "webhook_url": "",
-            "channel": "#general",
-            "username": "redalert",
-            "icon_emoji": ":rocket:"
-         }
-      },
-      {
-         "name": "sms",
-         "type": "twilio",
-         "config": {
-            "account_sid": "",
-            "auth_token": "",
-            "twilio_number": "",
-            "notification_numbers": ""
-         }
-      }
-   ]
+    "checks": [
+        {
+            "assertions": [
+                {
+                    "comparison": "==",
+                    "identifier": "status_code",
+                    "source": "metadata",
+                    "target": "200"
+                }
+            ],
+            "backoff": {
+                "interval": 10,
+                "type": "constant"
+            },
+            "config": {
+                "address": "http://httpstat.us/200",
+                "headers": {
+                    "X-Api-Key": "ABCD1234"
+                }
+            },
+            "name": "Demo HTTP Status Check",
+            "send_alerts": [
+                "stderr"
+            ],
+            "type": "web-ping"
+        },
+        {
+            "assertions": [
+                {
+                    "comparison": "less than",
+                    "identifier": "latency",
+                    "source": "metric",
+                    "target": "1100"
+                },
+                {
+                    "comparison": "==",
+                    "identifier": "status_code",
+                    "source": "metadata",
+                    "target": "400"
+                },
+                {
+                    "comparison": "==",
+                    "source": "text/plain",
+                    "target": "400 Bad Request"
+                }
+            ],
+            "backoff": {
+                "interval": 10,
+                "type": "linear"
+            },
+            "config": {
+                "address": "http://httpstat.us/400"
+            },
+            "name": "Demo Response Check",
+            "send_alerts": [
+                "stderr",
+                "email",
+                "chat",
+                "sms"
+            ],
+            "type": "web-ping"
+        },
+        {
+            "assertions": [
+                {
+                    "comparison": "==",
+                    "identifier": "status_code",
+                    "source": "metadata",
+                    "target": "500"
+                }
+            ],
+            "backoff": {
+                "interval": 10,
+                "multiplier": 2,
+                "type": "exponential"
+            },
+            "config": {
+                "address": "http://httpstat.us/200"
+            },
+            "name": "Demo Exponential Backoff",
+            "send_alerts": [
+                "stderr"
+            ],
+            "type": "web-ping"
+        },
+        {
+            "backoff": {
+                "interval": 10,
+                "type": "constant"
+            },
+            "config": {
+                "host": "192.168.99.100",
+                "port": 1001
+            },
+            "name": "Docker Redis",
+            "send_alerts": [
+                "stderr"
+            ],
+            "type": "tcp"
+        },
+        {
+            "backoff": {
+                "interval": 5,
+                "type": "linear"
+            },
+            "config": {
+                "host": "ec2-xx-xxx-xx-xxx.ap-southeast-1.compute.amazonaws.com",
+                "user": "ubuntu"
+            },
+            "name": "production-docker-host",
+            "send_alerts": [
+                "stderr"
+            ],
+            "type": "remote-docker"
+        },
+        {
+            "backoff": {
+                "interval": 15,
+                "type": "constant"
+            },
+            "config": {
+                "host": "hostname"
+            },
+            "name": "scollector-metrics",
+            "send_alerts": [
+                "stderr"
+            ],
+            "type": "scollector"
+        },
+        {
+            "backoff": {
+                "interval": 120,
+                "type": "linear"
+            },
+            "config": {
+                "connection_url": "postgres://user:pass@localhost:5432/dbname?sslmode=disable",
+                "metric_queries": [
+                    {
+                        "metric": "client_count",
+                        "query": "select count(*) from clients"
+                    }
+                ]
+            },
+            "name": "production-db",
+            "send_alerts": [
+                "stderr"
+            ],
+            "type": "postgres"
+        },
+        {
+            "backoff": {
+                "interval": 10,
+                "type": "constant"
+            },
+            "config": {
+                "command": "cat README.md | wc -l",
+                "output_type": "number"
+            },
+            "name": "README size",
+            "send_alerts": [
+                "stderr"
+            ],
+            "type": "command"
+        },
+        {
+            "backoff": {
+                "interval": 10,
+                "type": "constant"
+            },
+            "config": {
+                "command": "ls"
+            },
+            "name": "List files",
+            "send_alerts": [
+                "stderr"
+            ],
+            "type": "command"
+        }
+    ],
+    "notifications": [
+        {
+            "config": {
+                "notification_addresses": "",
+                "pass": "",
+                "user": ""
+            },
+            "name": "email",
+            "type": "gmail"
+        },
+        {
+            "config": {
+                "channel": "#general",
+                "icon_emoji": ":rocket:",
+                "username": "redalert",
+                "webhook_url": ""
+            },
+            "name": "chat",
+            "type": "slack"
+        },
+        {
+            "config": {
+                "account_sid": "",
+                "auth_token": "",
+                "notification_numbers": "",
+                "twilio_number": ""
+            },
+            "name": "sms",
+            "type": "twilio"
+        }
+    ]
 }
+
 ```
 
 Build and run (capture stderr).
@@ -288,6 +354,8 @@ docker run --rm \
 Rocket emoji via https://github.com/twitter/twemoji
 
 ### TODO / Roadmap
+ - [ ] Store command exit code as metadata
+ - [ ] Assert on JSON response
  - [ ] Build out stats API & document endpoints (i.e. `/v1/stats`)
  - [ ] Alerts based on calculated values
  - [ ] Add more checks (expvars, remote command, consul)

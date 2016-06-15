@@ -34,7 +34,7 @@
     	<div class="server {{ $element.Store.Last.DisplayTags }}">
         <div class="status-check-name">{{ $element.Name }}</div>
         <div class="status-metrics">
-          {{ if $element.Store.Last }}{{ range $key, $val := $element.Store.Last.Metrics }}
+          {{ if $element.Store.Last }}{{ range $key, $val := $element.Store.Last.Data.Metrics }}
               <p class="metric">
                 <span class="name">{{$key}}</span>
                 <span class="data">{{ $element.Store.Last.DisplayMetric $key }}</span>

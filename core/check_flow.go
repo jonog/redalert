@@ -1,12 +1,14 @@
 package core
 
 import (
-	"fmt"
 	"os"
 	"os/signal"
+	"strings"
 	"sync"
 	"time"
 
+	"github.com/jonog/redalert/assertions"
+	"github.com/jonog/redalert/data"
 	"github.com/jonog/redalert/events"
 	"github.com/jonog/redalert/utils"
 )
@@ -38,20 +40,23 @@ func (c *Check) run(stopChan chan bool) {
 
 		var err error
 		var event *events.Event
-		var checkData map[string]*float64
+		var checkResponse data.CheckResponse
+		var fail bool
+		var failMessages []string
 
 		delay := c.Backoff.Init()
 
 		for {
 
-			checkData, err = c.Checker.Check()
-			event = events.NewEvent(checkData)
+			checkResponse, err = c.Checker.Check()
+			event = events.NewEvent(checkResponse)
 
-			if err != nil {
+			fail, failMessages = c.isFailing(err, event)
+			if fail {
 
 				// Trigger RedAlert as check has failed
-				event.MarkRedAlert()
-				c.Log.Println(utils.Red, "redalert", err, utils.Reset)
+				event.MarkRedAlert(failMessages)
+				c.Log.Println(utils.Red, "redalert", failMessages, utils.Reset)
 
 				// increase fail count and delay between checks
 				failCount, storeErr := c.Store.IncrFailCount("redalert")
@@ -62,9 +67,7 @@ func (c *Check) run(stopChan chan bool) {
 					delay = c.Backoff.Next(failCount)
 				}
 
-			}
-
-			if err == nil {
+			} else {
 
 				lastEvent, storeErr := c.Store.Last()
 				if storeErr != nil {
@@ -101,27 +104,27 @@ func (c *Check) run(stopChan chan bool) {
 
 }
 
+func (c *Check) isFailing(err error, event *events.Event) (bool, []string) {
+	messages := []string{}
+	if err != nil {
+		messages = append(messages, "check failure: "+err.Error())
+		return true, messages
+	}
+	for _, assertion := range c.Assertions {
+		// TODO: consider returning a message here too
+		outcome, err := assertion.Assert(assertions.Options{CheckResponse: event.Data})
+		if err != nil {
+			messages = append(messages, "assertion failure: "+err.Error())
+		} else if !outcome.Assertion {
+			messages = append(messages, outcome.Message)
+		}
+	}
+	return len(messages) > 0, messages
+}
+
 func (c *Check) processNotifications(event *events.Event) {
 
 	msgPrefix := c.Name + " :: (" + c.Type + " - " + c.Checker.MessageContext() + ") "
-
-	// Process Threshold Notifications
-
-	for _, trigger := range c.Triggers {
-
-		if !trigger.MeetsCriteria(event.Metrics) {
-			continue
-		}
-
-		msg := msgPrefix + trigger.Metric + " (" + fmt.Sprintf("%f", *event.Metrics[trigger.Metric]) + ") " + " has met alert criteria, " + trigger.Criteria
-		for _, notifier := range c.Notifiers {
-			err := notifier.Notify(AlertMessage{msg})
-			if err != nil {
-				c.Log.Println(utils.Red, "CRITICAL: Failure triggering threshold alert ["+notifier.Name()+"]: ", err.Error())
-			}
-		}
-
-	}
 
 	// Process Redalert/Greenalert (Failure / Recovery)
 
@@ -142,7 +145,7 @@ func (c *Check) processNotifications(event *events.Event) {
 
 			var msg string
 			if event.IsRedAlert() {
-				msg = msgPrefix + "fail"
+				msg = msgPrefix + "fail: " + strings.Join(event.Messages, ",")
 			} else if event.IsGreenAlert() {
 				msg = msgPrefix + "recovery"
 			}

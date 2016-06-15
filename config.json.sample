@@ -1,162 +1,212 @@
 {
-   "checks":[
-      {
-         "name":"Server 1",
-         "type": "web-ping",
-         "config": {
-            "address":"http://server1.com/healthcheck",
-            "headers": {
-              "X-Api-Key": "ABCD1234"
-            }
-         },
-         "send_alerts": ["stderr"],
-         "backoff": {
-            "type": "constant",
-            "interval": 10
-         },
-         "triggers": [
-            {
-               "metric": "latency",
-               "criteria": ">100"
-            }
-         ]
-      },
-      {
-         "name":"Server 2",
-         "type": "web-ping",
-         "config": {
-            "address":"http://server2.com/healthcheck"
-         },
-         "send_alerts": ["stderr", "email", "chat", "sms"],
-         "backoff": {
-            "type": "linear",
-            "interval": 10
-         }
-      },
-      {
-         "name":"Server 3",
-         "type": "web-ping",
-         "config": {
-            "address":"http://server3.com/healthcheck"
-         },
-         "send_alerts": ["stderr"],
-         "backoff": {
-            "type": "exponential",
-            "interval": 10,
-            "multiplier": 2
-         }
-      },
-      {
-         "name":"Docker Redis",
-         "type": "tcp",
-         "config": {
-            "host":"192.168.99.100",
-            "port": 1001
-         },
-         "send_alerts": ["stderr"],
-         "backoff": {
-            "type": "constant",
-            "interval": 10
-         }
-      },
-      {
-         "name": "production-docker-host",
-         "type": "remote-docker",
-         "config": {
-            "host": "ec2-xx-xxx-xx-xxx.ap-southeast-1.compute.amazonaws.com",
-            "user": "ubuntu"
-         },
-         "send_alerts": ["stderr"],
-         "backoff": {
-            "type": "linear",
-            "interval": 5
-         }
-      },
-      {
-         "name": "scollector-metrics",
-         "type": "scollector",
-         "config": {
-            "host": "hostname"
-         },
-         "send_alerts": ["stderr"],
-         "backoff": {
-            "type": "constant",
-            "interval": 15
-         }
-      },
-      {
-         "name": "production-db",
-         "type": "postgres",
-         "config": {
-            "connection_url": "postgres://user:pass@localhost:5432/dbname?sslmode=disable",
-            "metric_queries": [
-               {
-                  "metric": "client_count",
-                  "query": "select count(*) from clients"
-               }
-            ]
-         },
-         "send_alerts": ["stderr"],
-         "backoff": {
-            "type": "linear",
-            "interval": 120
-         }
-      },
-      {
-         "name":"README size",
-         "type": "command",
-         "config": {
-            "command":"cat README.md | wc -l",
-            "output_type": "number"
-         },
-         "send_alerts": ["stderr"],
-         "backoff": {
-            "type": "constant",
-            "interval": 10
-         }
-      },
-      {
-         "name":"List files",
-         "type": "command",
-         "config": {
-            "command":"ls"
-         },
-         "send_alerts": ["stderr"],
-         "backoff": {
-            "type": "constant",
-            "interval": 10
-         }
-      }
-   ],
-   "notifications": [
-      {
-         "name": "email",
-         "type": "gmail",
-         "config": {
-            "user": "",
-            "pass": "",
-            "notification_addresses": ""
-         }
-      },
-      {
-         "name": "chat",
-         "type": "slack",
-         "config": {
-            "webhook_url": "",
-            "channel": "#general",
-            "username": "redalert",
-            "icon_emoji": ":rocket:"
-         }
-      },
-      {
-         "name": "sms",
-         "type": "twilio",
-         "config": {
-            "account_sid": "",
-            "auth_token": "",
-            "twilio_number": "",
-            "notification_numbers": ""
-         }
-      }
-   ]
+    "checks": [
+        {
+            "assertions": [
+                {
+                    "comparison": "==",
+                    "identifier": "status_code",
+                    "source": "metadata",
+                    "target": "200"
+                }
+            ],
+            "backoff": {
+                "interval": 10,
+                "type": "constant"
+            },
+            "config": {
+                "address": "http://httpstat.us/200",
+                "headers": {
+                    "X-Api-Key": "ABCD1234"
+                }
+            },
+            "name": "Demo HTTP Status Check",
+            "send_alerts": [
+                "stderr"
+            ],
+            "type": "web-ping"
+        },
+        {
+            "assertions": [
+                {
+                    "comparison": "less than",
+                    "identifier": "latency",
+                    "source": "metric",
+                    "target": "1100"
+                },
+                {
+                    "comparison": "==",
+                    "identifier": "status_code",
+                    "source": "metadata",
+                    "target": "400"
+                },
+                {
+                    "comparison": "==",
+                    "source": "text/plain",
+                    "target": "400 Bad Request"
+                }
+            ],
+            "backoff": {
+                "interval": 10,
+                "type": "linear"
+            },
+            "config": {
+                "address": "http://httpstat.us/400"
+            },
+            "name": "Demo Response Check",
+            "send_alerts": [
+                "stderr",
+                "email",
+                "chat",
+                "sms"
+            ],
+            "type": "web-ping"
+        },
+        {
+            "assertions": [
+                {
+                    "comparison": "==",
+                    "identifier": "status_code",
+                    "source": "metadata",
+                    "target": "500"
+                }
+            ],
+            "backoff": {
+                "interval": 10,
+                "multiplier": 2,
+                "type": "exponential"
+            },
+            "config": {
+                "address": "http://httpstat.us/200"
+            },
+            "name": "Demo Exponential Backoff",
+            "send_alerts": [
+                "stderr"
+            ],
+            "type": "web-ping"
+        },
+        {
+            "backoff": {
+                "interval": 10,
+                "type": "constant"
+            },
+            "config": {
+                "host": "192.168.99.100",
+                "port": 1001
+            },
+            "name": "Docker Redis",
+            "send_alerts": [
+                "stderr"
+            ],
+            "type": "tcp"
+        },
+        {
+            "backoff": {
+                "interval": 5,
+                "type": "linear"
+            },
+            "config": {
+                "host": "ec2-xx-xxx-xx-xxx.ap-southeast-1.compute.amazonaws.com",
+                "user": "ubuntu"
+            },
+            "name": "production-docker-host",
+            "send_alerts": [
+                "stderr"
+            ],
+            "type": "remote-docker"
+        },
+        {
+            "backoff": {
+                "interval": 15,
+                "type": "constant"
+            },
+            "config": {
+                "host": "hostname"
+            },
+            "name": "scollector-metrics",
+            "send_alerts": [
+                "stderr"
+            ],
+            "type": "scollector"
+        },
+        {
+            "backoff": {
+                "interval": 120,
+                "type": "linear"
+            },
+            "config": {
+                "connection_url": "postgres://user:pass@localhost:5432/dbname?sslmode=disable",
+                "metric_queries": [
+                    {
+                        "metric": "client_count",
+                        "query": "select count(*) from clients"
+                    }
+                ]
+            },
+            "name": "production-db",
+            "send_alerts": [
+                "stderr"
+            ],
+            "type": "postgres"
+        },
+        {
+            "backoff": {
+                "interval": 10,
+                "type": "constant"
+            },
+            "config": {
+                "command": "cat README.md | wc -l",
+                "output_type": "number"
+            },
+            "name": "README size",
+            "send_alerts": [
+                "stderr"
+            ],
+            "type": "command"
+        },
+        {
+            "backoff": {
+                "interval": 10,
+                "type": "constant"
+            },
+            "config": {
+                "command": "ls"
+            },
+            "name": "List files",
+            "send_alerts": [
+                "stderr"
+            ],
+            "type": "command"
+        }
+    ],
+    "notifications": [
+        {
+            "config": {
+                "notification_addresses": "",
+                "pass": "",
+                "user": ""
+            },
+            "name": "email",
+            "type": "gmail"
+        },
+        {
+            "config": {
+                "channel": "#general",
+                "icon_emoji": ":rocket:",
+                "username": "redalert",
+                "webhook_url": ""
+            },
+            "name": "chat",
+            "type": "slack"
+        },
+        {
+            "config": {
+                "account_sid": "",
+                "auth_token": "",
+                "notification_numbers": "",
+                "twilio_number": ""
+            },
+            "name": "sms",
+            "type": "twilio"
+        }
+    ]
 }
