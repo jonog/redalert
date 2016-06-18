@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/jonog/redalert/data"
@@ -68,7 +69,8 @@ var NewCommand = func(config Config, logger *log.Logger) (Checker, error) {
 func (c *Command) Check() (data.CheckResponse, error) {
 
 	response := data.CheckResponse{
-		Metrics: data.Metrics(make(map[string]*float64)),
+		Metrics:  data.Metrics(make(map[string]*float64)),
+		Metadata: make(map[string]string),
 	}
 	executionTime := float64(0)
 
@@ -76,6 +78,7 @@ func (c *Command) Check() (data.CheckResponse, error) {
 
 	startTime := time.Now()
 	out, err := exec.Command(c.Shell, "-c", c.Command).Output()
+	response.Response = out
 	endTime := time.Now()
 
 	executionTimeCalc := endTime.Sub(startTime)
@@ -84,8 +87,15 @@ func (c *Command) Check() (data.CheckResponse, error) {
 	response.Metrics["execution_time"] = &executionTime
 
 	if err != nil {
+		if exitError, ok := err.(*exec.ExitError); ok {
+			waitStatus := exitError.Sys().(syscall.WaitStatus)
+			response.Metadata["exit_status"] = strconv.Itoa(waitStatus.ExitStatus())
+			return response, nil
+		}
 		return response, errors.New("command: " + err.Error())
 	}
+
+	response.Metadata["exit_status"] = "0"
 
 	if c.OutputType == "number" {
 		numberStr := bytes.NewBuffer(out).String()
