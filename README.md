@@ -362,14 +362,12 @@ docker run --rm \
 Rocket emoji via https://github.com/twitter/twemoji
 
 ### TODO / Roadmap
- - [ ] Store command exit code as metadata
  - [ ] Assert on JSON response
  - [ ] Build out stats API & document endpoints (i.e. `/v1/stats`)
  - [ ] Alerts based on calculated values
  - [ ] Add more checks (expvars, remote command, consul)
  - [ ] Add more notifiers (webhooks, msgqueue)
  - [ ] Push events into a time-series DB (e.g. influx, elasticsearch)
- - [ ] Distinguish between an error performing a check & a failing check
  - [ ] Safely handle concurrent read/writes in key data structures accessed in different goroutines.
  - [ ] Tags/searchable to handle more metrics/ categorising dashboards
  - [ ] More charts
