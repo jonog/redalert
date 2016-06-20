@@ -7,6 +7,8 @@ For monitoring your infrastructure and sending notifications if stuff is not ok.
 
 ![](https://cloud.githubusercontent.com/assets/1314353/7707829/7e18fe10-fe84-11e4-9762-322544d1142b.png)
 
+
+
 ### Features
 
 #### Checks
@@ -46,6 +48,47 @@ For monitoring your infrastructure and sending notifications if stuff is not ok.
 
 #### API
 * Event stats available via `/v1/stats`
+
+### Design
+
+```
+
+         ┌──────────────────────────────┐
+         │                              │
+   ┌────▶│     Redalert Check Flow      │
+   │     │                              │
+   │     └──────────────────────────────┘
+   │                    │
+   │                @interval          ┌──────────────────────┐
+   │                    │            ┌▶│  error during check  │
+   │                    ▼            │ └──────────────────────┘
+   │        ┌──────────────────────┐ │ ┌──────────────────────┐
+   │        │  is check failing?   │─┤ │  failing assertions  │
+   │        └──────────────────────┘ │ │     * metrics *      │
+   │                    │            └▶│     * metadata *     │
+   │          ┌───YES───┴───NO────┐    │     * response *     │
+   │          │                   │    └──────────────────────┘
+   │          ▼                   ▼
+   │  ┌───────────────┐   ┌───────────────┐
+   │  │send alerts via│   │   is check    │
+   │  │   notifiers   │   │  recovering?  │
+   │  └───────────────┘   └───────────────┘
+   │  ┌───────────────┐          YES
+   │  │adjust backoff │           │
+   │  └───────────────┘           ▼
+   │          │           ┌───────────────┐
+   │          │           │send alerts via│
+   │          │           │   notifiers   │
+   │          │           └───────────────┘
+   │          │           ┌───────────────┐
+   │          │           │ reset backoff │
+   │          │           └───────────────┘
+   │          │                   │
+   │          ▼                   ▼
+   │         ┌──────────────────────┐
+   └─────────│    Event Storage     │
+             └──────────────────────┘
+```
 
 #### Screenshots
 ![](https://cloud.githubusercontent.com/assets/1314353/5157264/edb21476-733a-11e4-8452-4b96b443f7ee.jpg)
