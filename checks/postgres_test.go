@@ -67,12 +67,6 @@ func TestPostgres_Check(t *testing.T) {
 	}
 	defer removePostgresContainer(container.ID)
 
-	data, err := json.MarshalIndent(container, "", "\t")
-	if err != nil {
-		t.Fatalf("error: %#v", err)
-	}
-	fmt.Println(string(data))
-
 	host, err := getHost()
 	if err != nil {
 		t.Fatalf("error: %#v, host: %#v", err, host)
