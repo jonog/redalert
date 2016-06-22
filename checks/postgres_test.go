@@ -117,7 +117,9 @@ func TestPostgres_Check(t *testing.T) {
 
 func getHost() (string, error) {
 	dockerHost := os.Getenv("DOCKER_HOST")
-	log.Println(dockerHost)
+	if dockerHost == "" {
+		return "127.0.0.1", nil
+	}
 	u, err := url.Parse(dockerHost)
 	if err != nil {
 		return "dockerHost: " + dockerHost, err
