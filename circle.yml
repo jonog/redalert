@@ -3,4 +3,4 @@ machine:
     - docker
 
   environment:
-    DOCKER_API_VERSION: "1.2.0"
+    DOCKER_API_VERSION: "1.20"
