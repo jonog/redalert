@@ -18,6 +18,7 @@ func init() {
 type Postgres struct {
 	ConnectionURL string        `json:"connection_url"`
 	MetricQueries []MetricQuery `json:"metric_queries"`
+	log           *log.Logger
 }
 
 type MetricQuery struct {
@@ -37,6 +38,7 @@ var NewPostgres = func(config Config, logger *log.Logger) (Checker, error) {
 	if len(postgres.MetricQueries) == 0 {
 		return nil, errors.New("postgres: no metrics to query")
 	}
+	postgres.log = logger
 	return Checker(postgres), nil
 }
 
@@ -46,6 +48,7 @@ func (p *Postgres) Check() (data.CheckResponse, error) {
 		Metrics: data.Metrics(make(map[string]*float64)),
 	}
 
+	p.log.Println("Establish postgres connection with", p.ConnectionURL)
 	db, err := initDB(p.ConnectionURL)
 	if err != nil {
 		return response, err
