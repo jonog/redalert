@@ -75,7 +75,7 @@ func TestPostgres_Check(t *testing.T) {
 
 	host, err := getHost()
 	if err != nil {
-		t.Fatalf("error: %#v", err)
+		t.Fatalf("error: %#v, host: %#v", err, host)
 	}
 	port := container.NetworkSettings.Ports["5432/tcp"][0].HostPort
 
@@ -117,10 +117,10 @@ func TestPostgres_Check(t *testing.T) {
 
 func getHost() (string, error) {
 	dockerHost := os.Getenv("DOCKER_HOST")
-	fmt.Println(dockerHost)
+	log.Println(dockerHost)
 	u, err := url.Parse(dockerHost)
 	if err != nil {
-		return "", err
+		return "dockerHost: " + dockerHost, err
 	}
 	host, _, err := net.SplitHostPort(u.Host)
 	return host, err
@@ -156,7 +156,9 @@ func setupPostgresContainer() (*types.ContainerJSON, error) {
 		Image:        "postgres",
 		ExposedPorts: emptyMap,
 	}
-	hostConfig := container.HostConfig{PublishAllPorts: true}
+	hostConfig := container.HostConfig{
+		PublishAllPorts: true,
+	}
 	networkConfig := network.NetworkingConfig{}
 
 	u4, err := uuid.NewV4()
