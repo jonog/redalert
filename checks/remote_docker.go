@@ -244,21 +244,6 @@ func getKey(filename string) (ssh.Signer, error) {
 	return pubkey, nil
 }
 
-func getContainerName(names []string) (string, error) {
-
-	// remove prefix '/'
-	for _, name := range names {
-		namePrefixRemoved := name[1:]
-
-		// find container without '/' within name
-		if len(strings.Split(namePrefixRemoved, "/")) == 1 {
-			return namePrefixRemoved, nil
-		}
-	}
-
-	return "", errors.New("remote-docker: unable to find container name")
-}
-
 func (r *RemoteDocker) MetricInfo(metric string) MetricInfo {
 	return MetricInfo{Unit: ""}
 }
