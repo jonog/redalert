@@ -3,24 +3,14 @@ package checks
 import (
 	"encoding/json"
 	"testing"
-
-	_ "github.com/lib/pq"
 )
 
-func testPostgresConfig(host, port string) []byte {
+func testDockerStatsConfig() []byte {
 	json := `
 			{
-					"name": "Sample Postgres",
-					"type": "postgres",
-					"config": {
-							"connection_url": "postgres://postgres@` + host + ":" + port + `/postgres?sslmode=disable",
-							"metric_queries": [
-									{
-											"metric": "emoji_count",
-											"query": "select count(*) from emojis"
-									}
-							]
-					},
+					"name": "Sample DockerStats",
+					"type": "docker-stats",
+					"config": {},
 					"send_alerts": [
 							"stderr"
 					],
@@ -32,9 +22,9 @@ func testPostgresConfig(host, port string) []byte {
 	return []byte(json)
 }
 
-func TestPostgres_ParseAndInitialise(t *testing.T) {
+func TestDockerStats_ParseAndInitialise(t *testing.T) {
 	var config Config
-	err := json.Unmarshal(testPostgresConfig("localhost", "5432"), &config)
+	err := json.Unmarshal(testDockerStatsConfig(), &config)
 	if err != nil {
 		t.Fatalf("error: %#v", err)
 	}
@@ -44,7 +34,9 @@ func TestPostgres_ParseAndInitialise(t *testing.T) {
 	}
 }
 
-func TestPostgres_Check(t *testing.T) {
+func TestDockerStats_Check(t *testing.T) {
+
+	// use postgres image as a test container
 
 	container, err := setupPostgresContainer()
 	if err != nil {
@@ -59,7 +51,7 @@ func TestPostgres_Check(t *testing.T) {
 	port := container.NetworkSettings.Ports["5432/tcp"][0].HostPort
 
 	var config Config
-	err = json.Unmarshal(testPostgresConfig(host, port), &config)
+	err = json.Unmarshal(testDockerStatsConfig(), &config)
 	if err != nil {
 		t.Fatalf("error: %#v", err)
 	}
@@ -70,23 +62,20 @@ func TestPostgres_Check(t *testing.T) {
 
 	waitForTCP(host + ":" + port)
 
-	prepareDatabase(host + ":" + port)
-	if err != nil {
-		t.Fatalf("error: %#v", err)
-	}
-
 	checkData, err := checker.Check()
 	if err != nil {
 		t.Fatalf("error: %#v", err)
 	}
 
-	count, ok := checkData.Metrics["emoji_count"]
-	if !ok || count == nil {
-		t.Fatalf("Expected metric emoji_count does not exist. metrics: %#v", checkData.Metrics)
+	name, err := getContainerName([]string{container.Name})
+	if err != nil {
+		t.Fatalf("error: %#v", err)
 	}
 
-	if *count != 3 {
-		t.Fatalf("Invalid count")
+	expectedStats := []string{"memory_usage", "cpu_usage_percentage"}
+	for _, stat := range expectedStats {
+		if _, exists := checkData.Metrics[name+"_"+stat]; !exists {
+			t.Fatalf("missing %s stat for container %s", name, stat)
+		}
 	}
-
 }

@@ -14,7 +14,8 @@ For monitoring your infrastructure and sending notifications if stuff is not ok.
 #### Checks
 * *Website monitoring* & latency measurement (check type: `web-ping`)
 * *Server metrics* from local machine (check type: `scollector`)
-* *Docker container metrics* from remote host (check type: `remote-docker`)
+* *Docker container metrics* (check type: `docker-stats`)
+* *Docker container metrics* from remote host via SSH (check type: `remote-docker`)
 * *Postgres counts/stats* via SQL queries (check type: `postgres`)
 * *TCP connectivity monitoring* & latency measurement (check type: `tcp`)
 * *Execute local commands* & capture output (check type: `command`)
@@ -239,6 +240,18 @@ Configure servers to monitor & alert settings via `config.json`.
             "backoff": {
                 "interval": 10,
                 "type": "constant"
+            }
+        },
+        {
+            "name": "Docker stats",
+            "type": "docker-stats",
+            "config": {},
+            "send_alerts": [
+                "stderr"
+            ],
+            "backoff": {
+                "interval": 30,
+                "type": "linear"
             }
         },
         {
