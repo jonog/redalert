@@ -2,7 +2,6 @@ package checks
 
 import (
 	"encoding/json"
-	"fmt"
 	"testing"
 
 	_ "github.com/lib/pq"
@@ -58,9 +57,6 @@ func TestPostgres_Check(t *testing.T) {
 		t.Fatalf("error: %#v, host: %#v", err, host)
 	}
 	port := container.NetworkSettings.Ports["5432/tcp"][0].HostPort
-
-	fmt.Println("host", host)
-	fmt.Println("port", port)
 
 	var config Config
 	err = json.Unmarshal(testPostgresConfig(host, port), &config)

@@ -58,7 +58,7 @@ func (c *DockerStats) Check() (data.CheckResponse, error) {
 		return response, err
 	}
 
-	allStats := make(chan map[string]float64)
+	allStats := make(chan map[string]float64, len(containers))
 	doneChan := make(chan struct{})
 	errorChan := make(chan error)
 
@@ -76,6 +76,15 @@ func (c *DockerStats) Check() (data.CheckResponse, error) {
 		}(container)
 	}
 	go func() {
+		defer func() {
+			close(doneChan)
+			close(allStats)
+		}()
+		wg.Wait()
+	}()
+
+	select {
+	case <-doneChan:
 		for cStats := range allStats {
 			for k, v := range cStats {
 				// assignment to avoid ref to iterator pointer
@@ -83,18 +92,10 @@ func (c *DockerStats) Check() (data.CheckResponse, error) {
 				response.Metrics[k] = &value
 			}
 		}
-	}()
-	go func() {
-		defer close(doneChan)
-		wg.Wait()
-	}()
-
-	select {
-	case <-doneChan:
 		return response, nil
 	case err := <-errorChan:
 		return response, err
-	case <-time.After(time.Second * 10):
+	case <-time.After(time.Second * 20):
 		return response, errors.New("timeout")
 	}
 }
