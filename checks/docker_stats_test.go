@@ -9,7 +9,7 @@ func testDockerStatsConfig() []byte {
 	json := `
 			{
 					"name": "Sample DockerStats",
-					"type": "docker_stats",
+					"type": "docker-stats",
 					"config": {},
 					"send_alerts": [
 							"stderr"

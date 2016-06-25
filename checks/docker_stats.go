@@ -16,7 +16,7 @@ import (
 )
 
 func init() {
-	Register("docker_stats", NewDockerStats)
+	Register("docker-stats", NewDockerStats)
 }
 
 type DockerStats struct {
@@ -67,7 +67,7 @@ func (c *DockerStats) Check() (data.CheckResponse, error) {
 	for _, container := range containers {
 		go func(container types.Container) {
 			defer wg.Done()
-			containerStats, err := c.fetchStats(client, &container) //Name, container.ID)
+			containerStats, err := c.fetchStats(client, &container)
 			if err != nil {
 				errorChan <- err
 			} else {

@@ -100,6 +100,18 @@
             }
         },
         {
+            "name": "Docker stats",
+            "type": "docker-stats",
+            "config": {},
+            "send_alerts": [
+                "stderr"
+            ],
+            "backoff": {
+                "interval": 30,
+                "type": "linear"
+            }
+        },
+        {
             "name": "production-docker-host",
             "type": "remote-docker",
             "config": {
