@@ -188,6 +188,30 @@
                 "interval": 10,
                 "type": "constant"
             }
+        },
+        {
+            "name": "SHH into docker-alpine-sshd",
+            "type": "remote-command",
+            "config": {
+                "command": "uptime",
+                "ssh_auth_options": {
+                  "user": "root",
+                  "password": "root",
+                  "host": "localhost",
+                  "port": 2222
+                }
+            },
+            "send_alerts": [
+                "stderr"
+            ],
+            "assertions": [
+                {
+                    "comparison": "==",
+                    "identifier": "exit_status",
+                    "source": "metadata",
+                    "target": "0"
+                }
+            ]
         }
     ],
     "notifications": [
