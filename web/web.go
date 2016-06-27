@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/GeertJohan/go.rice"
+	"github.com/gorilla/mux"
 	"github.com/jonog/redalert/core"
 	"github.com/rs/cors"
 )
@@ -19,19 +20,20 @@ func Run(service *core.Service, port string) {
 	box := rice.MustFindBox("static")
 	fs := http.FileServer(box.HTTPBox())
 
-	mux := http.NewServeMux()
+	router := mux.NewRouter()
+	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fs))
+	router.Handle("/", appHandler{context, dashboardHandler})
+	router.Handle("/api/put", appHandler{context, metricsReceiverHandler})
 
-	mux.Handle("/static/", http.StripPrefix("/static/", fs))
-	mux.Handle("/", appHandler{context, dashboardHandler})
-	mux.Handle("/api/put", appHandler{context, metricsReceiverHandler})
+	router.Handle("/v1/stats", appHandler{context, statsHandler})
+	router.Handle("/v1/checks/{check_id}/disable", appHandler{context, checkDisableHandler})
+	router.Handle("/v1/checks/{check_id}/enable", appHandler{context, checkEnableHandler})
 
-	mux.Handle("/v1/stats", appHandler{context, statsHandler})
-
-	mux.HandleFunc("/healthcheck", func(w http.ResponseWriter, r *http.Request) {
+	router.HandleFunc("/healthcheck", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("OK"))
 	})
 
-	handler := cors.Default().Handler(mux)
+	handler := cors.Default().Handler(router)
 	err := http.ListenAndServe(":8888", handler)
 	if err != nil {
 		log.Fatal(err)

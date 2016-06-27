@@ -31,7 +31,9 @@ func (s *Service) Start() {
 	s.wg.Add(1)
 
 	for _, check := range s.checks {
-		go check.Start()
+		if check.Enabled {
+			go check.Start()
+		}
 	}
 
 	c := make(chan os.Signal, 1)
@@ -56,6 +58,14 @@ func (s *Service) Checks() []*Check {
 	}
 	sort.Sort(ChecksArr(checksArr))
 	return checksArr
+}
+
+func (s *Service) CheckByID(id string) (*Check, error) {
+	check, exists := s.checks[id]
+	if !exists {
+		return nil, errors.New("service: check does not exist")
+	}
+	return check, nil
 }
 
 type ChecksArr []*Check

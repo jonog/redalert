@@ -33,6 +33,7 @@ type Config struct {
 	Backoff    backoffs.Config     `json:"backoff"`
 	Config     json.RawMessage     `json:"config"`
 	Assertions []assertions.Config `json:"assertions"`
+	Enabled    *bool               `json:"enabled"`
 }
 
 var registry = make(map[string]func(Config, *log.Logger) (Checker, error))

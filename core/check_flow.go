@@ -4,7 +4,6 @@ import (
 	"os"
 	"os/signal"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/jonog/redalert/assertions"
@@ -14,27 +13,35 @@ import (
 )
 
 func (c *Check) Start() {
+	c.Enabled = true
 
-	var wg sync.WaitGroup
-	wg.Add(1)
+	c.wait.Add(1)
 
-	stopScheduler := make(chan bool)
-	c.run(stopScheduler)
+	serviceStop := make(chan bool)
+	c.run(serviceStop)
 
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt)
 	go func() {
 		for _ = range sigChan {
-			stopScheduler <- true
-			wg.Done()
+			serviceStop <- true
 		}
 	}()
 
-	wg.Wait()
+	c.wait.Wait()
 
 }
 
-func (c *Check) run(stopChan chan bool) {
+func (c *Check) Stop() {
+	c.Enabled = false
+	c.stopChan <- true
+}
+
+func (c *Check) cleanup() {
+	c.wait.Done()
+}
+
+func (c *Check) run(serviceStop chan bool) {
 
 	go func() {
 
@@ -96,7 +103,11 @@ func (c *Check) run(stopChan chan bool) {
 
 			select {
 			case <-time.After(delay):
-			case <-stopChan:
+			case <-c.stopChan:
+				c.cleanup()
+				return
+			case <-serviceStop:
+				c.cleanup()
 				return
 			}
 		}

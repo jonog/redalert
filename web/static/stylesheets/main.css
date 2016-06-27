@@ -19,19 +19,26 @@ body {
 .server {
   width: 100%;
   float: left;
-  background: #2ecc71;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
   cursor: pointer; cursor: hand;
 }
 
-.server:nth-child(2n+1) {
+.server.enabled {
+  background: #2ecc71;
+}
+
+.server.enabled:nth-child(2n+1) {
   background: #27ae60;
 }
 
-.server.redalert {
+.server.enabled.redalert {
   background: #e74c3c;
+}
+
+.server.disabled {
+  background: #95a5a6;
 }
 
 .server .status-check-name {

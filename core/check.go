@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/nu7hatch/gouuid"
 
@@ -32,6 +33,10 @@ type Check struct {
 	Assertions []assertions.Asserter
 
 	ConfigRank int
+
+	Enabled  bool
+	stopChan chan bool
+	wait     sync.WaitGroup
 }
 
 func NewCheck(config checks.Config, eventStorage storage.EventStorage) (*Check, error) {
@@ -71,6 +76,8 @@ func NewCheck(config checks.Config, eventStorage storage.EventStorage) (*Check, 
 		Store:      eventStorage,
 		Checker:    checker,
 		Assertions: asserters,
+		Enabled:    config.Enabled == nil || *config.Enabled,
+		stopChan:   make(chan bool),
 	}, nil
 }
 
