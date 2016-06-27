@@ -21,7 +21,7 @@ func init() {
 }
 
 type RemoteCommand struct {
-	RemoteCommand  string
+	Command        string
 	OutputType     string
 	SSHAuthOptions SSHAuthOptions
 	log            *log.Logger
@@ -34,7 +34,7 @@ var RemoteCommandMetrics = map[string]MetricInfo{
 }
 
 type RemoteCommandConfig struct {
-	RemoteCommand  string         `json:"command"`
+	Command        string         `json:"command"`
 	OutputType     string         `json:"output_type"`
 	SSHAuthOptions SSHAuthOptions `json:"ssh_auth_options"`
 }
@@ -45,7 +45,7 @@ var NewRemoteCommand = func(config Config, logger *log.Logger) (Checker, error) 
 	if err != nil {
 		return nil, err
 	}
-	if commandConfig.RemoteCommand == "" {
+	if commandConfig.Command == "" {
 		return nil, errors.New("remote-command: command to run cannot be blank")
 	}
 	if commandConfig.OutputType != "" && commandConfig.OutputType != "number" {
@@ -57,7 +57,7 @@ var NewRemoteCommand = func(config Config, logger *log.Logger) (Checker, error) 
 		}
 	}
 	return Checker(&RemoteCommand{
-		commandConfig.RemoteCommand,
+		commandConfig.Command,
 		commandConfig.OutputType,
 		commandConfig.SSHAuthOptions,
 		logger}), nil
@@ -94,7 +94,7 @@ func (c *RemoteCommand) Check() (data.CheckResponse, error) {
 	defer client.Close()
 
 	startTime := time.Now()
-	out, err := runCommand(client, c.RemoteCommand)
+	out, err := runCommand(client, c.Command)
 	response.Response = out
 	endTime := time.Now()
 
@@ -132,5 +132,5 @@ func (c *RemoteCommand) MetricInfo(metric string) MetricInfo {
 }
 
 func (c *RemoteCommand) MessageContext() string {
-	return c.RemoteCommand
+	return c.Command
 }
