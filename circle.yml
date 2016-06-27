@@ -7,4 +7,5 @@ machine:
 
 dependencies:
   pre:
+    - docker pull sickp/alpine-sshd
     - docker pull postgres
