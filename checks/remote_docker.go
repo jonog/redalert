@@ -1,21 +1,16 @@
 package checks
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
-	"net"
-	"os"
 	"strings"
 
 	"github.com/jonog/redalert/data"
 	"github.com/jonog/redalert/utils"
 
 	"golang.org/x/crypto/ssh"
-	"golang.org/x/crypto/ssh/agent"
 )
 
 func init() {
@@ -70,22 +65,6 @@ var NewDockerRemoteDocker = func(config Config, logger *log.Logger) (Checker, er
 	}), nil
 }
 
-func runCommand(client *ssh.Client, cmd string) (string, error) {
-	session, err := client.NewSession()
-	if err != nil {
-		return "", nil
-	}
-	defer session.Close()
-	var b bytes.Buffer
-	session.Stdout = &b
-	err = session.Run(cmd)
-	if err != nil {
-		return "", nil
-	}
-	output := b.String()
-	return output, nil
-}
-
 func parseAndUnmarshal(raw string, data interface{}) error {
 
 	httpRawSplit := strings.Split(raw, "\n\r\n")
@@ -123,42 +102,22 @@ func (r *RemoteDocker) Check() (data.CheckResponse, error) {
 		Metrics: data.Metrics(make(map[string]*float64)),
 	}
 
-	auths := []ssh.AuthMethod{}
-
-	if r.Password != "" {
-		r.log.Println("ssh via password is an enabled option")
-		auths = append(auths, ssh.Password(r.Password))
-	}
-
-	if os.Getenv("SSH_AUTH_SOCK") != "" {
-		if sshAgent, err := net.Dial("unix", os.Getenv("SSH_AUTH_SOCK")); err == nil {
-			r.log.Println("ssh via ssh-agent is an enabled option")
-			auths = append(auths, ssh.PublicKeysCallback(agent.NewClient(sshAgent).Signers))
-			defer sshAgent.Close()
-		}
-	}
-
-	if r.Key != "" {
-		if pubkey, err := getKey(r.Key); err == nil {
-			r.log.Println("ssh via public key is an enabled option")
-			auths = append(auths, ssh.PublicKeys(pubkey))
-		}
-	}
-
-	if len(auths) == 0 {
+	auth := NewSSHAuthenticator(r.log, SSHAuthOptions{Password: r.Password, Key: r.Key})
+	if len(auth.auths) == 0 {
 		return response, errors.New("remote-docker: no SSH authentication methods available")
 	}
+	defer auth.Cleanup()
 
 	client, err := ssh.Dial("tcp", r.Host+":"+"22", &ssh.ClientConfig{
 		User: r.User,
-		Auth: auths,
+		Auth: auth.auths,
 	})
 	if err != nil {
 		return response, fmt.Errorf("remote-docker: error dialing ssh. err: %v", err)
 	}
 	defer client.Close()
 
-	sshOutput, err := runCommand(client, `echo -e "GET /containers/json HTTP/1.0\r\n" | `+r.dockerAPISocketAccess())
+	sshOutput, err := runCommandStrOutput(client, `echo -e "GET /containers/json HTTP/1.0\r\n" | `+r.dockerAPISocketAccess())
 	if err != nil {
 		return response, fmt.Errorf("remote-docker: error getting container list. err: %v", err)
 	}
@@ -178,7 +137,7 @@ func (r *RemoteDocker) Check() (data.CheckResponse, error) {
 
 		cmd := `<<<'GET /containers/` + c.Id + `/stats HTTP/1.0'$'\r'$'\n' ` + r.dockerAPIStreamSocketAccess() + ` | head -6 | tail -2`
 
-		sshOutput, err := runCommand(client, cmd)
+		sshOutput, err := runCommandStrOutput(client, cmd)
 		if err != nil {
 			r.log.Println("ERROR: unable to successfully ssh to obtain container stats", err)
 			continue
@@ -230,18 +189,6 @@ func (r *RemoteDocker) Check() (data.CheckResponse, error) {
 	response.Metrics["container_count"] = &containerCount
 
 	return response, nil
-}
-
-func getKey(filename string) (ssh.Signer, error) {
-	buf, err := ioutil.ReadFile(filename)
-	if err != nil {
-		return nil, err
-	}
-	pubkey, err := ssh.ParsePrivateKey(buf)
-	if err != nil {
-		return nil, err
-	}
-	return pubkey, nil
 }
 
 func (r *RemoteDocker) MetricInfo(metric string) MetricInfo {

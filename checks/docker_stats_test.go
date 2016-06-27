@@ -44,7 +44,7 @@ func TestDockerStats_Check(t *testing.T) {
 	}
 	defer removePostgresContainer(container.ID)
 
-	host, err := getHost()
+	host, err := getDockerHost()
 	if err != nil {
 		t.Fatalf("error: %#v, host: %#v", err, host)
 	}

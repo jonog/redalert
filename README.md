@@ -19,6 +19,7 @@ For monitoring your infrastructure and sending notifications if stuff is not ok.
 * *Postgres counts/stats* via SQL queries (check type: `postgres`)
 * *TCP connectivity monitoring* & latency measurement (check type: `tcp`)
 * *Execute local commands* & capture output (check type: `command`)
+* *Execute remote commands via SSH* & capture output (check type: `remote-command`)
 
 #### Dashboard and Alerts
 * Alert notifications available on several channels:
@@ -331,6 +332,30 @@ Configure servers to monitor & alert settings via `config.json`.
                 "interval": 10,
                 "type": "constant"
             }
+        },
+        {
+            "name": "SHH into docker-alpine-sshd",
+            "type": "remote-command",
+            "config": {
+                "command": "uptime",
+                "ssh_auth_options": {
+                  "user": "root",
+                  "password": "root",
+                  "host": "localhost",
+                  "port": 2222
+                }
+            },
+            "send_alerts": [
+                "stderr"
+            ],
+            "assertions": [
+                {
+                    "comparison": "==",
+                    "identifier": "exit_status",
+                    "source": "metadata",
+                    "target": "0"
+                }
+            ]
         }
     ],
     "notifications": [
@@ -421,7 +446,7 @@ Rocket emoji via https://github.com/twitter/twemoji
  - [ ] Assert on JSON response
  - [ ] Build out stats API & document endpoints (i.e. `/v1/stats`)
  - [ ] Alerts based on calculated values
- - [ ] Add more checks (expvars, remote command, consul)
+ - [ ] Add more checks (expvars, consul)
  - [ ] Add more notifiers (webhooks, msgqueue)
  - [ ] Push events into a time-series DB (e.g. influx, elasticsearch)
  - [ ] Safely handle concurrent read/writes in key data structures accessed in different goroutines.
