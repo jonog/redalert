@@ -31,7 +31,7 @@
     {{ end }}
 
 	  {{range $element := .Checks }}
-    	<div class="server {{ $element.Store.Last.DisplayTags }}">
+    	<div class="server {{ if $element.Enabled }}enabled{{ else }}disabled{{ end }} {{ $element.Store.Last.DisplayTags }}">
         <div class="status-check-name">{{ $element.Name }}</div>
         <div class="status-metrics">
           {{ if $element.Store.Last }}{{ range $key, $val := $element.Store.Last.Data.Metrics }}
