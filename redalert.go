@@ -7,6 +7,7 @@ import (
 
 	"github.com/jonog/redalert/core"
 	"github.com/jonog/redalert/notifiers"
+	"github.com/jonog/redalert/rpc"
 	"github.com/jonog/redalert/storage"
 
 	"github.com/jonog/redalert/web"
@@ -116,6 +117,7 @@ func main() {
 	service.Start()
 
 	go web.Run(service, getPort())
+	go rpc.Run(service)
 
 	service.KeepRunning()
 
