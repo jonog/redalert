@@ -17,20 +17,21 @@ import (
 )
 
 type Check struct {
-	ID      string
-	Name    string
-	Type    string // e.g. future options: web-ping, ssh-ping, query
-	Backoff backoffs.Backoff
+	ID   string
+	Name string
+	Type string
 
-	Notifiers []notifiers.Notifier
-
-	Log *log.Logger
-
-	Store storage.EventStorage
-
-	Checker checks.Checker
-
+	Backoff    backoffs.Backoff
+	Notifiers  []notifiers.Notifier
+	Log        *log.Logger
+	Store      storage.EventStorage
+	Checker    checks.Checker
 	Assertions []assertions.Asserter
+
+	Counter   storage.Counter
+	Tracker   storage.Tracker
+	State     CheckState
+	PrevState CheckState
 
 	ConfigRank int
 
@@ -73,12 +74,45 @@ func NewCheck(config checks.Config, eventStorage storage.EventStorage) (*Check, 
 		Backoff:    backoffs.New(config.Backoff),
 		Notifiers:  make([]notifiers.Notifier, 0),
 		Log:        logger,
+		Counter:    storage.NewBasicCounter(),
+		Tracker:    storage.NewBasicTracker(),
 		Store:      eventStorage,
 		Checker:    checker,
 		Assertions: asserters,
 		Enabled:    config.Enabled == nil || *config.Enabled,
+		State:      initState(config),
+		PrevState:  initState(config),
 		stopChan:   make(chan bool),
 	}, nil
+}
+
+type CheckState int
+
+const (
+	Disabled CheckState = iota
+	Unknown
+	Successful
+	Failing
+)
+
+func (c *Check) DisplayState() string {
+	if c.State == Disabled {
+		return "DISABLED"
+	} else if c.State == Unknown {
+		return "UNKNOWN"
+	} else if c.State == Failing {
+		return "FAILING"
+	} else if c.State == Successful {
+		return "SUCCESSFUL"
+	}
+	return "UNKNOWN"
+}
+
+func initState(config checks.Config) CheckState {
+	if config.Enabled == nil || *config.Enabled {
+		return Unknown
+	}
+	return Disabled
 }
 
 func (c *Check) AddNotifiers(service *Service, names []string) error {

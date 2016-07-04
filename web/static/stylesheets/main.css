@@ -25,19 +25,23 @@ body {
   cursor: pointer; cursor: hand;
 }
 
-.server.enabled {
+.server.UNKNOWN {
+  background: #f1c40f;
+}
+
+.server.SUCCESSFUL {
   background: #2ecc71;
 }
 
-.server.enabled:nth-child(2n+1) {
+.server.SUCCESSFUL:nth-child(2n+1) {
   background: #27ae60;
 }
 
-.server.enabled.redalert {
+.server.FAILING {
   background: #e74c3c;
 }
 
-.server.disabled {
+.server.DISABLED {
   background: #95a5a6;
 }
 
