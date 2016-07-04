@@ -3,5 +3,4 @@ notes
 config.json
 *.rice-box.go
 Godeps/_workspace
-rpcclient/rpcclient
 *.exe
