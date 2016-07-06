@@ -36,7 +36,7 @@ var serverCmd = &cobra.Command{
 				log.Fatal("Missing or invalid format: ", configFile)
 			}
 		}
-		runServer(configStore, port)
+		runServer(configStore, port, disableBrand)
 	},
 }
 
@@ -44,7 +44,7 @@ func init() {
 	RootCmd.AddCommand(serverCmd)
 }
 
-func runServer(configStore storage.ConfigStorage, port int) {
+func runServer(configStore storage.ConfigStorage, portConfig int, disableBrandConfig bool) {
 	// Event Storage
 	const MaxEventsStored = 100
 
@@ -109,7 +109,7 @@ func runServer(configStore storage.ConfigStorage, port int) {
 
 	service.Start()
 
-	go web.Run(service, port)
+	go web.Run(service, portConfig, disableBrandConfig)
 	fmt.Println(`
 ____ ____ ___  ____ _    ____ ____ ___
 |--< |=== |__> |--| |___ |=== |--<  |
