@@ -12,10 +12,13 @@ import (
 	"github.com/rs/cors"
 )
 
-func Run(service *core.Service, port int) {
+func Run(service *core.Service, port int, disableBrand bool) {
 
 	context := &appCtx{
 		service: service,
+		config: Config{
+			disableBrand: disableBrand,
+		},
 	}
 
 	box := rice.MustFindBox("static")
@@ -43,6 +46,11 @@ func Run(service *core.Service, port int) {
 
 type appCtx struct {
 	service *core.Service
+	config  Config
+}
+
+type Config struct {
+	disableBrand bool
 }
 
 type appHandler struct {

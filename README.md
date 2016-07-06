@@ -29,7 +29,7 @@ For monitoring your infrastructure and sending notifications if stuff is not ok.
   * unix stream (`stderr`)
 * Provides ping status & latency info to `stdout`.
 * Adjustable back-off after a check fails (constant, linear, exponential - see notes below).
-* Includes a web UI as indicated by the screenshot above. (visit localhost:8888/, configure port via env RA_PORT)
+* Includes a web UI as indicated by the screenshot above. (visit localhost:8888/, configure port via cli flag)
 * Triggers a failure alert (`redalert`) when a check is failing, and a recovery alert (`greenalert`) when the check has recovered (e.g. a successful ping, following a failing ping).
 * Triggers an alert when specified metric is above/below threshold.
 
@@ -101,11 +101,25 @@ Run via Docker:
 docker run -d -P -v /path/to/config.json:/config.json jonog/redalert
 ```
 
-#### General Configuration
-Configure using environment variables
+#### Usage
+Get started with the `redalert` command:
 ```
-RA_PORT=3000 (defaults to 8888)
-RA_DISABLE_BRAND=true (defaults to false)
+Usage:
+  redalert [command]
+
+Available Commands:
+  config-sync Sync file and database configurations
+  server      Run checks and server stats
+  version     Print the version number of Redalert
+
+Flags:
+  -d, --config-db string     config database url
+  -f, --config-file string   config file (default "config.json")
+      --disable-brand        disable dashboard header logo
+  -h, --help                 help for redalert
+  -p, --port int             port to run server (default 8888)
+
+Use "redalert [command] --help" for more information about a command.
 ```
 
 #### Monitoring Configuration
