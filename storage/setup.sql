@@ -5,7 +5,7 @@ CREATE TABLE checks (
     send_alerts text,
     backoff text,
     config text,
-    triggers text
+    assertions text
 );
 
 CREATE TABLE notifications (
