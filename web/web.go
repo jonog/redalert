@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/GeertJohan/go.rice"
 	"github.com/gorilla/mux"
@@ -11,7 +12,7 @@ import (
 	"github.com/rs/cors"
 )
 
-func Run(service *core.Service, port string) {
+func Run(service *core.Service, port int) {
 
 	context := &appCtx{
 		service: service,
@@ -34,7 +35,7 @@ func Run(service *core.Service, port string) {
 	})
 
 	handler := cors.Default().Handler(router)
-	err := http.ListenAndServe(":8888", handler)
+	err := http.ListenAndServe(":"+strconv.Itoa(port), handler)
 	if err != nil {
 		log.Fatal(err)
 	}

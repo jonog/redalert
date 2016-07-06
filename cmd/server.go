@@ -1,8 +1,8 @@
 package cmd
 
 import (
+	"fmt"
 	"log"
-	"os"
 
 	"github.com/jonog/redalert/core"
 	"github.com/jonog/redalert/notifiers"
@@ -36,7 +36,7 @@ var serverCmd = &cobra.Command{
 				log.Fatal("Missing or invalid format: ", configFile)
 			}
 		}
-		runServer(configStore)
+		runServer(configStore, port)
 	},
 }
 
@@ -44,7 +44,7 @@ func init() {
 	RootCmd.AddCommand(serverCmd)
 }
 
-func runServer(configStore storage.ConfigStorage) {
+func runServer(configStore storage.ConfigStorage, port int) {
 	// Event Storage
 	const MaxEventsStored = 100
 
@@ -109,14 +109,13 @@ func runServer(configStore storage.ConfigStorage) {
 
 	service.Start()
 
-	go web.Run(service, getPort())
+	go web.Run(service, port)
+	fmt.Println(`
+____ ____ ___  ____ _    ____ ____ ___
+|--< |=== |__> |--| |___ |=== |--<  |
+
+`)
+	fmt.Println("Running on port ", port)
 
 	service.KeepRunning()
-}
-
-func getPort() string {
-	if os.Getenv("RA_PORT") == "" {
-		return "8888"
-	}
-	return os.Getenv("RA_PORT")
 }
