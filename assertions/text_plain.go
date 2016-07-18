@@ -7,30 +7,30 @@ import (
 )
 
 func init() {
-	Register("text/plain", NewTextPlain)
+	Register("text", NewText)
 }
 
-type TextPlain struct {
+type Text struct {
 	Config
 	log *log.Logger
 }
 
-var NewTextPlain = func(config Config, logger *log.Logger) (Asserter, error) {
-	return Asserter(&TextPlain{config, logger}), nil
+var NewText = func(config Config, logger *log.Logger) (Asserter, error) {
+	return Asserter(&Text{config, logger}), nil
 }
 
-var UnknownTextPlainComparisonErr = errors.New("text/plain asserter: unknown comparison")
+var UnknownTextComparisonErr = errors.New("text asserter: unknown comparison")
 
-func (m *TextPlain) Assert(options Options) (Outcome, error) {
+func (m *Text) Assert(options Options) (Outcome, error) {
 	current := string(options.CheckResponse.Response)
-	return evaluateTextPlain(m.Comparison, current, m.Target)
+	return evaluateText(m.Comparison, current, m.Target)
 }
 
-func (m *TextPlain) ValidateConfig() error {
+func (m *Text) ValidateConfig() error {
 	return nil
 }
 
-func evaluateTextPlain(operator, current, target string) (Outcome, error) {
+func evaluateText(operator, current, target string) (Outcome, error) {
 	switch operator {
 	case "==", "=", "equals":
 		if current == target {
@@ -38,6 +38,6 @@ func evaluateTextPlain(operator, current, target string) (Outcome, error) {
 		}
 		return Outcome{Assertion: false, Message: fmt.Sprintf("(%s) is not equal to %s", current, target)}, nil
 	default:
-		return Outcome{}, UnknownTextPlainComparisonErr
+		return Outcome{}, UnknownTextComparisonErr
 	}
 }

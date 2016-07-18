@@ -8,7 +8,7 @@ import (
 
 func testTextPlainConfig() Config {
 	return Config{
-		Source:     "text/plain",
+		Source:     "text",
 		Identifier: "",
 		Comparison: "==",
 		Target:     "HEALTH_CHECK_OK",

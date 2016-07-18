@@ -9,7 +9,7 @@ import (
 
 type Config struct {
 
-	// Source can be one of metric | metadata | application/json | text/plain
+	// Source can be one of metric | metadata | json | text
 	Source string `json:"source"`
 
 	// Relevant name. e.g. metric name

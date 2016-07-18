@@ -56,7 +56,7 @@
                 },
                 {
                     "comparison": "==",
-                    "source": "text/plain",
+                    "source": "text",
                     "target": "400 Bad Request"
                 }
             ]
