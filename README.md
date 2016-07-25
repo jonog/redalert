@@ -7,8 +7,6 @@ For monitoring your infrastructure and sending notifications if stuff is not ok.
 
 ![](https://cloud.githubusercontent.com/assets/1314353/7707829/7e18fe10-fe84-11e4-9762-322544d1142b.png)
 
-
-
 ### Features
 
 #### Checks
@@ -45,8 +43,9 @@ For monitoring your infrastructure and sending notifications if stuff is not ok.
 * Assert on metadata
   * source: `metadata`
   * `web-ping` returns `status_code`
-* Assert on response (using MIME types)
-  * source: `text/plain`
+* Assert on response
+  * source: `text`
+  * source: `json`
 
 #### API
 * Event stats available via `/v1/stats`
@@ -214,7 +213,7 @@ Configure servers to monitor & alert settings via `config.json`.
                 },
                 {
                     "comparison": "==",
-                    "source": "text/plain",
+                    "source": "text",
                     "target": "400 Bad Request"
                 }
             ]
@@ -456,13 +455,5 @@ docker run --rm \
 ### Credits
 Rocket emoji via https://github.com/twitter/twemoji
 
-### TODO / Roadmap
- - [ ] Assert on JSON response
- - [ ] Build out stats API & document endpoints (i.e. `/v1/stats`)
- - [ ] Alerts based on calculated values
- - [ ] Add more checks (expvars, consul)
- - [ ] Add more notifiers (webhooks, msgqueue)
- - [ ] Push events into a time-series DB (e.g. influx, elasticsearch)
- - [ ] Safely handle concurrent read/writes in key data structures accessed in different goroutines.
- - [ ] Tags/searchable to handle more metrics/ categorising dashboards
- - [ ] More charts
+### Next Features
+See Github Issues [here](https://github.com/jonog/redalert/issues)
