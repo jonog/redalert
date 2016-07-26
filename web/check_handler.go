@@ -17,7 +17,7 @@ func checkDisableHandler(c *appCtx, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !check.Enabled {
+	if !check.Data.Enabled {
 		http.Error(w, "Check is already disabled", http.StatusPreconditionFailed)
 		return
 	}
@@ -38,7 +38,7 @@ func checkEnableHandler(c *appCtx, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if check.Enabled {
+	if check.Data.Enabled {
 		http.Error(w, "Check is already disabled", http.StatusPreconditionFailed)
 		return
 	}

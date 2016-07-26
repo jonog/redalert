@@ -70,7 +70,7 @@ func TestRegisterCheck(t *testing.T) {
 	if len(service.checks) != 1 {
 		t.Fail()
 	}
-	if service.checks[check.ID].Name != "myservice" && service.checks[check.ID].Type != "fake" {
+	if service.checks[check.Data.ID].Data.Name != "myservice" && service.checks[check.Data.ID].Data.Type != "fake" {
 		t.Fail()
 	}
 }
@@ -94,10 +94,10 @@ func TestRegisterCheckNotifications(t *testing.T) {
 	if err != nil {
 		t.Fail()
 	}
-	if len(service.checks[check.ID].Notifiers) != 1 {
+	if len(service.checks[check.Data.ID].Notifiers) != 1 {
 		t.Fail()
 	}
-	if service.checks[check.ID].Notifiers[0].Name() != "my_notifier" {
+	if service.checks[check.Data.ID].Notifiers[0].Name() != "my_notifier" {
 		t.Fail()
 	}
 }
