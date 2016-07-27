@@ -3,11 +3,10 @@ package core
 import (
 	"errors"
 	"log"
+	"math/rand"
 	"os"
 	"strings"
 	"sync"
-
-	"github.com/nu7hatch/gouuid"
 
 	"github.com/jonog/redalert/assertions"
 	"github.com/jonog/redalert/backoffs"
@@ -39,11 +38,6 @@ type Check struct {
 func NewCheck(config checks.Config, eventStorage storage.EventStorage) (*Check, error) {
 	logger := log.New(os.Stdout, config.Name+" ", log.Ldate|log.Ltime)
 
-	u4, err := uuid.NewV4()
-	if err != nil {
-		return nil, err
-	}
-
 	checker, err := checks.New(config, logger)
 	if err != nil {
 		return nil, err
@@ -65,7 +59,7 @@ func NewCheck(config checks.Config, eventStorage storage.EventStorage) (*Check, 
 
 	return &Check{
 		Data: servicepb.Check{
-			ID:      u4.String(),
+			ID:      generateID(8),
 			Name:    config.Name,
 			Type:    config.Type,
 			Enabled: config.Enabled == nil || *config.Enabled,
@@ -103,6 +97,16 @@ func initState(config checks.Config) servicepb.Check_Status {
 		return servicepb.Check_UNKNOWN
 	}
 	return servicepb.Check_DISABLED
+}
+
+var idLetters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+
+func generateID(n int) string {
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = idLetters[rand.Intn(len(idLetters))]
+	}
+	return string(b)
 }
 
 func (c *Check) AddNotifiers(service *Service, names []string) error {

@@ -34,7 +34,7 @@ var checksCmd = &cobra.Command{
 
 		data := [][]string{}
 		for _, check := range r.Members {
-			data = append(data, []string{shortID(check.ID), check.Name, colorStatus(check.Status)})
+			data = append(data, []string{check.ID, check.Name, colorStatus(check.Status)})
 		}
 
 		table := tablewriter.NewWriter(os.Stdout)
@@ -62,8 +62,4 @@ func colorStatus(status pb.Check_Status) string {
 		return color.GreenString(status.String())
 	}
 	return "-"
-}
-
-func shortID(longID string) string {
-	return longID[:6]
 }
