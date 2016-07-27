@@ -41,12 +41,14 @@ func Execute() {
 
 var cfgFile string
 var cfgDb string
-var port int
+var webPort int
+var rpcPort int
 var disableBrand bool
 
 func init() {
 	RootCmd.PersistentFlags().StringVarP(&cfgFile, "config-file", "f", "config.json", "config file")
 	RootCmd.PersistentFlags().StringVarP(&cfgDb, "config-db", "d", "", "config database url")
-	RootCmd.PersistentFlags().IntVarP(&port, "port", "p", 8888, "port to run server")
+	RootCmd.PersistentFlags().IntVarP(&webPort, "port", "p", 8888, "port to run web server")
+	RootCmd.PersistentFlags().IntVarP(&rpcPort, "rpc-port", "r", 8889, "port to run RPC server")
 	RootCmd.PersistentFlags().BoolVar(&disableBrand, "disable-brand", false, "disable dashboard header logo")
 }

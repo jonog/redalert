@@ -107,6 +107,7 @@ Usage:
   redalert [command]
 
 Available Commands:
+  checks      List checks
   config-sync Sync file and database configurations
   server      Run checks and server stats
   version     Print the version number of Redalert
@@ -116,7 +117,8 @@ Flags:
   -f, --config-file string   config file (default "config.json")
       --disable-brand        disable dashboard header logo
   -h, --help                 help for redalert
-  -p, --port int             port to run server (default 8888)
+  -p, --port int             port to run web server (default 8888)
+  -r, --rpc-port int         port to run RPC server (default 8889)
 
 Use "redalert [command] --help" for more information about a command.
 ```

@@ -6,10 +6,17 @@ import (
 
 	"github.com/jonog/redalert/core"
 	"github.com/jonog/redalert/notifiers"
+	"github.com/jonog/redalert/rpc"
 	"github.com/jonog/redalert/storage"
 	"github.com/jonog/redalert/web"
 	"github.com/spf13/cobra"
 )
+
+type serverConfig struct {
+	webPort      int
+	disableBrand bool
+	rpcPort      int
+}
 
 var serverCmd = &cobra.Command{
 	Use:   "server",
@@ -36,7 +43,11 @@ var serverCmd = &cobra.Command{
 				log.Fatal("Missing or invalid format: ", configFile)
 			}
 		}
-		runServer(configStore, port, disableBrand)
+		runServer(configStore, serverConfig{
+			webPort:      webPort,
+			disableBrand: disableBrand,
+			rpcPort:      rpcPort,
+		})
 	},
 }
 
@@ -44,7 +55,7 @@ func init() {
 	RootCmd.AddCommand(serverCmd)
 }
 
-func runServer(configStore storage.ConfigStorage, portConfig int, disableBrandConfig bool) {
+func runServer(configStore storage.ConfigStorage, config serverConfig) {
 	// Event Storage
 	const MaxEventsStored = 100
 
@@ -109,13 +120,15 @@ func runServer(configStore storage.ConfigStorage, portConfig int, disableBrandCo
 
 	service.Start()
 
-	go web.Run(service, portConfig, disableBrandConfig)
+	go web.Run(service, config.webPort, config.disableBrand)
+	go rpc.Run(service, config.rpcPort)
 	fmt.Println(`
 ____ ____ ___  ____ _    ____ ____ ___
 |--< |=== |__> |--| |___ |=== |--<  |
 
 `)
-	fmt.Println("Running on port ", port)
+	fmt.Println("Web Running on port ", config.webPort)
+	fmt.Println("RPC Running on port ", config.rpcPort)
 
 	service.KeepRunning()
 }

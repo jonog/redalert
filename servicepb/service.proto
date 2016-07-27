@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package servicepb;
+
+service RedalertService {
+
+  // CheckList lists all the checks in configuration
+  rpc CheckList(CheckListRequest) returns (CheckListResponse) {}
+
+}
+
+message CheckListRequest {
+}
+
+message CheckListResponse {
+  repeated Check members = 1;
+}
+
+message Check {
+  string ID = 1;
+  string name = 2;
+  string type = 3;
+
+  enum Status {
+    DISABLED = 0;
+    UNKNOWN = 1;
+    FAILING = 2;
+    SUCCESSFUL = 3;
+  }
+  Status status = 4;
+
+  bool enabled = 5;
+}

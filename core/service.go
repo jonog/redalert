@@ -31,7 +31,7 @@ func (s *Service) Start() {
 	s.wg.Add(1)
 
 	for _, check := range s.checks {
-		if check.Enabled {
+		if check.Data.Enabled {
 			go check.Start()
 		}
 	}
@@ -88,7 +88,7 @@ func (s *Service) RegisterCheck(check *Check, sendAlerts []string, checkIdx int)
 	if err != nil {
 		return err
 	}
-	s.checks[check.ID] = check
+	s.checks[check.Data.ID] = check
 	check.ConfigRank = checkIdx
 	return nil
 }

@@ -13,13 +13,12 @@ import (
 	"github.com/jonog/redalert/backoffs"
 	"github.com/jonog/redalert/checks"
 	"github.com/jonog/redalert/notifiers"
+	"github.com/jonog/redalert/servicepb"
 	"github.com/jonog/redalert/storage"
 )
 
 type Check struct {
-	ID   string
-	Name string
-	Type string
+	Data servicepb.Check
 
 	Backoff    backoffs.Backoff
 	Notifiers  []notifiers.Notifier
@@ -28,14 +27,11 @@ type Check struct {
 	Checker    checks.Checker
 	Assertions []assertions.Asserter
 
-	Counter   storage.Counter
-	Tracker   storage.Tracker
-	State     CheckState
-	PrevState CheckState
+	Counter storage.Counter
+	Tracker storage.Tracker
 
 	ConfigRank int
 
-	Enabled  bool
 	stopChan chan bool
 	wait     sync.WaitGroup
 }
@@ -68,9 +64,14 @@ func NewCheck(config checks.Config, eventStorage storage.EventStorage) (*Check, 
 	}
 
 	return &Check{
-		ID:         u4.String(),
-		Name:       config.Name,
-		Type:       config.Type,
+		Data: servicepb.Check{
+			ID:      u4.String(),
+			Name:    config.Name,
+			Type:    config.Type,
+			Enabled: config.Enabled == nil || *config.Enabled,
+			Status:  initState(config),
+		},
+
 		Backoff:    backoffs.New(config.Backoff),
 		Notifiers:  make([]notifiers.Notifier, 0),
 		Log:        logger,
@@ -79,10 +80,8 @@ func NewCheck(config checks.Config, eventStorage storage.EventStorage) (*Check, 
 		Store:      eventStorage,
 		Checker:    checker,
 		Assertions: asserters,
-		Enabled:    config.Enabled == nil || *config.Enabled,
-		State:      initState(config),
-		PrevState:  initState(config),
-		stopChan:   make(chan bool),
+
+		stopChan: make(chan bool),
 	}, nil
 }
 
@@ -96,23 +95,14 @@ const (
 )
 
 func (c *Check) DisplayState() string {
-	if c.State == Disabled {
-		return "DISABLED"
-	} else if c.State == Unknown {
-		return "UNKNOWN"
-	} else if c.State == Failing {
-		return "FAILING"
-	} else if c.State == Successful {
-		return "SUCCESSFUL"
-	}
-	return "UNKNOWN"
+	return c.Data.Status.String()
 }
 
-func initState(config checks.Config) CheckState {
+func initState(config checks.Config) servicepb.Check_Status {
 	if config.Enabled == nil || *config.Enabled {
-		return Unknown
+		return servicepb.Check_UNKNOWN
 	}
-	return Disabled
+	return servicepb.Check_DISABLED
 }
 
 func (c *Check) AddNotifiers(service *Service, names []string) error {

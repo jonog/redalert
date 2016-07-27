@@ -8,12 +8,13 @@ import (
 
 	"github.com/jonog/redalert/assertions"
 	"github.com/jonog/redalert/events"
+	"github.com/jonog/redalert/servicepb"
 	"github.com/jonog/redalert/utils"
 )
 
 func (c *Check) Start() {
-	c.Enabled = true
-	c.State = Unknown
+	c.Data.Enabled = true
+	c.Data.Status = servicepb.Check_UNKNOWN
 
 	c.wait.Add(1)
 
@@ -33,8 +34,8 @@ func (c *Check) Start() {
 }
 
 func (c *Check) Stop() {
-	c.Enabled = false
-	c.State = Disabled
+	c.Data.Enabled = false
+	c.Data.Status = servicepb.Check_DISABLED
 	c.stopChan <- true
 }
 
@@ -43,7 +44,7 @@ func (c *Check) cleanup() {
 }
 
 func (c *Check) handleFailing(ev *events.Event, failMessages []string) int {
-	c.State = Failing
+	c.Data.Status = servicepb.Check_FAILING
 	failCount := c.Counter.Inc("failing_seq", 1)
 	c.Counter.Inc("failing_all", 1)
 	c.Counter.Reset("successful_seq")
@@ -56,7 +57,7 @@ func (c *Check) handleFailing(ev *events.Event, failMessages []string) int {
 }
 
 func (c *Check) handleSuccessful() {
-	c.State = Successful
+	c.Data.Status = servicepb.Check_SUCCESSFUL
 	c.Counter.Inc("successful_seq", 1)
 	c.Counter.Inc("successful_all", 1)
 	c.Counter.Reset("failing_seq")
@@ -79,7 +80,7 @@ func (c *Check) run(serviceStop chan bool) {
 
 			checkResponse, err := c.Checker.Check()
 			event := events.NewEvent(checkResponse)
-			prevState := c.State
+			prevState := c.Data.Status
 
 			fail, failMessages := c.isFailing(err, event)
 			if fail {
@@ -89,7 +90,7 @@ func (c *Check) run(serviceStop chan bool) {
 				}
 			} else {
 				c.handleSuccessful()
-				if prevState == Failing {
+				if prevState == servicepb.Check_FAILING {
 					c.handleRecovery(event)
 					delay = c.Backoff.Init()
 				}
@@ -133,7 +134,7 @@ func (c *Check) isFailing(err error, event *events.Event) (bool, []string) {
 
 func (c *Check) processNotifications(event *events.Event) {
 
-	msgPrefix := c.Name + " :: (" + c.Type + " - " + c.Checker.MessageContext() + ") "
+	msgPrefix := c.Data.Name + " :: (" + c.Data.Type + " - " + c.Checker.MessageContext() + ") "
 
 	// Process Redalert/Greenalert (Failure / Recovery)
 

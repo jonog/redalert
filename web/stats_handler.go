@@ -24,8 +24,8 @@ func statsHandler(c *appCtx, w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		publicChecks[idx] = checkPublic{
-			ID:     check.ID,
-			Name:   check.Name,
+			ID:     check.Data.ID,
+			Name:   check.Data.Name,
 			Events: events,
 		}
 	}
