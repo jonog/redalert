@@ -7,14 +7,31 @@ service RedalertService {
   // CheckList lists all the checks in configuration
   rpc CheckList(CheckListRequest) returns (CheckListResponse) {}
 
+  // CheckEnable enables a check
+  rpc CheckEnable(CheckEnableRequest) returns (CheckEnableResponse) {}
+
+  // CheckDisable disables a check
+  rpc CheckDisable(CheckDisableRequest) returns (CheckDisableResponse) {}
+
 }
 
-message CheckListRequest {
-}
+message CheckListRequest {}
 
 message CheckListResponse {
   repeated Check members = 1;
 }
+
+message CheckEnableRequest {
+  string ID = 1;
+}
+
+message CheckEnableResponse {}
+
+message CheckDisableRequest {
+  string ID = 1;
+}
+
+message CheckDisableResponse {}
 
 message Check {
   string ID = 1;

@@ -1,6 +1,7 @@
 package rpc
 
 import (
+	"errors"
 	"log"
 	"net"
 	"net/http"
@@ -25,6 +26,38 @@ func (s *server) CheckList(ctx context.Context, in *pb.CheckListRequest) (*pb.Ch
 		rpcChecks[idx] = &check.Data
 	}
 	return &pb.CheckListResponse{Members: rpcChecks}, nil
+}
+
+func (s *server) CheckEnable(ctx context.Context, in *pb.CheckEnableRequest) (*pb.CheckEnableResponse, error) {
+
+	check, err := s.service.CheckByID(in.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	if check.Data.Enabled {
+		return nil, errors.New("Check is already enabled")
+	}
+
+	go check.Start()
+
+	return &pb.CheckEnableResponse{}, nil
+}
+
+func (s *server) CheckDisable(ctx context.Context, in *pb.CheckDisableRequest) (*pb.CheckDisableResponse, error) {
+
+	check, err := s.service.CheckByID(in.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	if !check.Data.Enabled {
+		return nil, errors.New("Check is already disabled")
+	}
+
+	check.Stop()
+
+	return &pb.CheckDisableResponse{}, nil
 }
 
 func Run(service *core.Service, port int) {
