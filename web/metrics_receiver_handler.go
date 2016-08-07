@@ -35,7 +35,7 @@ func metricsReceiverHandler(c *appCtx, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for idx, _ := range metrics {
+	for idx := range metrics {
 
 		host, exists := metrics[idx].Tags["host"]
 		if !exists || host == "" {

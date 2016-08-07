@@ -28,7 +28,7 @@ type RemoteCommand struct {
 }
 
 var RemoteCommandMetrics = map[string]MetricInfo{
-	"execution_time": MetricInfo{
+	"execution_time": {
 		Unit: "ms",
 	},
 }

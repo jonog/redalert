@@ -24,7 +24,7 @@ func (c *Check) Start() {
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt)
 	go func() {
-		for _ = range sigChan {
+		for range sigChan {
 			serviceStop <- true
 		}
 	}()

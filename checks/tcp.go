@@ -24,7 +24,7 @@ type TCP struct {
 }
 
 var TCPMetrics = map[string]MetricInfo{
-	"latency": MetricInfo{
+	"latency": {
 		Unit: "ms",
 	},
 }

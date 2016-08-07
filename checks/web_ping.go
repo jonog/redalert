@@ -24,7 +24,7 @@ type WebPinger struct {
 }
 
 var WebPingerMetrics = map[string]MetricInfo{
-	"latency": MetricInfo{
+	"latency": {
 		Unit: "ms",
 	},
 }
