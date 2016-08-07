@@ -27,7 +27,7 @@ func NewService() *Service {
 // The service runs until a signal is received to stop the service.
 func (s *Service) Start() {
 
-	// use this to keep the service running, even if no monitoring is occuring
+	// use this to keep the service running, even if no monitoring is occurring
 	s.wg.Add(1)
 
 	for _, check := range s.checks {
