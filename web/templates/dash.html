@@ -32,7 +32,7 @@
 
 	  {{range $element := .Checks }}
     	<div class="server {{ $element.DisplayState }} {{ $element.Store.Last.DisplayTags }}">
-        <div class="status-check-name">{{ $element.Name }}</div>
+        <div class="status-check-name">{{ $element.Data.Name }}</div>
         <div class="status-metrics">
           {{ if $element.Store.Last }}{{ range $key, $val := $element.Store.Last.Data.Metrics }}
               <p class="metric">
