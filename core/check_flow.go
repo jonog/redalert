@@ -8,6 +8,7 @@ import (
 
 	"github.com/jonog/redalert/assertions"
 	"github.com/jonog/redalert/events"
+	"github.com/jonog/redalert/notifiers"
 	"github.com/jonog/redalert/servicepb"
 	"github.com/jonog/redalert/utils"
 )
@@ -148,22 +149,21 @@ func (c *Check) processNotifications(event *events.Event) {
 			return
 		}
 
-		var err error
+		var msg string
+		if event.IsRedAlert() {
+			msg = msgPrefix + "fail: " + strings.Join(event.Messages, ",")
+		} else if event.IsGreenAlert() {
+			msg = msgPrefix + "recovery - check is now successful"
+		}
+
 		for _, notifier := range c.Notifiers {
-
-			c.Log.Println(utils.White, "Sending "+event.DisplayTags()+" via "+notifier.Name(), utils.Reset)
-
-			var msg string
-			if event.IsRedAlert() {
-				msg = msgPrefix + "fail: " + strings.Join(event.Messages, ",")
-			} else if event.IsGreenAlert() {
-				msg = msgPrefix + "recovery"
-			}
-
-			err = notifier.Notify(AlertMessage{msg})
-			if err != nil {
-				c.Log.Println(utils.Red, "CRITICAL: Failure triggering alert ["+notifier.Name()+"]: ", err.Error())
-			}
+			go func(n notifiers.Notifier) {
+				c.Log.Println(utils.White, "Sending "+event.DisplayTags()+" via "+n.Name(), utils.Reset)
+				err := n.Notify(AlertMessage{msg})
+				if err != nil {
+					c.Log.Println(utils.Red, "CRITICAL: Failure triggering alert ["+n.Name()+"]: ", err.Error())
+				}
+			}(notifier)
 		}
 
 	}()
