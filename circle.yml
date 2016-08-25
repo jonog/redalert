@@ -4,6 +4,7 @@ machine:
 
   environment:
     DOCKER_API_VERSION: "1.20"
+    POSTGRES_IMAGE: "postgres:9.5"
 
 dependencies:
   pre:
