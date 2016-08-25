@@ -8,4 +8,4 @@ machine:
 dependencies:
   pre:
     - docker pull sickp/alpine-sshd
-    - docker pull postgres
+    - docker pull postgres:9.5
