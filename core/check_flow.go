@@ -80,7 +80,7 @@ func (c *Check) run(serviceStop chan bool) {
 		for {
 
 			checkResponse, err := c.Checker.Check()
-			event := events.NewEvent(checkResponse)
+			event := events.NewEvent(c.Data.ID, c.Data.Name, c.Data.Type, checkResponse)
 			prevState := c.Data.Status
 
 			fail, failMessages := c.isFailing(err, event)
@@ -159,7 +159,10 @@ func (c *Check) processNotifications(event *events.Event) {
 		for _, notifier := range c.Notifiers {
 			go func(n notifiers.Notifier) {
 				c.Log.Println(utils.White, "Sending "+event.DisplayTags()+" via "+n.Name(), utils.Reset)
-				err := n.Notify(AlertMessage{msg})
+				err := n.Notify(notifiers.Message{
+					DefaultMessage: msg,
+					Event:          event,
+				})
 				if err != nil {
 					c.Log.Println(utils.Red, "CRITICAL: Failure triggering alert ["+n.Name()+"]: ", err.Error())
 				}
@@ -167,12 +170,4 @@ func (c *Check) processNotifications(event *events.Event) {
 		}
 
 	}()
-}
-
-type AlertMessage struct {
-	Short string
-}
-
-func (m AlertMessage) ShortMessage() string {
-	return m.Short
 }

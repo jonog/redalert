@@ -2,6 +2,8 @@ package notifiers
 
 import (
 	"errors"
+
+	"github.com/jonog/redalert/events"
 )
 
 type Notifier interface {
@@ -9,13 +11,10 @@ type Notifier interface {
 	Name() string
 }
 
-type Message interface {
-	ShortMessage() string
+type Message struct {
+	DefaultMessage string
+	Event          *events.Event
 }
-
-/////////////////
-// Initialisation
-/////////////////
 
 type Config struct {
 	Name   string            `json:"name"`

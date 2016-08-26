@@ -49,11 +49,10 @@ func prepareDatabase(address string) error {
 }
 
 func setupPostgresContainer() (*types.ContainerJSON, error) {
-	imageName := os.Getenv("POSTGRES_IMAGE")
-	if imageName == "" {
-		imageName = "postgres"
+	if imageName := os.Getenv("POSTGRES_IMAGE"); imageName != "" {
+		return setupContainer(imageName)
 	}
-	return setupContainer(imageName)
+	return setupContainer("postgres")
 }
 
 func setupContainer(image string) (*types.ContainerJSON, error) {
