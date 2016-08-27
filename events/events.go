@@ -14,18 +14,24 @@ const (
 )
 
 type Event struct {
-	Time     RFCTime            `json:"time"`
-	Data     data.CheckResponse `json:"data"`
-	Tags     map[string]string  `json:"tags"`
-	Messages []string           `json:"messages"`
+	CheckID   string
+	CheckName string
+	CheckType string
+	Time      RFCTime            `json:"time"`
+	Data      data.CheckResponse `json:"data"`
+	Tags      map[string]string  `json:"tags"`
+	Messages  []string           `json:"messages"`
 }
 
-func NewEvent(checkData data.CheckResponse) *Event {
+func NewEvent(checkID, checkName, checkType string, checkResponse data.CheckResponse) *Event {
 	return &Event{
-		Time:     RFCTime{time.Now()},
-		Data:     checkData,
-		Tags:     make(map[string]string),
-		Messages: []string{},
+		CheckID:   checkID,
+		CheckName: checkName,
+		CheckType: checkType,
+		Time:      RFCTime{time.Now()},
+		Data:      checkResponse,
+		Tags:      make(map[string]string),
+		Messages:  []string{},
 	}
 }
 

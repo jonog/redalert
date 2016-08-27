@@ -54,7 +54,7 @@ func (a Twilio) Name() string {
 
 func (a Twilio) Notify(msg Message) (err error) {
 
-	smsText := msg.ShortMessage()
+	smsText := msg.DefaultMessage
 	for _, num := range a.phoneNumbers {
 		err = SendSMS(a.accountSid, a.authToken, num, a.twilioNumber, smsText)
 		if err != nil {

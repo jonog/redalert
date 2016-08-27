@@ -50,8 +50,8 @@ func (a Gmail) Name() string {
 func (a Gmail) Notify(msg Message) error {
 
 	body := "To: " + strings.Join(a.notificationAddresses, ",") +
-		"\r\nSubject: " + msg.ShortMessage() +
-		"\r\n\r\n" + msg.ShortMessage()
+		"\r\nSubject: " + msg.DefaultMessage +
+		"\r\n\r\n" + msg.DefaultMessage
 
 	auth := smtp.PlainAuth("", a.user, a.pass, "smtp.gmail.com")
 	err := smtp.SendMail("smtp.gmail.com:587", auth, a.user,

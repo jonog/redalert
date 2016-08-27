@@ -69,7 +69,7 @@ func (a SlackWebhook) Notify(msg Message) error {
 	message := SlackPayload{
 		Channel:   payloadChannel,
 		Username:  payloadUsername,
-		Text:      msg.ShortMessage(),
+		Text:      msg.DefaultMessage,
 		Parse:     "full",
 		IconEmoji: payloadIconEmoji,
 	}

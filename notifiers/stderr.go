@@ -26,6 +26,6 @@ func (a StandardError) Name() string {
 }
 
 func (a StandardError) Notify(msg Message) error {
-	a.log.Println(msg.ShortMessage())
+	a.log.Println(msg.DefaultMessage)
 	return nil
 }
