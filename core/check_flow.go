@@ -46,10 +46,10 @@ func (c *Check) cleanup() {
 
 func (c *Check) handleFailing(ev *events.Event, failMessages []string) int {
 	c.Data.Status = servicepb.Check_FAILING
-	failCount := c.Counter.Inc("failing_seq", 1)
-	c.Counter.Inc("failing_all", 1)
-	c.Counter.Reset("successful_seq")
-	c.Tracker.Track("last_failed_at")
+	failCount := c.Stats.FailureSequence.Inc()
+	c.Stats.FailureTotal.Inc()
+	c.Stats.SuccessfulSequence.Reset()
+	c.Stats.LastFailedAt.Mark()
 
 	ev.MarkRedAlert(failMessages)
 	c.Log.Println(utils.Red, "redalert", failMessages, utils.Reset)
@@ -59,16 +59,15 @@ func (c *Check) handleFailing(ev *events.Event, failMessages []string) int {
 
 func (c *Check) handleSuccessful() {
 	c.Data.Status = servicepb.Check_SUCCESSFUL
-	c.Counter.Inc("successful_seq", 1)
-	c.Counter.Inc("successful_all", 1)
-	c.Counter.Reset("failing_seq")
-	c.Tracker.Track("last_successful_at")
+	c.Stats.SuccessfulSequence.Inc()
+	c.Stats.SuccessfulTotal.Inc()
+	c.Stats.FailureSequence.Reset()
+	c.Stats.LastSuccessfulAt.Mark()
 }
 
 func (c *Check) handleRecovery(ev *events.Event) {
 	ev.MarkGreenAlert()
 	c.Log.Println(utils.Green, "greenalert", utils.Reset)
-	c.Counter.Reset("failing")
 }
 
 func (c *Check) run(serviceStop chan bool) {
@@ -97,7 +96,7 @@ func (c *Check) run(serviceStop chan bool) {
 				}
 			}
 
-			c.Tracker.Track("last_checked_at")
+			c.Stats.LastCheckedAt.Mark()
 			c.Store.Store(event)
 			c.processNotifications(event)
 
