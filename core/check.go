@@ -13,6 +13,7 @@ import (
 	"github.com/jonog/redalert/checks"
 	"github.com/jonog/redalert/notifiers"
 	"github.com/jonog/redalert/servicepb"
+	"github.com/jonog/redalert/stats"
 	"github.com/jonog/redalert/storage"
 )
 
@@ -26,8 +27,7 @@ type Check struct {
 	Checker    checks.Checker
 	Assertions []assertions.Asserter
 
-	Counter storage.Counter
-	Tracker storage.Tracker
+	Stats *stats.CheckStats
 
 	ConfigRank int
 
@@ -69,8 +69,7 @@ func NewCheck(config checks.Config, eventStorage storage.EventStorage) (*Check, 
 		Backoff:    backoffs.New(config.Backoff),
 		Notifiers:  make([]notifiers.Notifier, 0),
 		Log:        logger,
-		Counter:    storage.NewBasicCounter(),
-		Tracker:    storage.NewBasicTracker(),
+		Stats:      stats.NewCheckStats(),
 		Store:      eventStorage,
 		Checker:    checker,
 		Assertions: asserters,
