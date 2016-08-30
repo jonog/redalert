@@ -115,7 +115,6 @@ Available Commands:
 Flags:
   -d, --config-db string     config database url
   -f, --config-file string   config file (default "config.json")
-      --disable-brand        disable dashboard header logo
   -h, --help                 help for redalert
   -p, --port int             port to run web server (default 8888)
   -r, --rpc-port int         port to run RPC server (default 8889)

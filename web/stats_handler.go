@@ -7,8 +7,11 @@ import (
 )
 
 type checkPublic struct {
-	ID     string          `json:"id"`
-	Name   string          `json:"name"`
+	ID     string `json:"id"`
+	Name   string `json:"name"`
+	Type   string `json:"type"`
+	Status string `json:"status"`
+
 	Events []*events.Event `json:"events"`
 }
 
@@ -26,6 +29,8 @@ func statsHandler(c *appCtx, w http.ResponseWriter, r *http.Request) {
 		publicChecks[idx] = checkPublic{
 			ID:     check.Data.ID,
 			Name:   check.Data.Name,
+			Type:   check.Data.Type,
+			Status: check.Data.Status.String(),
 			Events: events,
 		}
 	}

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>REDALERT</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.0.0-rc.3/vue.min.js"></script>
+    <script src="https://npmcdn.com/axios@0.12.0/dist/axios.min.js"></script>
+    <script src="https://npmcdn.com/lodash@4.13.1/lodash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartist/0.9.8/chartist.min.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:700">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chartist/0.9.8/chartist.min.css">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.3/moment.min.js"></script>
+    <link rel="stylesheet" href="static/stylesheets/main.css">
+    <script>
+      window.baseURL = window.location.href;
+    </script>
+  </head>
+
+  <body>
+    <div id="checks">
+      <div v-for="check in checks" class="server" v-bind:class="[check.status]">
+        <div class="status-check-name">
+          {{ check.name }} <span class="check-type">[{{ check.type }}]</span>
+        </div>
+        <div class="metric-name">{{ check.selectedMetric }}</div>
+        <chartist :data="check.events" :metric="check.selectedMetric" class="chartist"></chartist>
+        </div>
+      </div>
+    </div>
+    <script src="static/js/index.js"></script>
+  </body>
+</html>
