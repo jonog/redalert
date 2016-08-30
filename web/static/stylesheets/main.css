@@ -7,15 +7,6 @@ body {
   background: #696969;
 }
 
-.brand img {
-  float: left;
-}
-
-.brand .redalert {
-  margin-top: 15px;
-  float:left;
-}
-
 .server {
   width: 100%;
   float: left;
@@ -23,6 +14,7 @@ body {
   -moz-user-select: none;
   -ms-user-select: none;
   cursor: pointer; cursor: hand;
+  min-height: 51px;
 }
 
 .server.UNKNOWN {
@@ -48,21 +40,31 @@ body {
 .server .status-check-name {
   font-size: 0.75em;
   position: absolute;
-  left: 10px;
+  left: 48px;
   margin-bottom: 35px;
   margin-top: 5px;
+
 }
 
-.server .status-metrics {
-  min-height: 51px;
-}
-
-.server .metric .name{
+.server .metric-name{
   font-size: 0.45em;
+  text-align: right;
+  margin-top: 5px;
+  margin-right: 5px;
 }
 
-.server .metric .data{}
+.server .check-type {
+  font-size: 0.25em;
+}
 
-.server .metric .unit{
-  font-size: 0.3em;
+.check-chart {
+  height: 100px;
+}
+.ct-series-a .ct-line {
+  stroke: white;
+  stroke-width: 1.75px;
+}
+.ct-series-b .ct-line {
+  stroke: white;
+  stroke-width: 3px;
 }

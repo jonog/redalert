@@ -14,9 +14,9 @@ const (
 )
 
 type Event struct {
-	CheckID   string
-	CheckName string
-	CheckType string
+	CheckID   string             `json:"-"`
+	CheckName string             `json:"-"`
+	CheckType string             `json:"-"`
 	Time      RFCTime            `json:"time"`
 	Data      data.CheckResponse `json:"data"`
 	Tags      map[string]string  `json:"tags"`

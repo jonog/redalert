@@ -26,7 +26,7 @@ func Run(service *core.Service, port int, disableBrand bool) {
 
 	router := mux.NewRouter()
 	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fs))
-	router.Handle("/", appHandler{context, dashboardHandler})
+	router.Handle("/", fs)
 	router.Handle("/api/put", appHandler{context, metricsReceiverHandler})
 
 	router.Handle("/v1/stats", appHandler{context, statsHandler})
