@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/jonog/redalert/config"
 	"github.com/jonog/redalert/core"
 	"github.com/jonog/redalert/notifiers"
 	"github.com/jonog/redalert/rpc"
@@ -26,19 +27,19 @@ var serverCmd = &cobra.Command{
 		if cmd.Flag("config-db").Changed && cmd.Flag("config-file").Changed {
 			log.Fatal("Please specify only one config source")
 		}
-		var configStore storage.ConfigStorage
+		var configStore config.Store
 		var err error
 		if cmd.Flag("config-db").Changed {
 			log.Println("Config via db")
 			configDb := cmd.Flag("config-db").Value.String()
-			configStore, err = storage.NewConfigDB(configDb)
+			configStore, err = config.NewDBStore(configDb)
 			if err != nil {
 				log.Fatal("Unable to initialise db via :", configDb, " Error: ", err)
 			}
 		} else {
 			log.Println("Config via file")
 			configFile := cmd.Flag("config-file").Value.String()
-			configStore, err = storage.NewConfigFile(configFile)
+			configStore, err = config.NewFileStore(configFile)
 			if err != nil {
 				log.Fatal("Missing or invalid format: ", configFile)
 			}
@@ -55,7 +56,7 @@ func init() {
 	RootCmd.AddCommand(serverCmd)
 }
 
-func runServer(configStore storage.ConfigStorage, config serverConfig) {
+func runServer(configStore config.Store, config serverConfig) {
 	// Event Storage
 	const MaxEventsStored = 100
 

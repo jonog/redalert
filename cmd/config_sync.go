@@ -3,7 +3,7 @@ package cmd
 import (
 	"log"
 
-	"github.com/jonog/redalert/storage"
+	"github.com/jonog/redalert/config"
 	"github.com/spf13/cobra"
 )
 
@@ -29,39 +29,18 @@ func init() {
 
 func syncConfigFileToDB(file, db string) {
 
-	fileConfigStore, err := storage.NewConfigFile(file)
+	fileConfigStore, err := config.NewFileStore(file)
 	if err != nil {
 		log.Fatal("Missing or invalid: ", file)
 	}
-	dbConfigStore, err := storage.NewConfigDB(db)
+	dbConfigStore, err := config.NewDBStore(db)
 	if err != nil {
 		log.Fatal("Unable to initialise db via :", db, " Error: ", err)
 	}
 
-	// Sync notifications
-	savedNotifications, err := fileConfigStore.Notifications()
+	err = config.Copy(fileConfigStore, dbConfigStore)
 	if err != nil {
 		log.Fatal(err)
 	}
-	for _, notificationConfig := range savedNotifications {
-		_, err = dbConfigStore.CreateNotificationRecord(notificationConfig)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-
-	// Sync checks
-	savedChecks, err := fileConfigStore.Checks()
-	if err != nil {
-		log.Fatal(err)
-	}
-	for _, checkConfig := range savedChecks {
-		_, err = dbConfigStore.CreateCheckRecord(checkConfig)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-
 	log.Println("file to db sync complete")
-
 }

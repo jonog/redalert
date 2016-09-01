@@ -1,4 +1,4 @@
-package storage
+package config
 
 import (
 	"database/sql"
@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"regexp"
+	"strings"
 
 	"github.com/jonog/redalert/assertions"
 	"github.com/jonog/redalert/backoffs"
@@ -16,12 +18,12 @@ import (
 	"gopkg.in/gorp.v1"
 )
 
-type ConfigDB struct {
+type DBStore struct {
 	DB *gorp.DbMap
 }
 
 type CheckRecord struct {
-	Id         int64
+	ID         string              `db:"id"`
 	Name       string              `db:"name"`
 	Type       string              `db:"type"`
 	SendAlerts []string            `db:"send_alerts"`
@@ -30,8 +32,18 @@ type CheckRecord struct {
 	Assertions []assertions.Config `db:"assertions"`
 }
 
-func (c *ConfigDB) CreateCheckRecord(check checks.Config) (*CheckRecord, error) {
+var checkRecordColumns string = strings.Join([]string{"id", "name", "type", "send_alerts", "backoff", "config", "assertions"}, ",")
+
+func (c *DBStore) findCheckRecord(id string) (*CheckRecord, error) {
+	r := new(CheckRecord)
+	err := c.DB.SelectOne(r, "select "+checkRecordColumns+" from checks where id=$1", id)
+	return r, err
+}
+
+func (c *DBStore) createOrUpdateCheckRecord(check checks.Config) error {
+	// TODO: improve using upsert
 	record := &CheckRecord{
+		ID:         check.ID,
 		Name:       check.Name,
 		Type:       check.Type,
 		SendAlerts: check.SendAlerts,
@@ -40,55 +52,106 @@ func (c *ConfigDB) CreateCheckRecord(check checks.Config) (*CheckRecord, error) 
 		Assertions: check.Assertions,
 	}
 	err := c.DB.Insert(record)
-	if err != nil {
-		return nil, err
+	if err == nil {
+		return nil
 	}
-	return record, nil
+	matched, _ := regexp.MatchString("duplicate.*checks_pkey", err.Error())
+	if !matched {
+		return err
+	}
+	if err != nil {
+		cr, err := c.findCheckRecord(check.ID)
+		if err != nil && err == sql.ErrNoRows {
+			return errors.New("config: cannot find check. name: " + record.Name)
+		}
+		if err != nil {
+			return err
+		}
+		cr.Name = record.Name
+		cr.Type = record.Type
+		cr.SendAlerts = record.SendAlerts
+		cr.Backoff = record.Backoff
+		cr.Config = record.Config
+		cr.Assertions = record.Assertions
+		_, err = c.DB.Update(cr)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
-func (c *ConfigDB) getAllCheckRecords() (checks []CheckRecord, err error) {
-	_, err = c.DB.Select(&checks, "select id, name, type, send_alerts, backoff, config, assertions from checks")
+func (c *DBStore) getAllCheckRecords() (checks []CheckRecord, err error) {
+	_, err = c.DB.Select(&checks, "select "+checkRecordColumns+" from checks")
 	return checks, err
 }
 
 type NotificationRecord struct {
-	Id     int64             `db:"id"`
+	ID     string            `db:"id"`
 	Name   string            `db:"name"`
 	Type   string            `db:"type"`
 	Config map[string]string `db:"config"`
 }
 
-func (c *ConfigDB) CreateNotificationRecord(notifier notifiers.Config) (*NotificationRecord, error) {
+var notificationRecordColumns string = strings.Join([]string{"id", "name", "type", "config"}, ",")
+
+func (c *DBStore) findNotificationRecord(id string) (*NotificationRecord, error) {
+	r := new(NotificationRecord)
+	err := c.DB.SelectOne(r, "select "+notificationRecordColumns+" from notifications where id=$1", id)
+	return r, err
+}
+
+func (c *DBStore) createOrUpdateNotificationRecord(notifier notifiers.Config) error {
+	// TODO: improve using upsert
 	record := &NotificationRecord{
+		ID:     notifier.ID,
 		Name:   notifier.Name,
 		Type:   notifier.Type,
 		Config: notifier.Config,
 	}
 	err := c.DB.Insert(record)
-	if err != nil {
-		return nil, err
+	if err == nil {
+		return nil
 	}
-	return record, nil
+	matched, _ := regexp.MatchString("duplicate.*notifications_pkey", err.Error())
+	if !matched {
+		return err
+	}
+	nr, err := c.findNotificationRecord(notifier.ID)
+	if err != nil && err == sql.ErrNoRows {
+		return errors.New("config: cannot find notification. name: " + record.Name)
+	}
+	if err != nil {
+		return err
+	}
+	nr.Name = record.Name
+	nr.Type = record.Type
+	nr.Config = record.Config
+	_, err = c.DB.Update(nr)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func (c *ConfigDB) getAllNotificationRecords() (notifications []NotificationRecord, err error) {
-	_, err = c.DB.Select(&notifications, "select id, name, type, config from notifications")
+func (c *DBStore) getAllNotificationRecords() (notifications []NotificationRecord, err error) {
+	_, err = c.DB.Select(&notifications, "select "+notificationRecordColumns+" from notifications")
 	return notifications, err
 }
 
-func NewConfigDB(connectionURL string) (*ConfigDB, error) {
+func NewDBStore(connectionURL string) (*DBStore, error) {
 	db, err := sql.Open("postgres", connectionURL)
 	if err != nil {
 		return nil, err
 	}
 	gorpDB := &gorp.DbMap{Db: db, Dialect: gorp.PostgresDialect{}}
-	gorpDB.AddTableWithName(CheckRecord{}, "checks").SetKeys(true, "Id")
-	gorpDB.AddTableWithName(NotificationRecord{}, "notifications").SetKeys(true, "Id")
+	gorpDB.AddTableWithName(CheckRecord{}, "checks").SetKeys(false, "ID")
+	gorpDB.AddTableWithName(NotificationRecord{}, "notifications").SetKeys(false, "ID")
 	gorpDB.TypeConverter = TypeConverter{}
-	return &ConfigDB{DB: gorpDB}, nil
+	return &DBStore{DB: gorpDB}, nil
 }
 
-func (c *ConfigDB) Notifications() ([]notifiers.Config, error) {
+func (c *DBStore) Notifications() ([]notifiers.Config, error) {
 	notificationConfigs := make([]notifiers.Config, 0)
 	records, err := c.getAllNotificationRecords()
 	if err != nil {
@@ -96,6 +159,7 @@ func (c *ConfigDB) Notifications() ([]notifiers.Config, error) {
 	}
 	for _, record := range records {
 		notificationConfigs = append(notificationConfigs, notifiers.Config{
+			ID:     record.ID,
 			Name:   record.Name,
 			Type:   record.Type,
 			Config: record.Config,
@@ -104,7 +168,7 @@ func (c *ConfigDB) Notifications() ([]notifiers.Config, error) {
 	return notificationConfigs, nil
 }
 
-func (c *ConfigDB) Checks() ([]checks.Config, error) {
+func (c *DBStore) Checks() ([]checks.Config, error) {
 	checkConfigs := make([]checks.Config, 0)
 	records, err := c.getAllCheckRecords()
 	if err != nil {
@@ -112,6 +176,7 @@ func (c *ConfigDB) Checks() ([]checks.Config, error) {
 	}
 	for _, record := range records {
 		checkConfigs = append(checkConfigs, checks.Config{
+			ID:         record.ID,
 			Name:       record.Name,
 			Type:       record.Type,
 			SendAlerts: record.SendAlerts,
