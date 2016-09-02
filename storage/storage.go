@@ -1,18 +1,9 @@
 package storage
 
-import (
-	"github.com/jonog/redalert/checks"
-	"github.com/jonog/redalert/events"
-	"github.com/jonog/redalert/notifiers"
-)
+import "github.com/jonog/redalert/events"
 
 type EventStorage interface {
 	Store(*events.Event) error
 	Last() (*events.Event, error)
 	GetRecent() ([]*events.Event, error)
-}
-
-type ConfigStorage interface {
-	Notifications() ([]notifiers.Config, error)
-	Checks() ([]checks.Config, error)
 }

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/jonog/redalert/checks"
+	"github.com/jonog/redalert/config"
 	"github.com/jonog/redalert/data"
 	"github.com/jonog/redalert/notifiers"
 	"github.com/jonog/redalert/storage"
@@ -44,6 +45,7 @@ func TestRegisterNotifierDuplicate(t *testing.T) {
 	if err != nil {
 		t.Fail()
 	}
+
 	err = service.RegisterNotifier(&fakeNotifier{"fake"})
 	if err == nil {
 		t.Fail()
@@ -55,7 +57,7 @@ func TestRegisterCheck(t *testing.T) {
 	check, err := NewCheck(checks.Config{
 		Name: "myservice",
 		Type: "fake",
-	}, storage.NewMemoryList(100))
+	}, storage.NewMemoryList(100), config.Preferences{})
 	if err != nil || check == nil {
 		t.Fail()
 	}
@@ -86,7 +88,7 @@ func TestRegisterCheckNotifications(t *testing.T) {
 		Name:       "myservice",
 		Type:       "fake",
 		SendAlerts: []string{"my_notifier"},
-	}, storage.NewMemoryList(100))
+	}, storage.NewMemoryList(100), config.Preferences{})
 	if err != nil || check == nil {
 		t.Fail()
 	}
@@ -125,7 +127,7 @@ func (n *fakeNotifier) Name() string {
 type fakeChecker struct {
 }
 
-var NewFakeChecker = func(config checks.Config, logger *log.Logger) (checks.Checker, error) {
+var NewFakeChecker = func(cfg checks.Config, logger *log.Logger) (checks.Checker, error) {
 	return checks.Checker(&fakeChecker{}), nil
 }
 

@@ -402,7 +402,13 @@ Configure servers to monitor & alert settings via `config.json`.
                 "twilio_number": ""
             }
         }
-    ]
+    ],
+    "preferences": {
+        "notifications": {
+          "fail_count_alert_threshold": 2,
+          "repeat_fail_alerts": false
+        }
+    }
 }
 
 ```
@@ -414,6 +420,17 @@ go build
 ./redalert 2> errors.log
 ```
 
+#### Notification Preferences
+* `fail_count_alert_threshold` controls sending an alert, only after N fails (defaults to 1)
+* `repeat_fail_alerts` controls whether fail alerts are repeated, on consecutive failing checks (defaults to false)
+```
+"preferences": {
+  "notifications": {
+    "fail_count_alert_threshold": 2,
+    "repeat_fail_alerts": false
+  }
+}
+```
 
 #### Backoffs
 When a server check fails - the next check will be delayed according to the back-off algorithm. By default, there is no delay (i.e. `constant` back-off), with a default interval of 10 seconds between checks. When a failing server returns to normal, the check frequency returns to its original value.

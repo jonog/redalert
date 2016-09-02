@@ -8,6 +8,7 @@ type CheckStats struct {
 	SuccessfulSequence *counter
 	FailureTotal       *counter
 	FailureSequence    *counter
+	CurrentAlertCount  *counter
 }
 
 func NewCheckStats() *CheckStats {
@@ -19,5 +20,6 @@ func NewCheckStats() *CheckStats {
 		SuccessfulSequence: newCounter(),
 		FailureTotal:       newCounter(),
 		FailureSequence:    newCounter(),
+		CurrentAlertCount:  newCounter(),
 	}
 }
