@@ -56,7 +56,7 @@ func init() {
 	RootCmd.AddCommand(serverCmd)
 }
 
-func runServer(configStore config.Store, config serverConfig) {
+func runServer(configStore config.Store, cfg serverConfig) {
 	// Event Storage
 	const MaxEventsStored = 100
 
@@ -105,9 +105,14 @@ func runServer(configStore config.Store, config serverConfig) {
 		log.Fatal(err)
 	}
 
+	preferences, err := configStore.Preferences()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	for _, checkConfig := range savedChecks {
 
-		check, err := core.NewCheck(checkConfig, storage.NewMemoryList(MaxEventsStored))
+		check, err := core.NewCheck(checkConfig, storage.NewMemoryList(MaxEventsStored), preferences)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -121,15 +126,15 @@ func runServer(configStore config.Store, config serverConfig) {
 
 	service.Start()
 
-	go web.Run(service, config.webPort, config.disableBrand)
-	go rpc.Run(service, config.rpcPort)
+	go web.Run(service, cfg.webPort, cfg.disableBrand)
+	go rpc.Run(service, cfg.rpcPort)
 	fmt.Println(`
 ____ ____ ___  ____ _    ____ ____ ___
 |--< |=== |__> |--| |___ |=== |--<  |
 
 `)
-	fmt.Println("Web Running on port ", config.webPort)
-	fmt.Println("RPC Running on port ", config.rpcPort)
+	fmt.Println("Web Running on port ", cfg.webPort)
+	fmt.Println("RPC Running on port ", cfg.rpcPort)
 
 	service.KeepRunning()
 }

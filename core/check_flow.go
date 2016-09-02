@@ -62,6 +62,7 @@ func (c *Check) handleSuccessful() {
 	c.Stats.SuccessfulSequence.Inc()
 	c.Stats.SuccessfulTotal.Inc()
 	c.Stats.FailureSequence.Reset()
+	c.Stats.CurrentAlertCount.Reset()
 	c.Stats.LastSuccessfulAt.Mark()
 }
 
@@ -98,7 +99,10 @@ func (c *Check) run(serviceStop chan bool) {
 
 			c.Stats.LastCheckedAt.Mark()
 			c.Store.Store(event)
-			c.processNotifications(event)
+
+			if c.hasNotifications(event) {
+				c.processNotifications(event)
+			}
 
 			select {
 			case <-time.After(delay):
@@ -132,34 +136,32 @@ func (c *Check) isFailing(err error, event *events.Event) (bool, []string) {
 	return len(messages) > 0, messages
 }
 
-func (c *Check) processNotifications(event *events.Event) {
-
-	msgPrefix := c.Data.Name + " :: (" + c.Data.Type + " - " + c.Checker.MessageContext() + ") "
-
-	// Process Redalert/Greenalert (Failure / Recovery)
-
+func (c *Check) hasNotifications(event *events.Event) bool {
 	if len(event.Tags) == 0 {
-		return
+		return false
 	}
+	if !event.IsRedAlert() && !event.IsGreenAlert() {
+		return false
+	}
+	// don't send alerts if the number of consequitive failures is below the threshold
+	if event.IsRedAlert() && c.Stats.FailureSequence.Get() < c.FailCountAlertThreshold {
+		return false
+	}
+	// don't send alerts if already have been sent
+	if event.IsRedAlert() && c.Stats.CurrentAlertCount.Get() > 0 && !c.RepeatFailAlerts {
+		return false
+	}
+	return true
+}
 
+func (c *Check) processNotifications(event *events.Event) {
+	c.Stats.CurrentAlertCount.Inc()
 	go func() {
-
-		if !event.IsRedAlert() && !event.IsGreenAlert() {
-			return
-		}
-
-		var msg string
-		if event.IsRedAlert() {
-			msg = msgPrefix + "fail: " + strings.Join(event.Messages, ",")
-		} else if event.IsGreenAlert() {
-			msg = msgPrefix + "recovery - check is now successful"
-		}
-
 		for _, notifier := range c.Notifiers {
 			go func(n notifiers.Notifier) {
 				c.Log.Println(utils.White, "Sending "+event.DisplayTags()+" via "+n.Name(), utils.Reset)
 				err := n.Notify(notifiers.Message{
-					DefaultMessage: msg,
+					DefaultMessage: c.message(event),
 					Event:          event,
 				})
 				if err != nil {
@@ -167,6 +169,16 @@ func (c *Check) processNotifications(event *events.Event) {
 				}
 			}(notifier)
 		}
-
 	}()
+}
+
+func (c *Check) message(event *events.Event) string {
+	msgPrefix := c.Data.Name + " :: (" + c.Data.Type + " - " + c.Checker.MessageContext() + ") "
+	var msg string
+	if event.IsRedAlert() {
+		msg = msgPrefix + "fail: " + strings.Join(event.Messages, ",")
+	} else if event.IsGreenAlert() {
+		msg = msgPrefix + "recovery - check is now successful"
+	}
+	return msg
 }

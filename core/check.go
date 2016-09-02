@@ -3,7 +3,6 @@ package core
 import (
 	"errors"
 	"log"
-	"math/rand"
 	"os"
 	"strings"
 	"sync"
@@ -11,6 +10,7 @@ import (
 	"github.com/jonog/redalert/assertions"
 	"github.com/jonog/redalert/backoffs"
 	"github.com/jonog/redalert/checks"
+	"github.com/jonog/redalert/config"
 	"github.com/jonog/redalert/notifiers"
 	"github.com/jonog/redalert/servicepb"
 	"github.com/jonog/redalert/stats"
@@ -29,22 +29,29 @@ type Check struct {
 
 	Stats *stats.CheckStats
 
+	// send an alert only after N fails
+	FailCountAlertThreshold int
+
+	// continue to send fail alerts
+	RepeatFailAlerts bool
+
 	ConfigRank int
 
 	stopChan chan bool
 	wait     sync.WaitGroup
 }
 
-func NewCheck(config checks.Config, eventStorage storage.EventStorage) (*Check, error) {
-	logger := log.New(os.Stdout, config.Name+" ", log.Ldate|log.Ltime)
+func NewCheck(cfg checks.Config, eventStorage storage.EventStorage, preferences config.Preferences) (*Check, error) {
 
-	checker, err := checks.New(config, logger)
+	logger := log.New(os.Stdout, cfg.Name+" ", log.Ldate|log.Ltime)
+
+	checker, err := checks.New(cfg, logger)
 	if err != nil {
 		return nil, err
 	}
 
 	asserters := make([]assertions.Asserter, 0)
-	for _, assertionConfig := range config.Assertions {
+	for _, assertionConfig := range cfg.Assertions {
 		var err error
 		asserter, err := assertions.New(assertionConfig, logger)
 		if err != nil {
@@ -59,14 +66,14 @@ func NewCheck(config checks.Config, eventStorage storage.EventStorage) (*Check, 
 
 	return &Check{
 		Data: servicepb.Check{
-			ID:      generateID(8),
-			Name:    config.Name,
-			Type:    config.Type,
-			Enabled: config.Enabled == nil || *config.Enabled,
-			Status:  initState(config),
+			ID:      cfg.ID,
+			Name:    cfg.Name,
+			Type:    cfg.Type,
+			Enabled: cfg.Enabled == nil || *cfg.Enabled,
+			Status:  initState(cfg),
 		},
 
-		Backoff:    backoffs.New(config.Backoff),
+		Backoff:    backoffs.New(cfg.Backoff),
 		Notifiers:  make([]notifiers.Notifier, 0),
 		Log:        logger,
 		Stats:      stats.NewCheckStats(),
@@ -74,8 +81,29 @@ func NewCheck(config checks.Config, eventStorage storage.EventStorage) (*Check, 
 		Checker:    checker,
 		Assertions: asserters,
 
+		FailCountAlertThreshold: intPtrDefault(
+			preferences.Notifications.FailCountAlertThreshold,
+			config.DefaultFailCountAlertThreshold),
+		RepeatFailAlerts: boolPtrDefault(
+			preferences.Notifications.RepeatFailAlerts,
+			config.DefaultRepeatFailAlerts),
+
 		stopChan: make(chan bool),
 	}, nil
+}
+
+func intPtrDefault(ptr *int, def int) int {
+	if ptr == nil {
+		return def
+	}
+	return *ptr
+}
+
+func boolPtrDefault(ptr *bool, def bool) bool {
+	if ptr == nil {
+		return def
+	}
+	return *ptr
 }
 
 type CheckState int
@@ -96,16 +124,6 @@ func initState(config checks.Config) servicepb.Check_Status {
 		return servicepb.Check_UNKNOWN
 	}
 	return servicepb.Check_DISABLED
-}
-
-var idLetters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
-
-func generateID(n int) string {
-	b := make([]rune, n)
-	for i := range b {
-		b[i] = idLetters[rand.Intn(len(idLetters))]
-	}
-	return string(b)
 }
 
 func (c *Check) AddNotifiers(service *Service, names []string) error {

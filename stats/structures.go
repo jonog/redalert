@@ -10,6 +10,10 @@ func newCounter() *counter {
 	return &counter{}
 }
 
+func (c *counter) Get() int {
+	return c.count
+}
+
 func (c *counter) Inc() int {
 	c.count++
 	return c.count

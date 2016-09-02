@@ -18,6 +18,7 @@ type FileStore struct {
 type FileStoreData struct {
 	Checks        []checks.Config    `json:"checks"`
 	Notifications []notifiers.Config `json:"notifications"`
+	Preferences   Preferences        `json:"preferences"`
 }
 
 func NewFileStore(filename string) (*FileStore, error) {
@@ -91,4 +92,8 @@ func (f *FileStore) Notifications() ([]notifiers.Config, error) {
 
 func (f *FileStore) Checks() ([]checks.Config, error) {
 	return f.data.Checks, nil
+}
+
+func (f *FileStore) Preferences() (Preferences, error) {
+	return f.data.Preferences, nil
 }

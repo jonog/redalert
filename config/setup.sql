@@ -14,3 +14,13 @@ CREATE TABLE notifications (
     type text NOT NULL,
     config text
 );
+
+CREATE TABLE preferences (
+  id integer PRIMARY KEY NOT NULL,
+  preferences text NOT NULL
+);
+
+CREATE UNIQUE INDEX preferences_single_row
+ON preferences((preferences IS NOT NULL));
+
+INSERT INTO preferences VALUES (1,'{}');

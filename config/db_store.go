@@ -40,7 +40,7 @@ func (c *DBStore) findCheckRecord(id string) (*CheckRecord, error) {
 	return r, err
 }
 
-func (c *DBStore) createOrUpdateCheckRecord(check checks.Config) error {
+func (c *DBStore) createOrUpdateCheck(check checks.Config) error {
 	// TODO: improve using upsert
 	record := &CheckRecord{
 		ID:         check.ID,
@@ -101,7 +101,7 @@ func (c *DBStore) findNotificationRecord(id string) (*NotificationRecord, error)
 	return r, err
 }
 
-func (c *DBStore) createOrUpdateNotificationRecord(notifier notifiers.Config) error {
+func (c *DBStore) createOrUpdateNotification(notifier notifiers.Config) error {
 	// TODO: improve using upsert
 	record := &NotificationRecord{
 		ID:     notifier.ID,
@@ -147,6 +147,7 @@ func NewDBStore(connectionURL string) (*DBStore, error) {
 	gorpDB := &gorp.DbMap{Db: db, Dialect: gorp.PostgresDialect{}}
 	gorpDB.AddTableWithName(CheckRecord{}, "checks").SetKeys(false, "ID")
 	gorpDB.AddTableWithName(NotificationRecord{}, "notifications").SetKeys(false, "ID")
+	gorpDB.AddTableWithName(PreferencesRecord{}, "preferences").SetKeys(false, "ID")
 	gorpDB.TypeConverter = TypeConverter{}
 	return &DBStore{DB: gorpDB}, nil
 }
@@ -186,6 +187,42 @@ func (c *DBStore) Checks() ([]checks.Config, error) {
 		})
 	}
 	return checkConfigs, nil
+}
+
+type PreferencesRecord struct {
+	ID          int             `db:"id"`
+	Preferences json.RawMessage `db:"preferences"`
+}
+
+func (c *DBStore) getPreferences() (*PreferencesRecord, error) {
+	r := new(PreferencesRecord)
+	err := c.DB.SelectOne(r, "select id, preferences from preferences limit 1")
+	return r, err
+}
+
+func (c *DBStore) updatePreferences(preferences Preferences) error {
+	pr, err := c.getPreferences()
+	if err != nil {
+		return err
+	}
+	b, err := json.Marshal(preferences)
+	fmt.Println(string(b))
+	if err != nil {
+		return err
+	}
+	pr.Preferences = json.RawMessage(b)
+	_, err = c.DB.Update(pr)
+	return err
+}
+
+func (c *DBStore) Preferences() (Preferences, error) {
+	var p Preferences
+	r, err := c.getPreferences()
+	if err != nil {
+		return Preferences{}, err
+	}
+	err = json.Unmarshal(r.Preferences, &p)
+	return p, err
 }
 
 type TypeConverter struct{}

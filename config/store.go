@@ -8,12 +8,14 @@ import (
 type Store interface {
 	Notifications() ([]notifiers.Config, error)
 	Checks() ([]checks.Config, error)
+	Preferences() (Preferences, error)
 }
 
 type writableStore interface {
 	Store
-	createOrUpdateNotificationRecord(notifier notifiers.Config) error
-	createOrUpdateCheckRecord(check checks.Config) error
+	createOrUpdateNotification(notifier notifiers.Config) error
+	createOrUpdateCheck(check checks.Config) error
+	updatePreferences(preferences Preferences) error
 }
 
 func Copy(srcStore Store, destStore writableStore) error {
@@ -23,7 +25,7 @@ func Copy(srcStore Store, destStore writableStore) error {
 		return err
 	}
 	for _, n := range notifications {
-		err = destStore.createOrUpdateNotificationRecord(n)
+		err = destStore.createOrUpdateNotification(n)
 		if err != nil {
 			return err
 		}
@@ -34,11 +36,15 @@ func Copy(srcStore Store, destStore writableStore) error {
 		return err
 	}
 	for _, c := range checks {
-		err = destStore.createOrUpdateCheckRecord(c)
+		err = destStore.createOrUpdateCheck(c)
 		if err != nil {
 			return err
 		}
 	}
 
-	return nil
+	preferences, err := srcStore.Preferences()
+	if err != nil {
+		return err
+	}
+	return destStore.updatePreferences(preferences)
 }
