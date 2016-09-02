@@ -45,7 +45,10 @@ body {
   margin-top: 5px;
 
 }
-
+.server .stats-success-rate {
+  font-size: 0.45em;
+  text-align: right;
+}
 .server .metric-name{
   font-size: 0.45em;
   text-align: right;

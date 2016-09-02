@@ -21,7 +21,8 @@
         <div class="status-check-name">
           {{ check.name }} <span class="check-type">[{{ check.type }}]</span>
         </div>
-        <div class="metric-name">{{ check.selectedMetric }}</div>
+        <div class="stats-success-rate"></div>
+        <div class="metric-name">({{ check.successRate }}% success, {{ check.totalChecks }} checks ) {{ check.selectedMetric }} </div>
         <chartist :data="check.events" :metric="check.selectedMetric" class="chartist"></chartist>
         </div>
       </div>

@@ -23,6 +23,18 @@ var redalert = new Vue({
               } else {
                 check.selectedMetric = null;
               }
+
+              // stats
+              // "last_failed_at": null,
+              // "last_successful_at": "2016-09-02T23:30:59+10:00",
+              // "last_checked_at": "2016-09-02T23:30:59+10:00",
+              // "successful_total": 4,
+              // "successful_sequence": 4,
+              // "failure_total": 0,
+              // "failure_sequence": 0
+              let totalChecks = check.stats.failure_total + check.stats.successful_total;
+              check.successRate = totalChecks > 0 ? 100 * check.stats.successful_total / totalChecks : null;
+              check.totalChecks = totalChecks;
             })
           })
           .catch(function (error) {
