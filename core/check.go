@@ -64,6 +64,9 @@ func NewCheck(cfg checks.Config, eventStorage storage.EventStorage, preferences 
 		asserters = append(asserters, asserter)
 	}
 
+	initialStats := stats.NewCheckStats()
+	initialStats.StateTransitionedAt.Mark()
+
 	return &Check{
 		Data: servicepb.Check{
 			ID:      cfg.ID,
@@ -76,7 +79,7 @@ func NewCheck(cfg checks.Config, eventStorage storage.EventStorage, preferences 
 		Backoff:    backoffs.New(cfg.Backoff),
 		Notifiers:  make([]notifiers.Notifier, 0),
 		Log:        logger,
-		Stats:      stats.NewCheckStats(),
+		Stats:      initialStats,
 		Store:      eventStorage,
 		Checker:    checker,
 		Assertions: asserters,

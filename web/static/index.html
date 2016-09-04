@@ -16,17 +16,41 @@
   </head>
 
   <body>
-    <div id="checks">
-      <div v-for="check in checks" class="server" v-bind:class="[check.status]">
-        <div class="status-check-name">
-          {{ check.name }} <span class="check-type">[{{ check.type }}]</span>
-        </div>
-        <div class="stats-success-rate"></div>
-        <div class="metric-name">({{ check.successRate }}% success, {{ check.totalChecks }} checks ) {{ check.selectedMetric }} </div>
-        <chartist :data="check.events" :metric="check.selectedMetric" class="chartist"></chartist>
-        </div>
+    <div id="wrapper">
+    <div id="header">
+      <div v-if="dataResolved" class="brand">
+        REDALERT
+      </div>
+      <div class="overall-check-status">
+        <span v-if="failCount > 0">{{ failCount }} FAILING</span>
+        <img v-if="failCount > 0" class="emojione overall-status" alt="❎" src="//cdn.jsdelivr.net/emojione/assets/png/1f525.png?v=2.2.4">
+        <span v-if="failCount === 0">ALL SUCCESSFUL</span>
+        <img v-if="failCount === 0" class="emojione overall-status" alt="✅" src="//cdn.jsdelivr.net/emojione/assets/png/2705.png?v=2.2.4">
       </div>
     </div>
+    <div id="checks">
+      <div v-for="check in checks" class="server" v-bind:class="[check.status]">
+
+        <div class="check-info">
+          <img v-if="check.status === 'SUCCESSFUL'" class="emojione status-icon" alt="✅" src="//cdn.jsdelivr.net/emojione/assets/png/2705.png?v=2.2.4">
+          <img v-if="check.status === 'FAILING'" class="emojione status-icon" alt="❎" src="//cdn.jsdelivr.net/emojione/assets/png/274e.png?v=2.2.4">
+          <span class="check-name">{{ check.name }}</span> <span class="check-type">[{{ check.type }}]</span>
+          <span class="success-rate" v-if="_.isNumber(check.successRate)">{{ check.successRate }}%&#8593;</span>
+
+        </div>
+
+        <div class="metric-name">
+            <span class="transition">{{ check.status }} <span v-if="check.stateTransitionedAt">for {{ check.stateTransitionedAt }}</span></span></br>
+           <span v-if="check.selectedMetric">{{ check.selectedMetric }} ({{ check.selectedMetricValue }})</span>
+        </div>
+
+        <chartist :data="check.events" :metric="check.selectedMetric" class="chartist"></chartist>
+
+        <div class="check-error" v-if="check.errors">errors: {{ check.errors }} </div>
+
+      </div>
+    </div>
+  </div>
     <script src="static/js/index.js"></script>
   </body>
 </html>

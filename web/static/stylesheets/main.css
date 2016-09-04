@@ -1,10 +1,38 @@
 body {
-  text-transform: uppercase;
   text-align: center;
   margin: 0;
   color: #ffffff;
   font-family: 'Montserrat', sans-serif;
-  background: #696969;
+  background: #34495e;
+}
+
+#header {
+  font-size: 0.75em;
+  height: 25px;
+  color: #eee;
+  text-align: left;
+  padding-top: 5px;
+  padding-left: 5px;
+
+  display: -webkit-flex;
+  display: flex;
+}
+
+#header .brand {
+  -webkit-flex: 2;
+          flex: 2;
+}
+
+#header .overall-check-status {
+  -webkit-flex: 1;
+          flex: 1;
+  text-align: right;
+}
+
+#header .overall-status {
+  height: 20px !important;
+  widgth: 20px !important;
+  text-align: right;
 }
 
 .server {
@@ -15,6 +43,9 @@ body {
   -ms-user-select: none;
   cursor: pointer; cursor: hand;
   min-height: 51px;
+  border-bottom-color: #bdc3c7;
+  border-bottom-width: 1px;
+  border-bottom-style: dotted;
 }
 
 .server.UNKNOWN {
@@ -31,23 +62,59 @@ body {
 
 .server.FAILING {
   background: #e74c3c;
+
 }
+/*.server.FAILING:nth-child(2n+1) {
+  background: #c0392b;
+}*/
+
 
 .server.DISABLED {
   background: #95a5a6;
 }
 
-.server .status-check-name {
+.server .check-name {
+  text-transform: uppercase;
+}
+
+.server .status-icon {
+  height: 20px !important;
+  widgth: 20px !important;
+}
+.server .check-info {
   font-size: 0.75em;
   position: absolute;
   left: 48px;
   margin-bottom: 35px;
   margin-top: 5px;
-
 }
+
+.server .check-error {
+  font-size: 0.45em;
+  text-align: left;
+  margin-left: 48px;
+  margin-bottom: 5px;
+  background: #cc0000;
+}
+
+.server .check-type {
+  font-size: 0.25em;
+  padding-left: 5px;
+  padding-right: 15px;
+}
+
+.server .transition {
+  font-size: 0.25em;
+  padding-left: 15px;
+  padding-right: 5px;
+}
+
+
 .server .stats-success-rate {
   font-size: 0.45em;
   text-align: right;
+  padding-left: 15px;
+  padding-right: 5px;
 }
 .server .metric-name{
   font-size: 0.45em;
@@ -56,9 +123,7 @@ body {
   margin-right: 5px;
 }
 
-.server .check-type {
-  font-size: 0.25em;
-}
+
 
 .check-chart {
   height: 100px;
@@ -70,4 +135,20 @@ body {
 .ct-series-b .ct-line {
   stroke: white;
   stroke-width: 3px;
+}
+
+.emojione {
+  font-size:inherit;
+  height:3ex;
+  width:3.1ex;
+  min-height:20px;
+  min-width:20px;
+  display:inline-block;
+  margin:-.2ex .15em .2ex;
+  line-height:normal;
+  vertical-align:middle
+}
+
+img.emojione {
+  width:auto
 }

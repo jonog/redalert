@@ -1,8 +1,10 @@
 
 var redalert = new Vue({
-  el: '#checks',
+  el: '#wrapper',
   data: {
-    checks: []
+    checks: [],
+    failCount: null,
+    dataResolved: false
   },
   created: function() {
     var vm = this;
@@ -14,35 +16,43 @@ var redalert = new Vue({
         axios.get(window.baseURL + '/v1/stats')
           .then(function (response) {
             vm.checks = response.data;
-            vm.checks.forEach(function(check) {
-              const lastEvent = _.last(check.events);
-              if (lastEvent) {
-                const metricNames = _.keys(lastEvent.data.metrics);
-                // TODO: make metric selectable
-                check.selectedMetric = metricNames[0];
-              } else {
-                check.selectedMetric = null;
-              }
-
-              // stats
-              // "last_failed_at": null,
-              // "last_successful_at": "2016-09-02T23:30:59+10:00",
-              // "last_checked_at": "2016-09-02T23:30:59+10:00",
-              // "successful_total": 4,
-              // "successful_sequence": 4,
-              // "failure_total": 0,
-              // "failure_sequence": 0
-              let totalChecks = check.stats.failure_total + check.stats.successful_total;
-              check.successRate = totalChecks > 0 ? 100 * check.stats.successful_total / totalChecks : null;
-              check.totalChecks = totalChecks;
-            })
+            vm.checks.forEach(processCheck);
+            vm.failCount = vm.checks.filter(function(c) { return c.status === 'FAILING'}).length;
+            vm.dataResolved = true;
           })
           .catch(function (error) {
             console.log(error);
           })
       }
+  },
+  filters: {
+    lowercase: function (value) {
+      if (!value) return ''
+      return value.toLowerCase()
+    }
   }
 })
+
+function processCheck(check) {
+  const lastEvent = _.first(check.events);
+  if (lastEvent) {
+    const metricNames = _.keys(lastEvent.data.metrics);
+    check.selectedMetric = metricNames[0];
+    check.selectedMetricValue = round(lastEvent.data.metrics[check.selectedMetric], 2);
+    check.lastEvent = lastEvent;
+    if (check.status === "FAILING") {
+      check.errors = lastEvent.messages.join(', ');
+    }
+  } else {
+    check.selectedMetric = null;
+    check.selectedMetricValue = null;
+  }
+
+  let totalChecks = check.stats.failure_total + check.stats.successful_total;
+  check.successRate = totalChecks > 0 ? round(100 * check.stats.successful_total / totalChecks, 2) : null;
+  check.totalChecks = totalChecks;
+  check.stateTransitionedAt = _.isNull(check.stats.state_transitioned_at) ? '' : timeAgo(new Date(check.stats.state_transitioned_at));
+}
 
 Vue.component('chartist', {
   props: ['metric', 'data'],
@@ -108,4 +118,29 @@ function generateSeriesOpts(metricName) {
     })
   };
   return seriesOpts;
+}
+
+function round(value, decimals) {
+  return Number(Math.round(value+'e'+decimals)+'e-'+decimals);
+}
+
+const timeUnits = [
+  { name: "s", limit: 60, inSeconds: 1 },
+  { name: "m", limit: 3600, inSeconds: 60 },
+  { name: "h", limit: 86400, inSeconds: 3600  },
+  { name: "d", limit: 604800, inSeconds: 86400 },
+  { name: "w", limit: 2629743, inSeconds: 604800  },
+  { name: "m", limit: 31556926, inSeconds: 2629743 },
+  { name: "y", limit: null, inSeconds: 31556926 }
+]
+
+function timeAgo(target){
+  var diff = (new Date() - target) / 1000;
+  var i = 0, unit;
+  while (unit = timeUnits[i++]) {
+    if (diff < unit.limit || !unit.limit){
+      var diff =  Math.floor(diff / unit.inSeconds);
+      return diff + unit.name;
+    }
+  };
 }

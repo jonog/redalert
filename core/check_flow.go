@@ -1,6 +1,7 @@
 package core
 
 import (
+	"math/rand"
 	"os"
 	"os/signal"
 	"strings"
@@ -16,10 +17,12 @@ import (
 func (c *Check) Start() {
 	c.Data.Enabled = true
 	c.Data.Status = servicepb.Check_UNKNOWN
+	c.Stats.StateTransitionedAt.Mark()
 
 	c.wait.Add(1)
 
 	serviceStop := make(chan bool)
+
 	c.run(serviceStop)
 
 	sigChan := make(chan os.Signal, 1)
@@ -37,6 +40,7 @@ func (c *Check) Start() {
 func (c *Check) Stop() {
 	c.Data.Enabled = false
 	c.Data.Status = servicepb.Check_DISABLED
+	c.Stats.StateTransitionedAt.Mark()
 	c.stopChan <- true
 }
 
@@ -45,6 +49,9 @@ func (c *Check) cleanup() {
 }
 
 func (c *Check) handleFailing(ev *events.Event, failMessages []string) int {
+	if c.Data.Status != servicepb.Check_FAILING {
+		c.Stats.StateTransitionedAt.Mark()
+	}
 	c.Data.Status = servicepb.Check_FAILING
 	failCount := c.Stats.FailureSequence.Inc()
 	c.Stats.FailureTotal.Inc()
@@ -58,6 +65,9 @@ func (c *Check) handleFailing(ev *events.Event, failMessages []string) int {
 }
 
 func (c *Check) handleSuccessful() {
+	if c.Data.Status != servicepb.Check_SUCCESSFUL {
+		c.Stats.StateTransitionedAt.Mark()
+	}
 	c.Data.Status = servicepb.Check_SUCCESSFUL
 	c.Stats.SuccessfulSequence.Inc()
 	c.Stats.SuccessfulTotal.Inc()
@@ -72,6 +82,10 @@ func (c *Check) handleRecovery(ev *events.Event) {
 }
 
 func (c *Check) run(serviceStop chan bool) {
+
+	// add some jitter
+	time.Sleep(time.Duration(randInt(1, 2500)) * time.Millisecond)
+	time.Sleep(time.Duration(randInt(1, 2500)) * time.Millisecond)
 
 	go func() {
 
@@ -181,4 +195,9 @@ func (c *Check) message(event *events.Event) string {
 		msg = msgPrefix + "recovery - check is now successful"
 	}
 	return msg
+}
+
+func randInt(min int, max int) int {
+	rand.Seed(time.Now().UTC().UnixNano())
+	return min + rand.Intn(max-min)
 }
