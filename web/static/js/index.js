@@ -78,7 +78,12 @@ Vue.component('chartist', {
               labelInterpolationFnc: function(value) {
                 return moment(value).format('HH:mm');
               }
+          },
+          axisY: {
+            labelInterpolationFnc: function(value) {
+              return round(value, 2);
             }
+          }
         },
         [
           ['screen', {
