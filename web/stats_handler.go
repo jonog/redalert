@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/jonog/redalert/events"
+	"github.com/jonog/redalert/stats"
 )
 
 type checkPublic struct {
@@ -12,7 +13,8 @@ type checkPublic struct {
 	Type   string `json:"type"`
 	Status string `json:"status"`
 
-	Events []*events.Event `json:"events"`
+	Events []*events.Event        `json:"events"`
+	Stats  stats.CheckStatsPublic `json:"stats"`
 }
 
 func statsHandler(c *appCtx, w http.ResponseWriter, r *http.Request) {
@@ -32,6 +34,7 @@ func statsHandler(c *appCtx, w http.ResponseWriter, r *http.Request) {
 			Type:   check.Data.Type,
 			Status: check.Data.Status.String(),
 			Events: events,
+			Stats:  check.Stats.Export(),
 		}
 	}
 

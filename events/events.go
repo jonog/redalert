@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/jonog/redalert/data"
+	"github.com/jonog/redalert/utils"
 )
 
 const (
@@ -17,7 +18,7 @@ type Event struct {
 	CheckID   string             `json:"-"`
 	CheckName string             `json:"-"`
 	CheckType string             `json:"-"`
-	Time      RFCTime            `json:"time"`
+	Time      utils.RFCTime      `json:"time"`
 	Data      data.CheckResponse `json:"data"`
 	Tags      map[string]string  `json:"tags"`
 	Messages  []string           `json:"messages"`
@@ -28,7 +29,7 @@ func NewEvent(checkID, checkName, checkType string, checkResponse data.CheckResp
 		CheckID:   checkID,
 		CheckName: checkName,
 		CheckType: checkType,
-		Time:      RFCTime{time.Now()},
+		Time:      utils.RFCTime{time.Now()},
 		Data:      checkResponse,
 		Tags:      make(map[string]string),
 		Messages:  []string{},
