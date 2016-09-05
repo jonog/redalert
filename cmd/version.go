@@ -11,7 +11,7 @@ var versionCmd = &cobra.Command{
 	Short: "Print the version number of Redalert",
 	Long:  "Print the version number of Redalert",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Redalert v0.1.2")
+		fmt.Println("Redalert v0.2.0")
 	},
 }
 
