@@ -48,7 +48,7 @@ function processCheck(check) {
     check.selectedMetricValue = null;
   }
 
-  let totalChecks = check.stats.failure_total + check.stats.successful_total;
+  var totalChecks = check.stats.failure_total + check.stats.successful_total;
   check.successRate = totalChecks > 0 ? round(100 * check.stats.successful_total / totalChecks, 2) : null;
   check.totalChecks = totalChecks;
   check.stateTransitionedAt = _.isNull(check.stats.state_transitioned_at) ? '' : timeAgo(new Date(check.stats.state_transitioned_at));
