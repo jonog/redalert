@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="rspec" tests="9" failures="0" errors="0" time="4.179975" timestamp="2016-09-07T22:48:34+10:00">
+  <!-- Randomized with seed 43628 -->
+  <properties/>
+  <testcase classname="my_spec" name="Test 1 is ..." file="./my_spec.rb" time="0.646604"/>
+  <testcase classname="my_spec" name="Test 2 is ..." file="./my_spec.rb" time="0.144441"/>
+  <testcase classname="my_spec" name="Test 3 is ..." file="./my_spec.rb" time="0.144228"/>
+  <testcase classname="my_spec" name="Test 4 is ..." file="./my_spec.rb" time="0.154773"/>
+  <testcase classname="my_spec" name="Test 5 is ..." file="./my_spec.rb" time="0.174368"/>
+  <testcase classname="my_spec" name="Test 6 is ..." file="./my_spec.rb" time="0.213206"/>
+  <testcase classname="my_spec" name="Test 7 is ..." file="./my_spec.rb" time="0.131378"/>
+  <testcase classname="my_spec" name="Test 8 is ..." file="./my_spec.rb" time="0.310525"/>
+  <testcase classname="my_spec" name="Test 9 is ..." file="./my_spec.rb" time="2.258925"/>
+</testsuite>

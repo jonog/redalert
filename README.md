@@ -18,6 +18,7 @@ For monitoring your infrastructure and sending notifications if stuff is not ok.
 * *TCP connectivity monitoring* & latency measurement (check type: `tcp`)
 * *Execute local commands* & capture output (check type: `command`)
 * *Execute remote commands via SSH* & capture output (check type: `remote-command`)
+* *Run test suite and capture report metrics* via `JUnit XML` format (check type: `test-report`)
 
 #### Dashboard and Alerts
 * Alert notifications available on several channels:
@@ -368,6 +369,24 @@ Configure servers to monitor & alert settings via `config.json`.
                     "identifier": "exit_status",
                     "source": "metadata",
                     "target": "0"
+                }
+            ]
+        },
+        {
+            "name": "Run Smoke Tests",
+            "type": "test-report",
+            "config": {
+                "command": "./run-smoke-tests.sh"
+            },
+            "send_alerts": [
+                "stderr"
+            ],
+            "assertions": [
+                {
+                    "comparison": "==",
+                    "identifier": "status",
+                    "source": "metadata",
+                    "target": "PASSING"
                 }
             ]
         }

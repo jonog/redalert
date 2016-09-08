@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="rspec" tests="9" failures="2" errors="0" time="3.257417" timestamp="2016-09-07T22:50:20+10:00">
+  <!-- Randomized with seed 47975 -->
+  <properties/>
+  <testcase classname="my_spec_fail" name="Test 1 is ..." file="./my_spec_fail.rb" time="0.251198"/>
+  <testcase classname="my_spec_fail" name="Test 2 is ..." file="./my_spec_fail.rb" time="0.000426">
+    <failure message="fail" type="RuntimeError">
+      <![CDATA[fail
+./my_spec_fail.rb:24:in `block (3 levels) in <top (required)>']]>
+    </failure>
+  </testcase>
+  <testcase classname="my_spec_fail" name="Test 3 is ..." file="./my_spec_fail.rb" time="0.133883"/>
+  <testcase classname="my_spec_fail" name="Test 4 is ..." file="./my_spec_fail.rb" time="0.149151"/>
+  <testcase classname="my_spec_fail" name="Test 5 is ..." file="./my_spec_fail.rb" time="0.168329"/>
+  <testcase classname="my_spec_fail" name="Test 6 is ..." file="./my_spec_fail.rb" time="0.140436"/>
+  <testcase classname="my_spec_fail" name="Test 7 is ..." file="./my_spec_fail.rb" time="0.132665"/>
+  <testcase classname="my_spec_fail" name="Test 8 is ..." file="./my_spec_fail.rb" time="0.000460">
+    <failure message="fail" type="RuntimeError">
+      <![CDATA[fail
+./my_spec_fail.rb:64:in `block (3 levels) in <top (required)>']]>
+    </failure>
+  </testcase>
+  <testcase classname="my_spec_fail" name="Test 9" file="./my_spec_fail.rb" time="2.279250"/>
+</testsuite>
