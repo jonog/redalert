@@ -64,8 +64,7 @@ func (c *TestReport) Check() (data.CheckResponse, error) {
 
 	startTime := time.Now()
 	// ignore error here and rely on xml parsing error
-	out, err := exec.Command(c.Shell, "-c", c.Command).Output()
-	fmt.Println(err)
+	out, _ := exec.Command(c.Shell, "-c", c.Command).Output()
 	response.Response = out
 	endTime := time.Now()
 
@@ -101,6 +100,14 @@ func (c *TestReport) Check() (data.CheckResponse, error) {
 
 	passCount := float64(testCount - failureCount - skippedCount)
 	response.Metrics["pass_count"] = &passCount
+
+	if (passCount + failureCount) > 0 {
+		passRate := float64(100 * passCount / (passCount + failureCount))
+		response.Metrics["pass_rate"] = &passRate
+	} else {
+		zeroPassRate := float64(0)
+		response.Metrics["pass_rate"] = &zeroPassRate
+	}
 
 	c.log.Println("Report: ", fmt.Sprintf("%s", out))
 

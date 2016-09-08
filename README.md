@@ -376,7 +376,7 @@ Configure servers to monitor & alert settings via `config.json`.
             "name": "Run Smoke Tests",
             "type": "test-report",
             "config": {
-                "command": "run_tests=$(rspec --tag smoke --format RspecJunitFormatter -o test.xml my_spec.rb) cat test.xml"
+                "command": "./run-smoke-tests.sh"
             },
             "send_alerts": [
                 "stderr"

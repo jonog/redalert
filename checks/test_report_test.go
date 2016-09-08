@@ -78,6 +78,14 @@ func TestTestReport_Check_PassingTests(t *testing.T) {
 		t.Fatalf("Invalid pass_count")
 	}
 
+	passRate, ok := data.Metrics["pass_rate"]
+	if !ok || passRate == nil {
+		t.Fatalf("Expected metric pass_rate does not exist. metrics: %#v", data.Metrics)
+	}
+	if *passRate != 100 {
+		t.Fatalf("Invalid pass_rate")
+	}
+
 }
 
 func TestTestReport_Check_FailingTests(t *testing.T) {
@@ -120,6 +128,14 @@ func TestTestReport_Check_FailingTests(t *testing.T) {
 	}
 	if *passCount != 7 {
 		t.Fatalf("Invalid pass_count")
+	}
+
+	passRate, ok := data.Metrics["pass_rate"]
+	if !ok || passRate == nil {
+		t.Fatalf("Expected metric pass_rate does not exist. metrics: %#v", data.Metrics)
+	}
+	if *passRate != 100*float64(7)/float64(9) {
+		t.Fatalf("Invalid pass_rate")
 	}
 
 }
