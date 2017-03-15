@@ -5,7 +5,7 @@
 For monitoring your infrastructure and sending notifications if stuff is not ok.
 (e.g. pinging your websites/APIs via HTTP GET at specified intervals, and alerting you if there is downtime).
 
-![](https://cloud.githubusercontent.com/assets/1314353/23970218/34e46d0a-0a1d-11e7-8af0-6db94f69f0a9.png)
+<img src="https://cloud.githubusercontent.com/assets/1314353/23970218/34e46d0a-0a1d-11e7-8af0-6db94f69f0a9.png" width="500">
 
 ### Features
 
