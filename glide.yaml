@@ -1,0 +1,36 @@
+package: github.com/jonog/redalert
+import:
+- package: github.com/GeertJohan/go.rice
+- package: github.com/docker/engine-api
+  version: ^0.4.0
+  subpackages:
+  - client
+  - types
+- package: github.com/fatih/color
+  version: ^1.4.1
+- package: github.com/golang/protobuf
+  subpackages:
+  - proto
+- package: github.com/gorilla/mux
+  version: ^1.3.0
+- package: github.com/jmoiron/jsonq
+- package: github.com/lib/pq
+- package: github.com/olekukonko/tablewriter
+- package: github.com/rs/cors
+  version: ^1.0.0
+- package: github.com/spf13/cobra
+- package: golang.org/x/crypto
+  subpackages:
+  - ssh
+  - ssh/agent
+- package: golang.org/x/net
+  subpackages:
+  - context
+- package: google.golang.org/grpc
+  version: ^1.0.5
+- package: gopkg.in/gorp.v1
+testImport:
+- package: github.com/docker/go-connections
+  subpackages:
+  - nat
+- package: github.com/nu7hatch/gouuid

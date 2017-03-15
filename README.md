@@ -469,25 +469,11 @@ If there are errors sending email via gmail - enable `Access for less secure app
 ### Development
 
 #### Setup
-Getting started:
-```
-go get github.com/tools/godep
-```
-
-Embedding static web files:
-```
-go get github.com/GeertJohan/go.rice
-go get github.com/GeertJohan/go.rice/rice
-cd web && rice embed-go && cd ..
-```
-
-#### Dockerizing Redalert
-```
-docker run --rm \
-  -v "$(pwd):/src" \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  centurylink/golang-builder
-```
+Dependencies:
+* Go dependency manager - [glide](https://github.com/Masterminds/glide)
+* Embedding static assets into binary - [go.rice](https://github.com/GeertJohan/go.rice)
+* `protoc` for gRPC code generation - [gRPC](http://www.grpc.io/docs/quickstart/go.html)
+* Docker-machine for tests
 
 ### Credits
 Rocket emoji via https://github.com/twitter/twemoji

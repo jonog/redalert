@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/jonog/redalert/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -11,7 +12,7 @@ var versionCmd = &cobra.Command{
 	Short: "Print the version number of Redalert",
 	Long:  "Print the version number of Redalert",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Redalert v0.2.0")
+		fmt.Println("Redalert v" + utils.Version() + " sha: " + utils.Build())
 	},
 }
 
