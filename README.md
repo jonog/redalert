@@ -100,6 +100,12 @@ Run via Docker:
 ```
 docker run -d -P -v /path/to/config.json:/config.json jonog/redalert
 ```
+Quick bootstrap example:
+```
+curl https://gist.githubusercontent.com/jonog/32c953aedf03edf71acaef53d89ce785/raw/e87f7e933165574e1d441781465223bfe6c3f1aa/sample_redalert_config.json > /tmp/sample_redalert_config.json && \
+    docker run -d -P -v /tmp/sample_redalert_config.json:/config.json --name test_redalert jonog/redalert && \
+    open "http://$(docker port test_redalert 8888)"
+```
 
 #### Usage
 Get started with the `redalert` command:
