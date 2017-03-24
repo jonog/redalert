@@ -30,8 +30,8 @@ func Run(service *core.Service, port int, disableBrand bool) {
 	router.Handle("/api/put", appHandler{context, metricsReceiverHandler})
 
 	router.Handle("/v1/stats", appHandler{context, statsHandler})
-	router.Handle("/v1/checks/{check_id}/disable", appHandler{context, checkDisableHandler})
-	router.Handle("/v1/checks/{check_id}/enable", appHandler{context, checkEnableHandler})
+	router.Handle("/v1/checks/{check_id}/disable", appHandler{context, checkDisableHandler}).Methods("POST")
+	router.Handle("/v1/checks/{check_id}/enable", appHandler{context, checkEnableHandler}).Methods("POST")
 
 	router.HandleFunc("/healthcheck", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("OK"))
