@@ -44,6 +44,10 @@ func (c *Check) Stop() {
 	c.stopChan <- true
 }
 
+func (c *Check) Trigger() {
+	c.triggerChan <- true
+}
+
 func (c *Check) cleanup() {
 	c.wait.Done()
 }
@@ -120,6 +124,7 @@ func (c *Check) run(serviceStop chan bool) {
 
 			select {
 			case <-time.After(delay):
+			case <-c.triggerChan:
 			case <-c.stopChan:
 				c.cleanup()
 				return
