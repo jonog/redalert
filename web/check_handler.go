@@ -47,3 +47,24 @@ func checkEnableHandler(c *appCtx, w http.ResponseWriter, r *http.Request) {
 
 	w.Write([]byte(`OK`))
 }
+
+func checkTriggerHandler(c *appCtx, w http.ResponseWriter, r *http.Request) {
+
+	vars := mux.Vars(r)
+	id := vars["check_id"]
+
+	check, err := c.service.CheckByID(id)
+	if err != nil {
+		http.Error(w, "Not Found", http.StatusNotFound)
+		return
+	}
+
+	if !check.Data.Enabled {
+		http.Error(w, "Check is not enabled", http.StatusPreconditionFailed)
+		return
+	}
+
+	check.Trigger()
+
+	w.Write([]byte(`OK`))
+}

@@ -37,8 +37,9 @@ type Check struct {
 
 	ConfigRank int
 
-	stopChan chan bool
-	wait     sync.WaitGroup
+	triggerChan chan bool
+	stopChan    chan bool
+	wait        sync.WaitGroup
 }
 
 func NewCheck(cfg checks.Config, eventStorage storage.EventStorage, preferences config.Preferences) (*Check, error) {
@@ -91,7 +92,8 @@ func NewCheck(cfg checks.Config, eventStorage storage.EventStorage, preferences 
 			preferences.Notifications.RepeatFailAlerts,
 			config.DefaultRepeatFailAlerts),
 
-		stopChan: make(chan bool),
+		triggerChan: make(chan bool),
+		stopChan:    make(chan bool),
 	}, nil
 }
 

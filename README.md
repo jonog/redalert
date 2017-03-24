@@ -20,6 +20,8 @@ For monitoring your infrastructure and sending notifications if stuff is not ok.
 * *Execute remote commands via SSH* & capture output (check type: `remote-command`)
 * *Run test suite and capture report metrics* via `JUnit XML` format (check type: `test-report`)
 
+Checks will happen at specified intervals or explicit trigger (i.e. trigger check API endpoint).
+
 #### Dashboard and Alerts
 * Alert notifications available on several channels:
   * sending email (`gmail`)
@@ -49,7 +51,14 @@ For monitoring your infrastructure and sending notifications if stuff is not ok.
   * source: `json`
 
 #### API
-* Event stats available via `/v1/stats`
+
+| Endpoint | Description |
+| --- | --- |
+| `GET /v1/stats` | Retrieve stats for all checks |
+| `POST /v1/checks/{check_id}/disable` | Disable check |
+| `POST /v1/checks/{check_id}/enable` | Enable check |
+| `POST /v1/checks/{check_id}/trigger` | Trigger check |
+
 
 ### Design
 
@@ -61,7 +70,7 @@ For monitoring your infrastructure and sending notifications if stuff is not ok.
    │     │                              │
    │     └──────────────────────────────┘
    │                    │
-   │                @interval          ┌──────────────────────┐
+   │          @interval or ->trigger   ┌──────────────────────┐
    │                    │            ┌▶│  error during check  │
    │                    ▼            │ └──────────────────────┘
    │        ┌──────────────────────┐ │ ┌──────────────────────┐
