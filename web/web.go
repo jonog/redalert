@@ -21,11 +21,11 @@ func Run(service *core.Service, port int, disableBrand bool) {
 		},
 	}
 
-	box := rice.MustFindBox("static")
+	box := rice.MustFindBox("assets")
 	fs := http.FileServer(box.HTTPBox())
 
 	router := mux.NewRouter()
-	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fs))
+	router.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", fs))
 	router.Handle("/", fs)
 	router.Handle("/api/put", appHandler{context, metricsReceiverHandler})
 
