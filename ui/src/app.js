@@ -1,3 +1,10 @@
+import css from './main.css';
+
+if (process.env.NODE_ENV == "development") {
+  window.baseURL = process.env.API_URL;
+} else {
+  window.baseURL = window.location.href;
+}
 
 var redalert = new Vue({
   el: '#wrapper',
