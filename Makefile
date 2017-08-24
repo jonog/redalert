@@ -5,6 +5,9 @@ BUILD=`git rev-parse HEAD`
 
 LDFLAGS=-ldflags "-X main.Version=${VERSION} -X main.Build=${BUILD}"
 
+install-deps:
+	glide install
+
 build: embed-static
 	go build ${LDFLAGS} -o ${BINARY}
 
@@ -15,7 +18,8 @@ embed-static: build-ui
 
 build-ui:
 	cd ui && npm install && NODE_ENV=production ./node_modules/.bin/webpack -p && cd ..
-	cp ui/dist/assets/app.bundle.js web/assets
+	mkdir -p web/assets
+	cp ui/dist/assets/app.bundle.js web/assets/
 	cp ui/index.html web/assets
 
 run-dev-ui:
