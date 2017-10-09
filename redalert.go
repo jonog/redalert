@@ -6,11 +6,11 @@ import (
 )
 
 var (
-	Version string
-	Build   string
+	version string
+	commit  string
 )
 
 func main() {
-	utils.RegisterVersionAndBuild(Version, Build)
+	utils.RegisterVersionAndBuild(version, commit)
 	cmd.Execute()
 }

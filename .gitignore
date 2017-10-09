@@ -1,7 +1,6 @@
 redalert
 notes
 config.json
-*.rice-box.go
 vendor
 *.exe
 ui/node_modules

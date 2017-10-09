@@ -1,9 +1,9 @@
 BINARY=redalert
 
-VERSION=0.2.1
-BUILD=`git rev-parse HEAD`
+VERSION=0.2.2
+COMMIT=`git rev-parse HEAD`
 
-LDFLAGS=-ldflags "-X main.Version=${VERSION} -X main.Build=${BUILD}"
+LDFLAGS=-ldflags "-X main.version=${VERSION} -X main.commit=${COMMIT}"
 
 install-deps:
 	glide install
