@@ -41,6 +41,7 @@ func Execute() {
 
 var cfgFile string
 var cfgDb string
+var cfgURL string
 var webPort int
 var rpcPort int
 var disableBrand bool
@@ -48,6 +49,7 @@ var disableBrand bool
 func init() {
 	RootCmd.PersistentFlags().StringVarP(&cfgFile, "config-file", "f", "config.json", "config file")
 	RootCmd.PersistentFlags().StringVarP(&cfgDb, "config-db", "d", "", "config database url")
+	RootCmd.PersistentFlags().StringVarP(&cfgURL, "config-url", "u", "", "config url")
 	RootCmd.PersistentFlags().IntVarP(&webPort, "port", "p", 8888, "port to run web server")
 	RootCmd.PersistentFlags().IntVarP(&rpcPort, "rpc-port", "r", 8889, "port to run RPC server")
 }
