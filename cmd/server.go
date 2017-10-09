@@ -24,9 +24,6 @@ var serverCmd = &cobra.Command{
 	Short: "Run checks and server stats",
 	Long:  "Run checks and server stats",
 	Run: func(cmd *cobra.Command, args []string) {
-		if cmd.Flag("config-db").Changed && cmd.Flag("config-file").Changed {
-			log.Fatal("Please specify only one config source")
-		}
 		var configStore config.Store
 		var err error
 		if cmd.Flag("config-db").Changed {
@@ -34,14 +31,21 @@ var serverCmd = &cobra.Command{
 			configDb := cmd.Flag("config-db").Value.String()
 			configStore, err = config.NewDBStore(configDb)
 			if err != nil {
-				log.Fatal("Unable to initialise db via :", configDb, " Error: ", err)
+				log.Fatal("DB config error via :", configDb, " Error: ", err)
+			}
+		} else if cmd.Flag("config-url").Changed {
+			log.Println("Config via URL")
+			configURL := cmd.Flag("config-url").Value.String()
+			configStore, err = config.NewURLStore(configURL)
+			if err != nil {
+				log.Fatal("URL config error via :", configURL, " Error: ", err)
 			}
 		} else {
 			log.Println("Config via file")
 			configFile := cmd.Flag("config-file").Value.String()
 			configStore, err = config.NewFileStore(configFile)
 			if err != nil {
-				log.Fatal("Missing or invalid format: ", configFile)
+				log.Fatal("File config error via :", configFile, " Error: ", err)
 			}
 		}
 		runServer(configStore, serverConfig{
