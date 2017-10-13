@@ -1,0 +1,30 @@
+{
+  "checks": [
+    {
+      "name": "AWS Bravo Adapter",
+      "type": "web-ping",
+      "send_alerts": [
+        "stderr"
+      ],
+      "backoff": {
+        "type": "constant",
+        "interval": 10
+      },
+      "config": {
+        "address": "https://uat01.webapi.tab.com.au/v1/bravo-adapter/status"
+      },
+      "assertions": [
+        {
+          "source": "metadata",
+          "identifier": "status_code",
+          "comparison": "==",
+          "target": "200"
+        }
+      ]
+    }
+  ],
+  "notifications": [],
+  "preferences": {
+    "notifications": {}
+  }
+}
