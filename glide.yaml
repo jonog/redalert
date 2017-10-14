@@ -29,6 +29,12 @@ import:
 - package: google.golang.org/grpc
   version: ^1.0.5
 - package: gopkg.in/gorp.v1
+- package: github.com/aws/aws-sdk-go
+  version: ^1.12.10
+  subpackages:
+  - aws
+  - aws/session
+  - service/s3
 testImport:
 - package: github.com/docker/go-connections
   subpackages:
