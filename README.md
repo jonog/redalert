@@ -131,6 +131,8 @@ Available Commands:
 Flags:
   -d, --config-db string     config database url
   -f, --config-file string   config file (default "config.json")
+  -s, --config-s3 string     config S3
+  -u, --config-url string    config url
   -h, --help                 help for redalert
   -p, --port int             port to run web server (default 8888)
   -r, --rpc-port int         port to run RPC server (default 8889)
@@ -138,10 +140,16 @@ Flags:
 Use "redalert [command] --help" for more information about a command.
 ```
 
-#### Monitoring Configuration
-Configure servers to monitor & alert settings via `config.json`.
+#### Configuration
 
-##### Simple config.json
+Configure servers to monitor & alert settings via a configuration file:
+* a local file (specified by `-f` or `--config-file`) - defaults to `config.json`
+* a file remotely accessible via HTTP (specified by `-u` or `--config-url`)
+* a file hosted in an AWS S3 bucket (specified by `-s` or `--config-s3`)
+
+TODO: document Postgres configuration option
+
+##### Example config.json
 ```
 {
    "checks":[

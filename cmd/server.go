@@ -40,6 +40,13 @@ var serverCmd = &cobra.Command{
 			if err != nil {
 				log.Fatal("URL config error via :", configURL, " Error: ", err)
 			}
+		} else if cmd.Flag("config-s3").Changed {
+			log.Println("Config via S3")
+			configS3 := cmd.Flag("config-s3").Value.String()
+			configStore, err = config.NewS3Store(configS3)
+			if err != nil {
+				log.Fatal("S3 config error via :", configS3, " Error: ", err)
+			}
 		} else {
 			log.Println("Config via file")
 			configFile := cmd.Flag("config-file").Value.String()
