@@ -1,6 +1,6 @@
 BINARY=redalert
 
-VERSION=0.2.2
+VERSION=0.2.3
 COMMIT=`git rev-parse HEAD`
 
 LDFLAGS=-ldflags "-X main.version=${VERSION} -X main.commit=${COMMIT}"
