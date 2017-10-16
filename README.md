@@ -2,6 +2,8 @@
 
 [![Circle CI](https://circleci.com/gh/jonog/redalert.svg?style=svg)](https://circleci.com/gh/jonog/redalert)
 
+[![Launch Stack](https://cdn.rawgit.com/buildkite/cloudformation-launch-stack-button-svg/master/launch-stack.svg)](https://console.aws.amazon.com/cloudformation/home#/stacks/new?stackName=redalert&templateURL=https://s3-ap-southeast-2.amazonaws.com/redalert-cloudformation/redalert.yml)
+
 For monitoring your infrastructure and sending notifications if stuff is not ok.
 (e.g. pinging your websites/APIs via HTTP GET at specified intervals, and alerting you if there is downtime).
 
@@ -115,6 +117,8 @@ curl https://gist.githubusercontent.com/jonog/32c953aedf03edf71acaef53d89ce785/r
     docker run -d -P -v /tmp/sample_redalert_config.json:/config.json --name test_redalert jonog/redalert && \
     open "http://$(docker port test_redalert 8888)"
 ```
+
+
 
 #### Usage
 Get started with the `redalert` command:
@@ -488,6 +492,19 @@ With each failure, the subsequent check will be delayed by the last delayed amou
 
 #### Note for Gmail
 If there are errors sending email via gmail - enable `Access for less secure apps` under Account permissions @ https://www.google.com/settings/u/2/security
+
+### Deployment
+
+#### CloudFormation Stacks
+
+See [redalert-cloudformation](https://github.com/jonog/redalert-cloudformation)
+
+##### EC2 & ELB
+[![Launch Stack](https://cdn.rawgit.com/buildkite/cloudformation-launch-stack-button-svg/master/launch-stack.svg)](https://console.aws.amazon.com/cloudformation/home#/stacks/new?stackName=redalert&templateURL=https://s3-ap-southeast-2.amazonaws.com/redalert-cloudformation/redalert.yml)
+
+##### EC2 & ELB & S3 config
+[![Launch Stack](https://cdn.rawgit.com/buildkite/cloudformation-launch-stack-button-svg/master/launch-stack.svg)](https://console.aws.amazon.com/cloudformation/home#/stacks/new?stackName=redalert&templateURL=https://s3-ap-southeast-2.amazonaws.com/redalert-cloudformation/redalert.yml)
+
 
 ### Development
 
