@@ -215,7 +215,8 @@ TODO: document Postgres configuration option
             "name": "Demo Response Check",
             "type": "web-ping",
             "config": {
-                "address": "http://httpstat.us/400"
+                "address": "http://httpstat.us/400",
+                "logrequests": false
             },
             "send_alerts": [
                 "stderr",
