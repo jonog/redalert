@@ -30,9 +30,8 @@ var WebPingerMetrics = map[string]MetricInfo{
 }
 
 type WebPingerConfig struct {
-	Address     string            `json:"address"`
-	Headers     map[string]string `json:"headers"`
-	LogRequests bool              `json:"logrequests"`
+	Address string            `json:"address"`
+	Headers map[string]string `json:"headers"`
 }
 
 var NewWebPinger = func(config Config, logger *log.Logger) (Checker, error) {
@@ -80,9 +79,7 @@ func (wp *WebPinger) ping() (data.Metrics, []byte, int, error) {
 	}()
 
 	startTime := time.Now()
-	if wp.LogRequests {
-		wp.log.Println("GET", wp.Address)
-	}
+	wp.log.Println("GET", wp.Address)
 
 	req, err := http.NewRequest("GET", wp.Address, nil)
 	if err != nil {
@@ -106,9 +103,7 @@ func (wp *WebPinger) ping() (data.Metrics, []byte, int, error) {
 	latencyCalc := endTime.Sub(startTime)
 	latency = float64(latencyCalc.Seconds() * 1e3)
 
-	if wp.LogRequests {
-		wp.log.Println("Latency", utils.White, latency, utils.Reset)
-	}
+	wp.log.Println("Latency", utils.White, latency, utils.Reset)
 
 	if err != nil {
 		return metrics, b, resp.StatusCode, errors.New("web-ping: failed reading body " + err.Error())
