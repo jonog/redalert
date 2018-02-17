@@ -245,7 +245,8 @@ TODO: document Postgres configuration option
                     "source": "text",
                     "target": "400 Bad Request"
                 }
-            ]
+            ],
+            "verbose_logging": true
         },
         {
             "name": "Demo Exponential Backoff",
