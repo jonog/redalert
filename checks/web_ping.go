@@ -18,9 +18,9 @@ func init() {
 }
 
 type WebPinger struct {
-	Address string
-	Headers map[string]string
-	log     *log.Logger
+	Config          Config
+	WebPingerConfig WebPingerConfig
+	log             *log.Logger
 }
 
 var WebPingerMetrics = map[string]MetricInfo{
@@ -43,7 +43,7 @@ var NewWebPinger = func(config Config, logger *log.Logger) (Checker, error) {
 	if webPingerConfig.Address == "" {
 		return nil, errors.New("web-ping: address to ping cannot be blank")
 	}
-	return Checker(&WebPinger{webPingerConfig.Address, webPingerConfig.Headers, logger}), nil
+	return Checker(&WebPinger{config, webPingerConfig, logger}), nil
 }
 
 var GlobalClient = http.Client{
@@ -79,15 +79,17 @@ func (wp *WebPinger) ping() (data.Metrics, []byte, int, error) {
 	}()
 
 	startTime := time.Now()
-	wp.log.Println("GET", wp.Address)
+	if wp.Config.VerboseLogging != nil && *wp.Config.VerboseLogging {
+		wp.log.Println("GET", wp.WebPingerConfig.Address)
+	}
 
-	req, err := http.NewRequest("GET", wp.Address, nil)
+	req, err := http.NewRequest("GET", wp.WebPingerConfig.Address, nil)
 	if err != nil {
 		return metrics, b, 0, errors.New("web-ping: failed parsing url in http.NewRequest " + err.Error())
 	}
 
 	req.Header.Add("User-Agent", "Redalert/1.0")
-	for k, v := range wp.Headers {
+	for k, v := range wp.WebPingerConfig.Headers {
 		req.Header.Add(k, v)
 	}
 
@@ -103,7 +105,9 @@ func (wp *WebPinger) ping() (data.Metrics, []byte, int, error) {
 	latencyCalc := endTime.Sub(startTime)
 	latency = float64(latencyCalc.Seconds() * 1e3)
 
-	wp.log.Println("Latency", utils.White, latency, utils.Reset)
+	if wp.Config.VerboseLogging != nil && *wp.Config.VerboseLogging {
+		wp.log.Println("Latency", utils.White, latency, utils.Reset)
+	}
 
 	if err != nil {
 		return metrics, b, resp.StatusCode, errors.New("web-ping: failed reading body " + err.Error())
@@ -117,5 +121,5 @@ func (wp *WebPinger) MetricInfo(metric string) MetricInfo {
 }
 
 func (wp *WebPinger) MessageContext() string {
-	return wp.Address
+	return wp.WebPingerConfig.Address
 }

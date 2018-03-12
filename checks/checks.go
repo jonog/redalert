@@ -27,14 +27,15 @@ type MetricInfo struct {
 /////////////////
 
 type Config struct {
-	ID         string              `json:"id"`
-	Name       string              `json:"name"`
-	Type       string              `json:"type"`
-	SendAlerts []string            `json:"send_alerts"`
-	Backoff    backoffs.Config     `json:"backoff"`
-	Config     json.RawMessage     `json:"config"`
-	Assertions []assertions.Config `json:"assertions"`
-	Enabled    *bool               `json:"enabled,omitempty"`
+	ID             string              `json:"id"`
+	Name           string              `json:"name"`
+	Type           string              `json:"type"`
+	SendAlerts     []string            `json:"send_alerts"`
+	Backoff        backoffs.Config     `json:"backoff"`
+	Config         json.RawMessage     `json:"config"`
+	Assertions     []assertions.Config `json:"assertions"`
+	Enabled        *bool               `json:"enabled,omitempty"`
+	VerboseLogging *bool               `json:"verbose_logging,omitempty"`
 }
 
 var registry = make(map[string]func(Config, *log.Logger) (Checker, error))
