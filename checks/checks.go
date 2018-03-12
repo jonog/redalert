@@ -35,7 +35,7 @@ type Config struct {
 	Config         json.RawMessage     `json:"config"`
 	Assertions     []assertions.Config `json:"assertions"`
 	Enabled        *bool               `json:"enabled,omitempty"`
-	VerboseLogging *bool               `json:"verbose_logging"`
+	VerboseLogging *bool               `json:"verbose_logging,omitempty"`
 }
 
 var registry = make(map[string]func(Config, *log.Logger) (Checker, error))
