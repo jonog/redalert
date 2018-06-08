@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+	"fmt"
 
 	"github.com/jonog/redalert/data"
 	"github.com/jonog/redalert/utils"
@@ -91,6 +92,14 @@ func (wp *WebPinger) ping() (data.Metrics, []byte, int, error) {
 	req.Header.Add("User-Agent", "Redalert/1.0")
 	for k, v := range wp.WebPingerConfig.Headers {
 		req.Header.Add(k, v)
+		if wp.Config.VerboseLogging != nil && *wp.Config.VerboseLogging {
+			wp.log.Printf("%s:%s", k, v)
+		}
+	}
+
+	host, ok := wp.WebPingerConfig.Headers["Host"]
+	if ok {
+		req.Host = host
 	}
 
 	resp, err := GlobalClient.Do(req)
@@ -121,5 +130,9 @@ func (wp *WebPinger) MetricInfo(metric string) MetricInfo {
 }
 
 func (wp *WebPinger) MessageContext() string {
+	host, ok := wp.WebPingerConfig.Headers["Host"]
+	if ok {
+		return fmt.Sprintf("%s, Host:%s", wp.WebPingerConfig.Address, host)
+	}
 	return wp.WebPingerConfig.Address
 }

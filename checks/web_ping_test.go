@@ -16,7 +16,8 @@ func testWebPingConfig(address string) []byte {
 							"config": {
 		             "address":"` + address + `",
 		             "headers": {
-		               "X-Api-Key": "ABCD1234"
+		               "X-Api-Key": "ABCD1234",
+		               "Host": "HostHeader"
 		             }
 		          },
 							"send_alerts": [
@@ -70,7 +71,7 @@ func TestWebPing_Check(t *testing.T) {
 
 func TestWebPing_Check_Headers(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, r.Header.Get("X-API-Key"))
+		fmt.Fprintf(w, "%s %s", r.Host, r.Header.Get("X-API-Key"))
 	}))
 	defer ts.Close()
 	var config Config
@@ -89,7 +90,7 @@ func TestWebPing_Check_Headers(t *testing.T) {
 	if data.Metadata["status_code"] != "200" {
 		t.Fatalf("expect: %#v, got: %#v", "200", data.Metadata["exit_status"])
 	}
-	if string(data.Response) != "ABCD1234" {
-		t.Fatalf("expect: %#v, got: %#v", "ABCD1234", string(data.Response))
+	if string(data.Response) != "HostHeader ABCD1234" {
+		t.Fatalf("expect: %#v, got: %#v", "HostHeader ABCD1234", string(data.Response))
 	}
 }
