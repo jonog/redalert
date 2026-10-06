@@ -536,10 +536,11 @@ Docker-backed SSH, Postgres, and Docker stats integration tests are opt-in. They
 
 ```sh
 make test-deps
+REDALERT_INTEGRATION=1 go test -v ./...
 make test-integration
 ```
 
-The integration target sets `REDALERT_INTEGRATION=1` and fails normally if Docker, the fixtures, or the tested behavior fails. Use `go test -v ./checks` to see the named opt-in cases and their skip reasons. The remote-command integration cases currently construct a `command` check, so they do not verify SSH behavior; SSH helper correction remains separate work. Run `python3 scripts/smoke.py ./redalert` after `make build` to verify startup outside the checkout, embedded assets and content types, health, statistics, local-target failure and recovery alerts, and the enable/disable/trigger routes.
+The fixture-enabled command sets `REDALERT_INTEGRATION=1` and fails normally if Docker, the fixtures, or the tested behavior fails. `make test-integration` runs the Docker-backed cases in isolation with the expected fixture settings. Use `go test -v ./...` to see named opt-in cases and their skip reasons during the default test run. The remote-command integration cases currently construct a `command` check, so they do not verify SSH behavior; SSH helper correction remains separate work. Run `python3 scripts/smoke.py ./redalert` after `make build` to verify startup outside the checkout, embedded assets and content types, health, statistics, local-target failure and recovery alerts, and the enable/disable/trigger routes.
 
 Race detection is intentionally excluded from this migration because known polling races are tracked separately.
 
