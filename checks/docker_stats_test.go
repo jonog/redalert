@@ -35,6 +35,7 @@ func TestDockerStats_ParseAndInitialise(t *testing.T) {
 }
 
 func TestDockerStats_Check(t *testing.T) {
+	requireIntegration(t)
 
 	// use postgres image as a test container
 

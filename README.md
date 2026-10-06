@@ -462,7 +462,7 @@ TODO: document Postgres configuration option
 
 Build and run (capture stderr).
 ```
-go build
+go build -o redalert .
 
 ./redalert 2> errors.log
 ```
@@ -510,11 +510,34 @@ See [redalert-cloudformation](https://github.com/jonog/redalert-cloudformation)
 ### Development
 
 #### Setup
-Dependencies:
-* Go dependency manager - [glide](https://github.com/Masterminds/glide)
-* Embedding static assets into binary - [go.rice](https://github.com/GeertJohan/go.rice)
-* `protoc` for gRPC code generation - [gRPC](http://www.grpc.io/docs/quickstart/go.html)
-* Docker-machine for tests
+Use Go 1.27.1. Dependencies are managed with Go modules; no GOPATH layout or Glide installation is required.
+
+```sh
+go mod download
+go mod tidy
+go build ./...
+go build -ldflags "-X main.version=0.2.4 -X main.commit=$(git rev-parse HEAD)" -o redalert .
+./redalert version
+```
+
+`web/rice-box.go` contains the checked-in dashboard assets used by ordinary builds. To regenerate them after changing the UI, run `make embed-static`; the generator is pinned in the Makefile.
+
+#### Tests
+
+Unit tests (default vet enabled):
+
+```sh
+go test ./...
+```
+
+Docker-backed SSH, Postgres, and Docker stats integration tests are opt-in. They need a working Docker daemon plus the `sickp/alpine-sshd` and `postgres:9.5` images; `make test-deps` pulls the images. Run them with:
+
+```sh
+make test-deps
+make test-integration
+```
+
+The integration target sets `REDALERT_INTEGRATION=1` and fails normally if Docker, the fixtures, or the tested behavior fails. The unit command skips only these fixture-dependent checks. For a local HTTP smoke check, build `redalert`, run `./redalert server -f config.json.sample`, then verify `/healthcheck`, `/`, `/assets/app.bundle.js`, and `/v1/stats`; use a disposable config with a controlled failing HTTP endpoint to observe failure and recovery, then exercise the enable, disable, and trigger endpoints against its check ID. These runtime checks require the configured endpoint to be reachable and have not been run as part of this change.
 
 ### Credits
 Rocket emoji via https://github.com/twitter/twemoji

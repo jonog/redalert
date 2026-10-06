@@ -43,6 +43,7 @@ func TestRemoteCommand_ParseAndInitialise(t *testing.T) {
 }
 
 func TestRemoteCommand_Check(t *testing.T) {
+	requireIntegration(t)
 
 	container, err := setupContainer("sickp/alpine-sshd")
 	if err != nil {
@@ -78,6 +79,7 @@ func TestRemoteCommand_Check(t *testing.T) {
 }
 
 func TestRemoteCommand_Check_MetadataExitStatus(t *testing.T) {
+	requireIntegration(t)
 
 	container, err := setupContainer("sickp/alpine-sshd")
 	if err != nil {

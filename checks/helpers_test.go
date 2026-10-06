@@ -30,6 +30,13 @@ func getDockerHost() (string, error) {
 	return host, err
 }
 
+func requireIntegration(t *testing.T) {
+	t.Helper()
+	if os.Getenv("REDALERT_INTEGRATION") != "1" {
+		t.Skip("set REDALERT_INTEGRATION=1 to run Docker-backed integration tests")
+	}
+}
+
 func prepareDatabase(address string) error {
 	db, err := sql.Open("postgres", "postgres://postgres@"+address+"/postgres?sslmode=disable")
 	if err != nil {

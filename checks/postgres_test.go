@@ -45,6 +45,7 @@ func TestPostgres_ParseAndInitialise(t *testing.T) {
 }
 
 func TestPostgres_Check(t *testing.T) {
+	requireIntegration(t)
 
 	container, err := setupPostgresContainer()
 	if err != nil {

@@ -1,20 +1,20 @@
 BINARY=redalert
 
 VERSION=0.2.4
-COMMIT=`git rev-parse HEAD`
+COMMIT=$(shell git rev-parse HEAD)
 
 LDFLAGS=-ldflags "-X main.version=${VERSION} -X main.commit=${COMMIT}"
 
-install-deps:
-	glide install
+GO_VERSION=1.27.1
 
-build: embed-static
-	go build ${LDFLAGS} -o ${BINARY}
+install-deps:
+	go mod download
+
+build:
+	go build ${LDFLAGS} -o ${BINARY} .
 
 embed-static: build-ui
-	go get github.com/GeertJohan/go.rice
-	go get github.com/GeertJohan/go.rice/rice
-	cd web && rice embed-go && cd ..
+	cd web && go run github.com/GeertJohan/go.rice/rice@v1.1.0 embed-go
 
 build-ui:
 	cd ui && npm install && NODE_ENV=production ./node_modules/.bin/webpack -p && cd ..
@@ -35,8 +35,13 @@ test-deps:
 	docker pull sickp/alpine-sshd
 	docker pull postgres
 
-test:
-	go test -v -race $(shell glide novendor)
+test: test-unit
+
+test-unit:
+	go test ./...
+
+test-integration:
+	REDALERT_INTEGRATION=1 go test ./checks -run 'Test(DockerStats_Check|Postgres_Check|RemoteCommand_Check(_MetadataExitStatus)?)$$' -count=1
 
 build-docker-image-local: embed-static
 	docker run --rm \
@@ -49,4 +54,4 @@ build-docker-image-remote: build-docker-image-local
 	docker tag jonog/redalert jonog/redalert:v${VERSION}
 	docker push jonog/redalert
 
-.PHONY: embed-static build-ui build-proto clean test-deps test build-docker-image build-docker-image-remote
+.PHONY: install-deps embed-static build-ui build-proto clean test-deps test test-unit test-integration build build-docker-image build-docker-image-remote
