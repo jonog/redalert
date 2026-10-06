@@ -27,10 +27,18 @@ def request(url, method="GET"):
         return response.status, response.read(), response.headers
 
 
-def wait_for(description, action, timeout=25):
+def wait_for(description, action, timeout=25, process=None, logs=None):
     deadline = time.monotonic() + timeout
     last = None
     while time.monotonic() < deadline:
+        if process is not None and process.poll() is not None:
+            details = ""
+            if logs:
+                details = "\nprocess logs:\n" + "\n".join(
+                    path + ":\n" + pathlib.Path(path).read_text()
+                    for path in logs)
+            raise RuntimeError("server exited early with status %d while waiting for %s%s" %
+                               (process.returncode, description, details))
         try:
             last = action()
             if last:
@@ -86,7 +94,8 @@ def main():
             cwd=work, stdout=stdout_log.open("w"), stderr=stderr_log.open("w"), text=True)
         base = "http://127.0.0.1:%d" % web_port
         try:
-            wait_for("healthcheck", lambda: request(base + "/healthcheck")[1] == b"OK")
+            wait_for("healthcheck", lambda: request(base + "/healthcheck")[1] == b"OK",
+                     process=process, logs=[str(stdout_log), str(stderr_log)])
             status, html, headers = request(base + "/")
             assert status == 200 and b"<html" in html.lower() and headers.get_content_type() == "text/html", "dashboard HTML was not served"
             status, js, headers = request(base + "/assets/app.bundle.js")

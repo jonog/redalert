@@ -21,6 +21,9 @@ import (
 const sshFixtureImage = "sickp/alpine-sshd@sha256:0f5a58ba5bfc5549a910264f32c337903967bb377d596c91c03611f15b4699ad"
 
 func getDockerHost() (string, error) {
+	if host := os.Getenv("DOCKER_TEST_HOST"); host != "" {
+		return host, nil
+	}
 	dockerHost := os.Getenv("DOCKER_HOST")
 	if dockerHost == "" {
 		return "127.0.0.1", nil
@@ -28,6 +31,12 @@ func getDockerHost() (string, error) {
 	u, err := url.Parse(dockerHost)
 	if err != nil {
 		return "dockerHost: " + dockerHost, err
+	}
+	// Unix sockets identify the Docker API endpoint, not the host used to
+	// reach ports published by containers. Docker Desktop forwards these to
+	// loopback unless DOCKER_TEST_HOST overrides it.
+	if u.Scheme == "unix" {
+		return "127.0.0.1", nil
 	}
 	host, _, err := net.SplitHostPort(u.Host)
 	return host, err

@@ -532,7 +532,7 @@ Unit tests (default vet enabled):
 go test ./...
 ```
 
-Docker-backed SSH, Postgres, and Docker stats integration tests are opt-in. They need an x86_64 Docker daemon plus the digest-pinned `sickp/alpine-sshd` fixture and `postgres:9.5`; `make test-deps` pulls them. Set `DOCKER_API_VERSION=1.24`, and set `DOCKER_HOST` to a Docker endpoint whose published ports are reachable from the test process (Docker Desktop users may need `host.docker.internal`). The PostgreSQL fixture runs with test-only trust authentication. Run the checks with:
+Docker-backed SSH, Postgres, and Docker stats integration tests are opt-in. They need an x86_64 Docker daemon plus the digest-pinned `sickp/alpine-sshd` fixture and `postgres:9.5`; `make test-deps` pulls them. Set `DOCKER_API_VERSION=1.24` and `DOCKER_HOST` to the Docker API endpoint. The address used to reach published fixture ports is selected separately: set `DOCKER_TEST_HOST` when it differs from the endpoint host. For example, on macOS with Docker Desktop's Unix socket, use `DOCKER_HOST=unix:///var/run/docker.sock DOCKER_TEST_HOST=127.0.0.1`; for a remote daemon, set `DOCKER_TEST_HOST` to a host reachable from the test process (often `host.docker.internal` for Docker Desktop). Unix socket endpoints default to `127.0.0.1`. The PostgreSQL fixture runs with test-only trust authentication. Run the checks with:
 
 ```sh
 make test-deps

@@ -1,6 +1,9 @@
+version: 2
+
 builds:
-  - binary: redalert
-    go: 1.27.1
+  - id: redalert
+    main: .
+    binary: redalert
     ldflags:
       - -X main.version={{.Version}} -X main.commit={{.Commit}}
     goos:

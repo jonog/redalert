@@ -18,7 +18,6 @@ jobs:
       - run: python3 scripts/smoke.py ./redalert
 
 workflows:
-  version: 2
   build:
     jobs:
       - build
