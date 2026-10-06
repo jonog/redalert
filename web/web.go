@@ -1,16 +1,20 @@
 package web
 
 import (
+	"embed"
 	"encoding/json"
+	"io/fs"
 	"log"
 	"net/http"
 	"strconv"
 
-	"github.com/GeertJohan/go.rice"
 	"github.com/gorilla/mux"
 	"github.com/jonog/redalert/core"
 	"github.com/rs/cors"
 )
+
+//go:embed assets/*
+var dashboard embed.FS
 
 func Run(service *core.Service, port int, disableBrand bool) {
 
@@ -21,12 +25,17 @@ func Run(service *core.Service, port int, disableBrand bool) {
 		},
 	}
 
-	box := rice.MustFindBox("assets")
-	fs := http.FileServer(box.HTTPBox())
+	assetFiles, err := fs.Sub(dashboard, "assets")
+	if err != nil {
+		log.Fatal(err)
+	}
+	assets := http.FileServer(http.FS(assetFiles))
 
 	router := mux.NewRouter()
-	router.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", fs))
-	router.Handle("/", fs)
+	router.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", assets))
+	router.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFileFS(w, r, assetFiles, "index.html")
+	}))
 	router.Handle("/api/put", appHandler{context, metricsReceiverHandler})
 
 	router.Handle("/v1/stats", appHandler{context, statsHandler})

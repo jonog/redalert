@@ -520,7 +520,7 @@ go build -ldflags "-X main.version=0.2.4 -X main.commit=$(git rev-parse HEAD)" -
 ./redalert version
 ```
 
-`web/rice-box.go` contains the checked-in dashboard assets used by ordinary builds. To regenerate them after changing the UI, run `make embed-static`; the generator is pinned in the Makefile.
+The checked-in files in `web/assets` are embedded by the standard library at build time. To regenerate them after changing the UI, run `make embed-static`.
 
 #### Tests
 
@@ -537,7 +537,7 @@ make test-deps
 make test-integration
 ```
 
-The integration target sets `REDALERT_INTEGRATION=1` and fails normally if Docker, the fixtures, or the tested behavior fails. The unit command skips only these fixture-dependent checks. For a local HTTP smoke check, build `redalert`, run `./redalert server -f config.json.sample`, then verify `/healthcheck`, `/`, `/assets/app.bundle.js`, and `/v1/stats`; use a disposable config with a controlled failing HTTP endpoint to observe failure and recovery, then exercise the enable, disable, and trigger endpoints against its check ID. These runtime checks require the configured endpoint to be reachable and have not been run as part of this change.
+The integration target sets `REDALERT_INTEGRATION=1` and fails normally if Docker, the fixtures, or the tested behavior fails. The unit command skips only these fixture-dependent checks. To smoke check the HTTP server, build `redalert`, start it with a disposable configuration, and verify that `/healthcheck`, `/`, `/assets/app.bundle.js`, and `/v1/stats` return successful responses. With a controlled endpoint in that configuration, verify an initial failure and recovery, then POST to `/v1/checks/{check_id}/disable`, `/enable`, and `/trigger` and confirm the corresponding check behavior. These runtime and Docker-backed checks were not run in this workspace: the required Go module checksums are absent and resolving them would require network access, which was unavailable.
 
 ### Credits
 Rocket emoji via https://github.com/twitter/twemoji

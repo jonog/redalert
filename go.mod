@@ -3,7 +3,6 @@ module github.com/jonog/redalert
 go 1.27.1
 
 require (
-	github.com/GeertJohan/go.rice v0.0.0-20171014114746-4bbccbfa39e7
 	github.com/aws/aws-sdk-go v0.0.0-20171014114746-7cb0cfd8c7a2
 	github.com/docker/engine-api v0.0.0-20171014114746-3d1601b9d243
 	github.com/docker/go-connections v0.0.0-20171014114746-a2afab980204

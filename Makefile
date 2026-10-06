@@ -14,7 +14,7 @@ build:
 	go build ${LDFLAGS} -o ${BINARY} .
 
 embed-static: build-ui
-	cd web && go run github.com/GeertJohan/go.rice/rice@v1.1.0 embed-go
+	# The dashboard files are embedded by web/web.go with //go:embed.
 
 build-ui:
 	cd ui && npm install && NODE_ENV=production ./node_modules/.bin/webpack -p && cd ..
