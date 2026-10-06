@@ -45,6 +45,7 @@ func TestPostgres_ParseAndInitialise(t *testing.T) {
 }
 
 func TestPostgres_Check(t *testing.T) {
+	requireIntegration(t)
 
 	container, err := setupPostgresContainer()
 	if err != nil {
@@ -68,11 +69,12 @@ func TestPostgres_Check(t *testing.T) {
 		t.Fatalf("error: %#v", err)
 	}
 
-	waitForTCP(host + ":" + port)
+	if err := waitForTCP(host + ":" + port); err != nil {
+		t.Fatal(err)
+	}
 
-	prepareDatabase(host + ":" + port)
-	if err != nil {
-		t.Fatalf("error: %#v", err)
+	if err := prepareDatabase(host + ":" + port); err != nil {
+		t.Fatalf("prepare fixture database: %v", err)
 	}
 
 	checkData, err := checker.Check()

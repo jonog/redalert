@@ -5,4 +5,3 @@ vendor
 *.exe
 ui/node_modules
 ui/dist
-web/assets

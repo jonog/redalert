@@ -35,6 +35,7 @@ func TestDockerStats_ParseAndInitialise(t *testing.T) {
 }
 
 func TestDockerStats_Check(t *testing.T) {
+	requireIntegration(t)
 
 	// use postgres image as a test container
 
@@ -60,7 +61,9 @@ func TestDockerStats_Check(t *testing.T) {
 		t.Fatalf("error: %#v", err)
 	}
 
-	waitForTCP(host + ":" + port)
+	if err := waitForTCP(host + ":" + port); err != nil {
+		t.Fatal(err)
+	}
 
 	checkData, err := checker.Check()
 	if err != nil {

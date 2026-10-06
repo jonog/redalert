@@ -462,7 +462,7 @@ TODO: document Postgres configuration option
 
 Build and run (capture stderr).
 ```
-go build
+go build -o redalert .
 
 ./redalert 2> errors.log
 ```
@@ -510,11 +510,39 @@ See [redalert-cloudformation](https://github.com/jonog/redalert-cloudformation)
 ### Development
 
 #### Setup
-Dependencies:
-* Go dependency manager - [glide](https://github.com/Masterminds/glide)
-* Embedding static assets into binary - [go.rice](https://github.com/GeertJohan/go.rice)
-* `protoc` for gRPC code generation - [gRPC](http://www.grpc.io/docs/quickstart/go.html)
-* Docker-machine for tests
+Use Go 1.27.1 (the module baseline is Go 1.27.0). Dependencies are managed with Go modules; no GOPATH layout, Glide installation, or checked-in vendor tree is required.
+
+The module requirements use versions resolved from the Glide-locked revisions (including canonical tags where those exact revisions are tagged), with the remaining transitive requirements recorded in `go.mod` and `go.sum`. `glide.yaml` and `glide.lock` are historical inputs only and are not used by the supported build or test workflow.
+
+```sh
+go mod download
+go mod tidy
+go build ./...
+go build -ldflags "-X main.version=0.2.4 -X main.commit=$(git rev-parse HEAD)" -o redalert .
+./redalert version
+```
+
+The checked-in files in `web/assets` are embedded by the standard library at build time. Ordinary Go builds need no Node installation. To regenerate them after changing the UI, use Node.js 20.19.0 and npm 10.8.2 (`nvm use` in `ui/`), then run `make embed-static`; the UI build uses `npm ci` and its checked-in lockfile.
+
+#### Tests
+
+Unit tests (default vet enabled):
+
+```sh
+go test ./...
+```
+
+Docker-backed SSH, Postgres, and Docker stats integration tests are opt-in. They need an x86_64 Docker daemon plus the digest-pinned `sickp/alpine-sshd` fixture and `postgres:9.5`; `make test-deps` pulls them. Set `DOCKER_API_VERSION=1.24` and `DOCKER_HOST` to the Docker API endpoint. The address used to reach published fixture ports is selected separately: set `DOCKER_TEST_HOST` when it differs from the endpoint host. For example, on macOS with Docker Desktop's Unix socket, use `DOCKER_HOST=unix:///var/run/docker.sock DOCKER_TEST_HOST=127.0.0.1`; for a remote daemon, set `DOCKER_TEST_HOST` to a host reachable from the test process (often `host.docker.internal` for Docker Desktop). Unix socket endpoints default to `127.0.0.1`. The PostgreSQL fixture runs with test-only trust authentication. Run the checks with:
+
+```sh
+make test-deps
+REDALERT_INTEGRATION=1 go test -v ./...
+make test-integration
+```
+
+The fixture-enabled command sets `REDALERT_INTEGRATION=1` and fails normally if Docker, the fixtures, or the tested behavior fails. `make test-integration` runs the Docker-backed cases in isolation with the expected fixture settings. Use `go test -v ./...` to see named opt-in cases and their skip reasons during the default test run. The remote-command integration cases currently construct a `command` check, so they do not verify SSH behavior; SSH helper correction remains separate work. Run `python3 scripts/smoke.py ./redalert` after `make build` to verify startup outside the checkout, embedded assets and content types, health, statistics, local-target failure and recovery alerts, and the enable/disable/trigger routes.
+
+Race detection is intentionally excluded from this migration because known polling races are tracked separately.
 
 ### Credits
 Rocket emoji via https://github.com/twitter/twemoji

@@ -30,6 +30,6 @@ func (d *RFCTime) UnmarshalJSON(b []byte) error {
 	if err != nil {
 		return err
 	}
-	*d = RFCTime{goTime}
+	*d = RFCTime{Time: goTime}
 	return nil
 }

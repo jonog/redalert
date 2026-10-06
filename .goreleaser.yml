@@ -1,5 +1,11 @@
+version: 2
+
 builds:
-  - binary: redalert
+  - id: redalert
+    main: .
+    binary: redalert
+    ldflags:
+      - -X main.version={{.Version}} -X main.commit={{.Commit}}
     goos:
       - windows
       - darwin

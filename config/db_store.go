@@ -252,7 +252,7 @@ func (t TypeConverter) FromDb(target interface{}) (gorp.CustomScanner, bool) {
 			b := []byte(*s)
 			return json.Unmarshal(b, target)
 		}
-		return gorp.CustomScanner{new(string), target, binder}, true
+		return gorp.CustomScanner{Holder: new(string), Target: target, Binder: binder}, true
 	case *json.RawMessage:
 		binder := func(holder, target interface{}) error {
 			s, ok := holder.(*string)
@@ -267,7 +267,7 @@ func (t TypeConverter) FromDb(target interface{}) (gorp.CustomScanner, bool) {
 			*st = json.RawMessage(b)
 			return nil
 		}
-		return gorp.CustomScanner{new(string), target, binder}, true
+		return gorp.CustomScanner{Holder: new(string), Target: target, Binder: binder}, true
 	}
 	return gorp.CustomScanner{}, false
 }
