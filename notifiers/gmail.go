@@ -36,9 +36,9 @@ var NewGmailNotifier = func(config Config) (Notifier, error) {
 	}
 
 	return Notifier(Gmail{
-		name: config.Name,
-		user: config.Config["user"],
-		pass: config.Config["pass"],
+		name:                  config.Name,
+		user:                  config.Config["user"],
+		pass:                  config.Config["pass"],
 		notificationAddresses: strings.Split(config.Config["notification_addresses"], ","),
 	}), nil
 }

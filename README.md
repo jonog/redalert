@@ -509,6 +509,8 @@ See [redalert-cloudformation](https://github.com/jonog/redalert-cloudformation)
 
 ### Development
 
+See [AGENTS.md](AGENTS.md) for the package map, toolchain, generated files, and completion criteria.
+
 #### Setup
 Use Go 1.27.1 (the module baseline is Go 1.27.0). Dependencies are managed with Go modules; no GOPATH layout, Glide installation, or checked-in vendor tree is required.
 
@@ -523,6 +525,18 @@ go build -ldflags "-X main.version=0.2.4 -X main.commit=$(git rev-parse HEAD)" -
 ```
 
 The checked-in files in `web/assets` are embedded by the standard library at build time. Ordinary Go builds need no Node installation. To regenerate them after changing the UI, use Node.js 20.19.0 and npm 10.8.2 (`nvm use` in `ui/`), then run `make embed-static`; the UI build uses `npm ci` and its checked-in lockfile.
+
+#### Local dashboard
+
+Run `make dev` from the repository. It always rebuilds the current checkout, uses a temporary copy of `config/demo.json`, starts a loopback-only local fixture, and cleans up both processes on Ctrl-C, termination, startup failure, or application exit. It does not read or write your `config.json`. Open the dashboard URL printed by the command. Open the printed fixture URL with `/fail` to trigger a local stderr alert, then `/recover` to see recovery. No Docker, credentials, or external monitoring targets are needed. The browser libraries are still loaded from CDNs, so the dashboard may need network access to render fully.
+
+Override the dashboard, RPC, and fixture ports with `REDALERT_DEV_PORT`, `REDALERT_DEV_RPC_PORT`, and `REDALERT_DEV_FIXTURE_PORT`, respectively:
+
+```sh
+REDALERT_DEV_PORT=8890 REDALERT_DEV_RPC_PORT=8891 REDALERT_DEV_FIXTURE_PORT=8892 make dev
+```
+
+`make check` is the common local and CI verification command. It checks formatting without modifying files, runs unit tests, builds all packages and the versioned executable, and runs the HTTP smoke check against that executable. Docker-backed integration checks remain separate under `make test-integration`.
 
 #### Tests
 

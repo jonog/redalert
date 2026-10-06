@@ -1,0 +1,15 @@
+{
+  "checks": [
+    {
+      "id": "demo",
+      "name": "Local demo fixture",
+      "type": "web-ping",
+      "send_alerts": ["stderr"],
+      "backoff": {"type": "constant", "interval": 5},
+      "config": {"address": "http://127.0.0.1:__FIXTURE_PORT__/"},
+      "assertions": [{"source": "text", "comparison": "==", "target": "healthy"}]
+    }
+  ],
+  "notifications": [],
+  "preferences": {"notifications": {"fail_count_alert_threshold": 1}}
+}

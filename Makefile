@@ -13,6 +13,17 @@ install-deps:
 build:
 	go build ${LDFLAGS} -o ${BINARY} .
 
+dev: build
+	python3 scripts/dev.py ./$(BINARY)
+
+check:
+	@unformatted=$$(gofmt -l $$(find . -name '*.go' -not -path './.git/*' -not -path './servicepb/service.pb.go')); \
+	if [ -n "$$unformatted" ]; then echo "Go files need formatting:"; echo "$$unformatted"; exit 1; fi
+	REDALERT_INTEGRATION= go test ./...
+	REDALERT_INTEGRATION= go build ./...
+	$(MAKE) build
+	python3 scripts/smoke.py ./$(BINARY)
+
 embed-static: build-ui
 	# The dashboard files are embedded by web/web.go with //go:embed.
 
@@ -55,4 +66,4 @@ build-docker-image-remote: build-docker-image-local
 	docker tag jonog/redalert jonog/redalert:v${VERSION}
 	docker push jonog/redalert
 
-.PHONY: install-deps embed-static build-ui build-proto clean test-deps test test-unit test-integration build build-docker-image build-docker-image-remote
+.PHONY: install-deps embed-static build-ui build-proto clean test-deps test test-unit test-integration build dev check build-docker-image build-docker-image-remote
