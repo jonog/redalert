@@ -4,12 +4,8 @@ jobs:
   build:
     docker:
       - image: cimg/go:1.27.1
-      - image: postgres:9.5
-        environment:
-          POSTGRES_PASSWORD: ""
     environment:
-      DOCKER_API_VERSION: "1.20"
-      POSTGRES_IMAGE: "postgres:9.5"
+      DOCKER_API_VERSION: "1.24"
     steps:
       - checkout
       - run: go mod download
@@ -17,7 +13,9 @@ jobs:
       - run: git diff --exit-code -- go.mod go.sum
       - run: go test ./...
       - run: go build ./...
-      - run: make build
+      - run: make build VERSION=ci COMMIT=ci
+      - run: test "$(./redalert version)" = "Redalert vci sha: ci"
+      - run: python3 scripts/smoke.py ./redalert
 
 workflows:
   version: 2

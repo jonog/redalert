@@ -510,7 +510,9 @@ See [redalert-cloudformation](https://github.com/jonog/redalert-cloudformation)
 ### Development
 
 #### Setup
-Use Go 1.27.1. Dependencies are managed with Go modules; no GOPATH layout or Glide installation is required.
+Use Go 1.27.1 (the module baseline is Go 1.27.0). Dependencies are managed with Go modules; no GOPATH layout, Glide installation, or checked-in vendor tree is required.
+
+The module requirements use versions resolved from the Glide-locked revisions (including canonical tags where those exact revisions are tagged), with the remaining transitive requirements recorded in `go.mod` and `go.sum`. `glide.yaml` and `glide.lock` are historical inputs only and are not used by the supported build or test workflow.
 
 ```sh
 go mod download
@@ -520,7 +522,7 @@ go build -ldflags "-X main.version=0.2.4 -X main.commit=$(git rev-parse HEAD)" -
 ./redalert version
 ```
 
-The checked-in files in `web/assets` are embedded by the standard library at build time. To regenerate them after changing the UI, run `make embed-static`.
+The checked-in files in `web/assets` are embedded by the standard library at build time. Ordinary Go builds need no Node installation. To regenerate them after changing the UI, use Node.js 20.19.0 and npm 10.8.2 (`nvm use` in `ui/`), then run `make embed-static`; the UI build uses `npm ci` and its checked-in lockfile.
 
 #### Tests
 
@@ -530,14 +532,16 @@ Unit tests (default vet enabled):
 go test ./...
 ```
 
-Docker-backed SSH, Postgres, and Docker stats integration tests are opt-in. They need a working Docker daemon plus the `sickp/alpine-sshd` and `postgres:9.5` images; `make test-deps` pulls the images. Run them with:
+Docker-backed SSH, Postgres, and Docker stats integration tests are opt-in. They need an x86_64 Docker daemon plus the digest-pinned `sickp/alpine-sshd` fixture and `postgres:9.5`; `make test-deps` pulls them. Set `DOCKER_API_VERSION=1.24`, and set `DOCKER_HOST` to a Docker endpoint whose published ports are reachable from the test process (Docker Desktop users may need `host.docker.internal`). The PostgreSQL fixture runs with test-only trust authentication. Run the checks with:
 
 ```sh
 make test-deps
 make test-integration
 ```
 
-The integration target sets `REDALERT_INTEGRATION=1` and fails normally if Docker, the fixtures, or the tested behavior fails. The unit command skips only these fixture-dependent checks. To smoke check the HTTP server, build `redalert`, start it with a disposable configuration, and verify that `/healthcheck`, `/`, `/assets/app.bundle.js`, and `/v1/stats` return successful responses. With a controlled endpoint in that configuration, verify an initial failure and recovery, then POST to `/v1/checks/{check_id}/disable`, `/enable`, and `/trigger` and confirm the corresponding check behavior. These runtime and Docker-backed checks were not run in this workspace: the required Go module checksums are absent and resolving them would require network access, which was unavailable.
+The integration target sets `REDALERT_INTEGRATION=1` and fails normally if Docker, the fixtures, or the tested behavior fails. Use `go test -v ./checks` to see the named opt-in cases and their skip reasons. The remote-command integration cases currently construct a `command` check, so they do not verify SSH behavior; SSH helper correction remains separate work. Run `python3 scripts/smoke.py ./redalert` after `make build` to verify startup outside the checkout, embedded assets and content types, health, statistics, local-target failure and recovery alerts, and the enable/disable/trigger routes.
+
+Race detection is intentionally excluded from this migration because known polling races are tracked separately.
 
 ### Credits
 Rocket emoji via https://github.com/twitter/twemoji

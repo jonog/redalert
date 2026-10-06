@@ -29,7 +29,7 @@ func NewEvent(checkID, checkName, checkType string, checkResponse data.CheckResp
 		CheckID:   checkID,
 		CheckName: checkName,
 		CheckType: checkType,
-		Time:      utils.RFCTime{time.Now()},
+		Time:      utils.RFCTime{Time: time.Now()},
 		Data:      checkResponse,
 		Tags:      make(map[string]string),
 		Messages:  []string{},

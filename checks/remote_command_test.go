@@ -45,7 +45,7 @@ func TestRemoteCommand_ParseAndInitialise(t *testing.T) {
 func TestRemoteCommand_Check(t *testing.T) {
 	requireIntegration(t)
 
-	container, err := setupContainer("sickp/alpine-sshd")
+	container, err := setupContainer(sshFixtureImage)
 	if err != nil {
 		t.Fatalf("error: %#v", err)
 	}
@@ -81,7 +81,7 @@ func TestRemoteCommand_Check(t *testing.T) {
 func TestRemoteCommand_Check_MetadataExitStatus(t *testing.T) {
 	requireIntegration(t)
 
-	container, err := setupContainer("sickp/alpine-sshd")
+	container, err := setupContainer(sshFixtureImage)
 	if err != nil {
 		t.Fatalf("error: %#v", err)
 	}

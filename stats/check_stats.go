@@ -41,10 +41,10 @@ func (c *CheckStats) Export() CheckStatsPublic {
 		FailureTotal:    c.FailureTotal.count,
 	}
 	if !c.LastCheckedAt.t.IsZero() {
-		stats.LastCheckedAt = &utils.RFCTime{c.LastCheckedAt.t}
+		stats.LastCheckedAt = &utils.RFCTime{Time: c.LastCheckedAt.t}
 	}
 	if !c.StateTransitionedAt.t.IsZero() {
-		stats.StateTransitionedAt = &utils.RFCTime{c.StateTransitionedAt.t}
+		stats.StateTransitionedAt = &utils.RFCTime{Time: c.StateTransitionedAt.t}
 	}
 	return stats
 }

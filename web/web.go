@@ -48,7 +48,7 @@ func Run(service *core.Service, port int, disableBrand bool) {
 	})
 
 	handler := cors.Default().Handler(router)
-	err := http.ListenAndServe(":"+strconv.Itoa(port), handler)
+	err = http.ListenAndServe(":"+strconv.Itoa(port), handler)
 	if err != nil {
 		log.Fatal(err)
 	}

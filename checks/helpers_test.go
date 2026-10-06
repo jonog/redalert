@@ -2,10 +2,11 @@ package checks
 
 import (
 	"database/sql"
-	"log"
+	"fmt"
 	"net"
 	"net/url"
 	"os"
+	"testing"
 	"time"
 
 	"github.com/docker/engine-api/client"
@@ -16,6 +17,8 @@ import (
 	"github.com/nu7hatch/gouuid"
 	"golang.org/x/net/context"
 )
+
+const sshFixtureImage = "sickp/alpine-sshd@sha256:0f5a58ba5bfc5549a910264f32c337903967bb377d596c91c03611f15b4699ad"
 
 func getDockerHost() (string, error) {
 	dockerHost := os.Getenv("DOCKER_HOST")
@@ -44,7 +47,9 @@ func prepareDatabase(address string) error {
 	}
 	defer db.Close()
 
-	waitForDBPing(db)
+	if err := waitForDBPing(db); err != nil {
+		return err
+	}
 
 	_, err = db.Exec("CREATE TABLE IF NOT EXISTS emojis(id serial primary key, name text NOT NULL);")
 	if err != nil {
@@ -74,6 +79,9 @@ func setupContainer(image string) (*types.ContainerJSON, error) {
 		Image:        image,
 		ExposedPorts: emptyMap,
 	}
+	if image == "postgres" || image == "postgres:9.5" {
+		containerConfig.Env = []string{"POSTGRES_HOST_AUTH_METHOD=trust"}
+	}
 	hostConfig := container.HostConfig{
 		PublishAllPorts: true,
 	}
@@ -88,13 +96,15 @@ func setupContainer(image string) (*types.ContainerJSON, error) {
 	if err != nil {
 		return nil, err
 	}
-	client.ContainerStart(context.Background(), container.ID, types.ContainerStartOptions{})
+	err = client.ContainerStart(context.Background(), container.ID, types.ContainerStartOptions{})
 	if err != nil {
-		return nil, err
+		_ = client.ContainerRemove(context.Background(), container.ID, types.ContainerRemoveOptions{Force: true})
+		return nil, fmt.Errorf("start fixture container %s: %w", image, err)
 	}
 
 	containerData, err := client.ContainerInspect(context.Background(), container.ID)
 	if err != nil {
+		_ = client.ContainerRemove(context.Background(), container.ID, types.ContainerRemoveOptions{Force: true})
 		return nil, err
 	}
 	return &containerData, nil
@@ -108,39 +118,33 @@ func removePostgresContainer(containerID string) error {
 	return client.ContainerRemove(context.Background(), containerID, types.ContainerRemoveOptions{Force: true})
 }
 
-func waitForDBPing(db *sql.DB) {
+func waitForDBPing(db *sql.DB) error {
 	tryDBPing := func() bool {
 		err := db.Ping()
 		return err == nil
 	}
-	waitFor(tryDBPing, 1*time.Millisecond, 5*time.Second)
+	return waitFor(tryDBPing, 100*time.Millisecond, 30*time.Second)
 }
 
-func waitForTCP(address string) {
+func waitForTCP(address string) error {
 	tryTCP := func() bool {
-		conn, _ := net.DialTimeout("tcp", address, 500*time.Millisecond)
-		return conn != nil
+		conn, err := net.DialTimeout("tcp", address, 500*time.Millisecond)
+		if err != nil {
+			return false
+		}
+		_ = conn.Close()
+		return true
 	}
-	waitFor(tryTCP, 500*time.Millisecond, 10*time.Second)
+	return waitFor(tryTCP, 500*time.Millisecond, 10*time.Second)
 }
 
-func waitFor(predicateFunc func() bool, backoff time.Duration, timeout time.Duration) {
-	waitChan := make(chan struct{})
-	go func() {
-		for {
-			if predicateFunc() {
-				break
-			} else {
-				log.Println("Waiting")
-				time.Sleep(backoff)
-			}
+func waitFor(predicateFunc func() bool, backoff time.Duration, timeout time.Duration) error {
+	deadline := time.Now().Add(timeout)
+	for time.Now().Before(deadline) {
+		if predicateFunc() {
+			return nil
 		}
-		close(waitChan)
-	}()
-	select {
-	case <-waitChan:
-		break
-	case <-time.After(timeout):
-		log.Println("Timeout")
+		time.Sleep(backoff)
 	}
+	return fmt.Errorf("timed out after %s waiting for fixture readiness", timeout)
 }
