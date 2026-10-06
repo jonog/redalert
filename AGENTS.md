@@ -2,6 +2,7 @@
 
 ## Project layout
 
+- `CONCEPTS.md` defines shared domain vocabulary, relevant when orienting to the codebase.
 - `redalert.go` and `cmd/` define the executable and CLI commands.
 - `core/` orchestrates checks and service lifecycle; `checks/` implements check types.
 - `assertions/` evaluates check results and `backoffs/` schedules retries.
