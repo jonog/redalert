@@ -48,7 +48,7 @@ build-docker-image-local:
 		-v "$(shell pwd):/src" \
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		golang:$(GO_VERSION) \
-		sh -c 'cd /src && go build -ldflags "-X main.version=$(VERSION) -X main.commit=$(COMMIT)" -o /src/redalert .'
+		sh -c 'cd /src && CGO_ENABLED=0 go build -buildvcs=false -ldflags "-X main.version=$(VERSION) -X main.commit=$(COMMIT)" -o /src/redalert .'
 	docker build -t jonog/redalert .
 
 build-docker-image-remote: build-docker-image-local

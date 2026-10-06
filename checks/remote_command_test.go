@@ -2,6 +2,7 @@ package checks
 
 import (
 	"encoding/json"
+	"net"
 	"testing"
 )
 
@@ -56,6 +57,9 @@ func TestRemoteCommand_Check(t *testing.T) {
 		t.Fatalf("error: %#v, host: %#v", err, host)
 	}
 	port := container.NetworkSettings.Ports["22/tcp"][0].HostPort
+	if err := waitForTCP(net.JoinHostPort(host, port)); err != nil {
+		t.Fatalf("wait for SSH fixture: %v", err)
+	}
 
 	var config Config
 	err = json.Unmarshal(testRemoteCommandConfig("echo hi", host, port), &config)
@@ -92,6 +96,9 @@ func TestRemoteCommand_Check_MetadataExitStatus(t *testing.T) {
 		t.Fatalf("error: %#v, host: %#v", err, host)
 	}
 	port := container.NetworkSettings.Ports["22/tcp"][0].HostPort
+	if err := waitForTCP(net.JoinHostPort(host, port)); err != nil {
+		t.Fatalf("wait for SSH fixture: %v", err)
+	}
 
 	var config Config
 	err = json.Unmarshal(testRemoteCommandConfig("exit 111", host, port), &config)
