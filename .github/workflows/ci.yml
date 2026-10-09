@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: ['**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_API_VERSION: "1.24"
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Check Python
+        run: python3 --version
+
+      - name: Download Go modules
+        run: go mod download
+
+      - name: Check Go module tidiness
+        run: |
+          go mod tidy
+          git diff --exit-code -- go.mod go.sum
+
+      - name: Run project checks
+        run: make check VERSION=ci COMMIT=ci
+
+      - name: Check executable version metadata
+        run: 'test "$(./redalert version)" = "Redalert vci sha: ci"'
