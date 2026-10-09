@@ -40,4 +40,4 @@ jobs:
         run: make check VERSION=ci COMMIT=ci
 
       - name: Check executable version metadata
-        run: test "$(./redalert version)" = "Redalert vci sha: ci"
+        run: 'test "$(./redalert version)" = "Redalert vci sha: ci"'
