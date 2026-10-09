@@ -1,6 +1,6 @@
 ## Redalert
 
-[![Circle CI](https://circleci.com/gh/jonog/redalert.svg?style=svg)](https://circleci.com/gh/jonog/redalert)
+[![CI](https://github.com/jonog/redalert/actions/workflows/ci.yml/badge.svg)](https://github.com/jonog/redalert/actions/workflows/ci.yml)
 
 [![Launch Stack](https://cdn.rawgit.com/buildkite/cloudformation-launch-stack-button-svg/master/launch-stack.svg)](https://console.aws.amazon.com/cloudformation/home#/stacks/new?stackName=redalert&templateURL=https://s3-ap-southeast-2.amazonaws.com/redalert-cloudformation/redalert.yml)
 
