@@ -19,6 +19,8 @@ type FileStore struct {
 	mu       sync.Mutex
 }
 
+func (f *FileStore) Filename() string { return f.filename }
+
 // AppendChecks atomically appends checks while preserving all other file data.
 func (f *FileStore) AppendChecks(additions []checks.Config) error {
 	f.mu.Lock()
@@ -54,7 +56,11 @@ func (f *FileStore) AppendChecks(additions []checks.Config) error {
 	if err = tmp.Close(); err != nil {
 		return err
 	}
-	return os.Rename(name, f.filename)
+	if err = os.Rename(name, f.filename); err != nil {
+		return err
+	}
+	f.data = data
+	return nil
 }
 
 type FileStoreData struct {
@@ -129,13 +135,19 @@ func (f *FileStore) write() error {
 }
 
 func (f *FileStore) Notifications() ([]notifiers.Config, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
 	return f.data.Notifications, nil
 }
 
 func (f *FileStore) Checks() ([]checks.Config, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
 	return f.data.Checks, nil
 }
 
 func (f *FileStore) Preferences() (Preferences, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
 	return f.data.Preferences, nil
 }

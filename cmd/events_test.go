@@ -18,6 +18,10 @@ type eventTestServer struct {
 	err      error
 }
 
+func (*eventTestServer) CheckAdd(context.Context, *pb.CheckAddRequest) (*pb.CheckAddResponse, error) {
+	return nil, nil
+}
+
 func (*eventTestServer) CheckList(context.Context, *pb.CheckListRequest) (*pb.CheckListResponse, error) {
 	return nil, nil
 }

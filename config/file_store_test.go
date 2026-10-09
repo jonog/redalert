@@ -159,3 +159,37 @@ func TestFileStore_Notifications(t *testing.T) {
 		t.Fatalf("error with notification config: %#v", n[0].Config)
 	}
 }
+
+func TestFileStore_AppendChecksPreservesOtherValuesAndUpdatesMemory(t *testing.T) {
+	path := t.TempDir() + "/config.json"
+	if err := ioutil.WriteFile(path, testConfig(), 0644); err != nil {
+		t.Fatal(err)
+	}
+	fs, err := NewFileStore(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	before, _ := fs.Checks()
+	if err := fs.AppendChecks([]checks.Config{{ID: "stable-id", Name: "added", Type: "web-ping", Config: json.RawMessage(`{"address":"http://localhost"}`)}}); err != nil {
+		t.Fatal(err)
+	}
+	after, err := fs.Checks()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(after) != 2 || after[0].ID != before[0].ID || after[1].ID != "stable-id" {
+		t.Fatalf("checks after append = %#v", after)
+	}
+	notifications, _ := fs.Notifications()
+	if len(notifications) != 1 || notifications[0].Name != "sms-devops" {
+		t.Fatalf("notifications changed: %#v", notifications)
+	}
+	reloaded, err := NewFileStore(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	persisted, _ := reloaded.Checks()
+	if len(persisted) != 2 || persisted[1].ID != "stable-id" {
+		t.Fatalf("persisted checks = %#v", persisted)
+	}
+}

@@ -147,6 +147,23 @@ Use "redalert [command] --help" for more information about a command.
 
 Use `redalert events <check-id>` to display the events currently retained by the running server for one check. The in-memory event store is bounded, so older evicted events and events from previous server processes are unavailable. The command uses the configured `--rpc-port` (default 8889).
 
+Use `redalert check-add --input checks.json` to append one or more checks to the running server's file configuration and start them immediately. The input is a nonempty JSON array using the `checks` entries from `config.json`; omitted IDs are generated and the command prints the IDs that were added. Use `--input -` to read the array from standard input. For example:
+
+```json
+[
+  {
+    "name": "Local HTTP",
+    "type": "web-ping",
+    "config": { "address": "http://localhost:8080" },
+    "send_alerts": ["stderr"],
+    "backoff": { "type": "constant", "interval": 10 },
+    "assertions": []
+  }
+]
+```
+
+`check-add` requires a running server using file configuration, and `--config-file` must identify the same file used by that server. Database, URL, and S3 configurations are not supported.
+
 #### Configuration
 
 Configure servers to monitor & alert settings via a configuration file:
