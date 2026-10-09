@@ -128,6 +128,7 @@ Usage:
 
 Available Commands:
   checks      List checks
+  events      List retained events for a check
   config-sync Sync file and database configurations
   server      Run checks and server stats
   version     Print the version number of Redalert
@@ -143,6 +144,8 @@ Flags:
 
 Use "redalert [command] --help" for more information about a command.
 ```
+
+Use `redalert events <check-id>` to display the events currently retained by the running server for one check. The in-memory event store is bounded, so older evicted events and events from previous server processes are unavailable. The command uses the configured `--rpc-port` (default 8889).
 
 #### Configuration
 
