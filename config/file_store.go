@@ -4,6 +4,9 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"math/rand"
+	"os"
+	"path/filepath"
+	"sync"
 	"time"
 
 	"github.com/jonog/redalert/checks"
@@ -13,6 +16,45 @@ import (
 type FileStore struct {
 	filename string
 	data     FileStoreData
+	mu       sync.Mutex
+}
+
+// AppendChecks atomically appends checks while preserving all other file data.
+func (f *FileStore) AppendChecks(additions []checks.Config) error {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	file, err := ioutil.ReadFile(f.filename)
+	if err != nil {
+		return err
+	}
+	var data FileStoreData
+	if err = json.Unmarshal(file, &data); err != nil {
+		return err
+	}
+	data.Checks = append(data.Checks, additions...)
+	b, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		return err
+	}
+	dir := filepath.Dir(f.filename)
+	tmp, err := ioutil.TempFile(dir, ".redalert-config-*")
+	if err != nil {
+		return err
+	}
+	name := tmp.Name()
+	defer os.Remove(name)
+	if _, err = tmp.Write(b); err != nil {
+		tmp.Close()
+		return err
+	}
+	if err = tmp.Sync(); err != nil {
+		tmp.Close()
+		return err
+	}
+	if err = tmp.Close(); err != nil {
+		return err
+	}
+	return os.Rename(name, f.filename)
 }
 
 type FileStoreData struct {
