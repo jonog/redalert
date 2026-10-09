@@ -31,6 +31,12 @@ func (m *Metadata) Assert(options Options) (Outcome, error) {
 }
 
 func (m *Metadata) ValidateConfig() error {
+	if m.Identifier == "" {
+		return errors.New("metadata asserter: identifier is required")
+	}
+	if m.Comparison != "==" && m.Comparison != "=" && m.Comparison != "equals" {
+		return UnknownMetadataComparisonErr
+	}
 	return nil
 }
 

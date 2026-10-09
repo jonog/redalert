@@ -108,3 +108,13 @@ func TestJSON_ErrorScenarios(t *testing.T) {
 		}
 	}
 }
+
+func TestJSON_ValidateConfigRejectsUnknownComparison(t *testing.T) {
+	a, err := New(Config{Source: "json", Identifier: "status", Comparison: "contains", Target: "ok"}, testLog())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := a.ValidateConfig(); err == nil {
+		t.Fatal("unknown comparison accepted")
+	}
+}

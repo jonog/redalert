@@ -44,6 +44,37 @@ func TestCheckAddRejectsMalformedInputAndDestinationWithoutWriting(t *testing.T)
 	}
 }
 
+func TestCheckAddRejectsInvalidAssertionWithoutWritingOrRegistering(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "config.json")
+	if err := ioutil.WriteFile(path, []byte(`{"checks":[],"notifications":[],"preferences":{}}`), 0600); err != nil {
+		t.Fatal(err)
+	}
+	store, err := config.NewFileStore(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	before, err := ioutil.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	service := core.NewService()
+	srv := &server{service: service, store: store, filename: path}
+	input := `[{"name":"bad-assertion","type":"web-ping","config":{"address":"http://localhost"},"assertions":[{"source":"metric","identifier":"latency","comparison":"approximately","target":"5"}]}]`
+	if _, err := srv.CheckAdd(context.Background(), &pb.CheckAddRequest{Destination: path, Json: input}); err == nil {
+		t.Fatal("invalid assertion accepted")
+	}
+	after, err := ioutil.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(after) != string(before) {
+		t.Fatalf("configuration changed after rejected addition: %s", after)
+	}
+	if got := service.Checks(); len(got) != 0 {
+		t.Fatalf("runtime checks changed after rejected addition: %#v", got)
+	}
+}
+
 func TestCheckAddPersistsRegistersAndStartsCheck(t *testing.T) {
 	requests := make(chan struct{}, 1)
 	fixture := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

@@ -35,6 +35,14 @@ func (m *Metric) Assert(options Options) (Outcome, error) {
 }
 
 func (m *Metric) ValidateConfig() error {
+	if m.Identifier == "" {
+		return errors.New("metric asserter: identifier is required")
+	}
+	switch m.Comparison {
+	case ">", "greater than", ">=", "greater than or equal", "<", "less than", "<=", "less than or equal", "==", "=", "equals":
+	default:
+		return UnknownMetricComparisonErr
+	}
 	_, err := strconv.ParseFloat(m.Target, 64)
 	if err != nil {
 		return InvalidTargetTypeErr

@@ -42,6 +42,12 @@ func (m *JSON) Assert(options Options) (Outcome, error) {
 }
 
 func (m *JSON) ValidateConfig() error {
+	if m.Identifier == "" {
+		return errors.New("json: identifier is required")
+	}
+	if m.Comparison != "==" && m.Comparison != "=" && m.Comparison != "equals" {
+		return UnknownJSONComparisonErr
+	}
 	return nil
 }
 
