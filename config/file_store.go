@@ -4,6 +4,9 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"math/rand"
+	"os"
+	"path/filepath"
+	"sync"
 	"time"
 
 	"github.com/jonog/redalert/checks"
@@ -13,6 +16,51 @@ import (
 type FileStore struct {
 	filename string
 	data     FileStoreData
+	mu       sync.Mutex
+}
+
+func (f *FileStore) Filename() string { return f.filename }
+
+// AppendChecks atomically appends checks while preserving all other file data.
+func (f *FileStore) AppendChecks(additions []checks.Config) error {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	file, err := ioutil.ReadFile(f.filename)
+	if err != nil {
+		return err
+	}
+	var data FileStoreData
+	if err = json.Unmarshal(file, &data); err != nil {
+		return err
+	}
+	data.Checks = append(data.Checks, additions...)
+	b, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		return err
+	}
+	dir := filepath.Dir(f.filename)
+	tmp, err := ioutil.TempFile(dir, ".redalert-config-*")
+	if err != nil {
+		return err
+	}
+	name := tmp.Name()
+	defer os.Remove(name)
+	if _, err = tmp.Write(b); err != nil {
+		tmp.Close()
+		return err
+	}
+	if err = tmp.Sync(); err != nil {
+		tmp.Close()
+		return err
+	}
+	if err = tmp.Close(); err != nil {
+		return err
+	}
+	if err = os.Rename(name, f.filename); err != nil {
+		return err
+	}
+	f.data = data
+	return nil
 }
 
 type FileStoreData struct {
@@ -87,13 +135,19 @@ func (f *FileStore) write() error {
 }
 
 func (f *FileStore) Notifications() ([]notifiers.Config, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
 	return f.data.Notifications, nil
 }
 
 func (f *FileStore) Checks() ([]checks.Config, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
 	return f.data.Checks, nil
 }
 
 func (f *FileStore) Preferences() (Preferences, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
 	return f.data.Preferences, nil
 }

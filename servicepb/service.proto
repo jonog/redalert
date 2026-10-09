@@ -13,10 +13,15 @@ service RedalertService {
   // CheckDisable disables a check
   rpc CheckDisable(CheckDisableRequest) returns (CheckDisableResponse) {}
 
+  rpc CheckAdd(CheckAddRequest) returns (CheckAddResponse) {}
+
   // EventList lists retained events for a check.
   rpc EventList(EventListRequest) returns (EventListResponse) {}
 
 }
+
+message CheckAddRequest { string destination = 1; string json = 2; }
+message CheckAddResponse { repeated string ids = 1; }
 
 message CheckListRequest {}
 

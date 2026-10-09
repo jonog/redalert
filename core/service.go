@@ -11,6 +11,7 @@ import (
 )
 
 type Service struct {
+	mu        sync.RWMutex
 	checks    map[string]*Check
 	notifiers map[string]notifiers.Notifier
 	wg        sync.WaitGroup
@@ -52,6 +53,8 @@ func (s *Service) KeepRunning() {
 }
 
 func (s *Service) Checks() []*Check {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 	var checksArr []*Check
 	for id := range s.checks {
 		checksArr = append(checksArr, s.checks[id])
@@ -61,6 +64,8 @@ func (s *Service) Checks() []*Check {
 }
 
 func (s *Service) CheckByID(id string) (*Check, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 	check, exists := s.checks[id]
 	if !exists {
 		return nil, errors.New("service: check does not exist")
@@ -75,6 +80,8 @@ func (a ChecksArr) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ChecksArr) Less(i, j int) bool { return a[i].ConfigRank < a[j].ConfigRank }
 
 func (s *Service) RegisterNotifier(notifier notifiers.Notifier) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	_, exists := s.notifiers[notifier.Name()]
 	if exists {
 		return errors.New("redalert: notifier already existing on service. name: " + notifier.Name())
@@ -84,11 +91,33 @@ func (s *Service) RegisterNotifier(notifier notifiers.Notifier) error {
 }
 
 func (s *Service) RegisterCheck(check *Check, sendAlerts []string, checkIdx int) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.registerCheck(check, sendAlerts, checkIdx)
+}
+
+func (s *Service) registerCheck(check *Check, sendAlerts []string, checkIdx int) error {
 	err := check.AddNotifiers(s, sendAlerts)
 	if err != nil {
 		return err
 	}
 	s.checks[check.Data.ID] = check
 	check.ConfigRank = checkIdx
+	return nil
+}
+
+func (s *Service) AddChecks(checks []*Check, notifications [][]string, ranks []int) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for _, check := range checks {
+		if _, exists := s.checks[check.Data.ID]; exists {
+			return errors.New("check ID already exists: " + check.Data.ID)
+		}
+	}
+	for i, check := range checks {
+		if err := s.registerCheck(check, notifications[i], ranks[i]); err != nil {
+			return err
+		}
+	}
 	return nil
 }

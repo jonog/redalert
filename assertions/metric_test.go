@@ -35,6 +35,16 @@ func TestMetric_AssertSuccess(t *testing.T) {
 	}
 }
 
+func TestMetric_ValidateConfigRejectsUnknownComparison(t *testing.T) {
+	a, err := New(testMetricConfig("approximately", "5"), testLog())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := a.ValidateConfig(); err == nil {
+		t.Fatal("unknown comparison accepted")
+	}
+}
+
 func metricCaseAssertSuccess(k string, actual float64, comparison, target string) bool {
 	a, err := New(testMetricConfig(comparison, target), testLog())
 	if err != nil {

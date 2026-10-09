@@ -138,7 +138,7 @@ func runServer(configStore config.Store, cfg serverConfig) {
 	service.Start()
 
 	go web.Run(service, cfg.webPort, cfg.disableBrand)
-	go rpc.Run(service, cfg.rpcPort)
+	go rpc.Run(service, cfg.rpcPort, configStore)
 	fmt.Print(`
 ____ ____ ___  ____ _    ____ ____ ___
 |--< |=== |__> |--| |___ |=== |--<  |

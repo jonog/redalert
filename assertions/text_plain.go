@@ -27,6 +27,9 @@ func (m *Text) Assert(options Options) (Outcome, error) {
 }
 
 func (m *Text) ValidateConfig() error {
+	if m.Comparison != "==" && m.Comparison != "=" && m.Comparison != "equals" {
+		return UnknownTextComparisonErr
+	}
 	return nil
 }
 
