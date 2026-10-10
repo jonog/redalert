@@ -2,7 +2,6 @@ package config
 
 import (
 	"bytes"
-	"encoding/json"
 	"io"
 	"log"
 	"net/url"
@@ -58,19 +57,21 @@ func (s *S3Store) read() error {
 	log.Printf("bucket: %q, key: %q", u.Host, u.Path)
 
 	sess := session.Must(session.NewSession())
-	body, err := getS3File(sess, u.Host, u.Path)
+	body, err := fetchS3File(sess, u.Host, u.Path)
 	if err != nil {
 		return err
 	}
 
 	var data S3StoreData
-	err = json.Unmarshal(body, &data)
+	err = decodeConfig(body, formatForPath(u.Path), &data)
 	if err != nil {
 		return err
 	}
 	s.data = data
 	return nil
 }
+
+var fetchS3File = getS3File
 
 func getS3File(s *session.Session, bucket, key string) (value []byte, err error) {
 	results, err := s3.New(s).GetObject(&s3.GetObjectInput{

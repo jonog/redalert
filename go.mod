@@ -16,6 +16,7 @@ require (
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d
 	github.com/olekukonko/tablewriter v0.0.0-20170128050532-febf2d34b54a
 	github.com/rs/cors v0.0.0-20170727213201-7af7a1e09ba3
+	gopkg.in/yaml.v3 v3.0.1
 	github.com/spf13/cobra v0.0.0-20170314171253-7be4beda01ec
 	golang.org/x/crypto v0.0.0-20170307004051-728b753d0135
 	golang.org/x/net v0.0.0-20170308210134-a6577fac2d73

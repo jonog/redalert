@@ -1,9 +1,9 @@
 package config
 
 import (
-	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 
 	"github.com/jonog/redalert/checks"
 	"github.com/jonog/redalert/notifiers"
@@ -55,7 +55,11 @@ func (u *URLStore) read() error {
 		return err
 	}
 	var data URLStoreData
-	err = json.Unmarshal(body, &data)
+	parsed, parseErr := url.Parse(u.URL)
+	if parseErr != nil {
+		return parseErr
+	}
+	err = decodeConfig(body, formatForPath(parsed.Path), &data)
 	if err != nil {
 		return err
 	}
