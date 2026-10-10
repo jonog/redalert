@@ -1,0 +1,20 @@
+# YAML is selected for .yaml and .yml files (case-insensitive). Other
+# extensions and extensionless sources continue to use JSON.
+checks:
+  - name: Google
+    type: web-ping
+    config:
+      address: "http://google.com"
+    send_alerts:
+      - stderr
+    backoff:
+      type: constant
+      interval: 10
+    assertions:
+      - comparison: "=="
+        identifier: status_code
+        source: metadata
+        # Quote strings that look numeric or boolean so YAML keeps them strings.
+        target: "200"
+notifications: []
+preferences: {}

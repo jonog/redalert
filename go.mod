@@ -21,6 +21,7 @@ require (
 	golang.org/x/net v0.0.0-20170308210134-a6577fac2d73
 	google.golang.org/grpc v1.7.0
 	gopkg.in/gorp.v1 v1.7.1
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
