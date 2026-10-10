@@ -171,6 +171,8 @@ Configure servers to monitor & alert settings via a configuration file:
 * a file remotely accessible via HTTP (specified by `-u` or `--config-url`)
 * a file hosted in an AWS S3 bucket (specified by `-s` or `--config-s3`)
 
+All three sources accept JSON or YAML. Files ending in `.yaml` or `.yml` (case-insensitive) use YAML; other and extensionless paths use JSON. For HTTP and S3, selection uses the URL path or object key, so query parameters do not affect it. YAML must contain one configuration document with string mapping keys and JSON-compatible values. Quote string values that resemble numbers or booleans, such as assertion targets and notifier settings. A YAML example is available in [config/config.yaml.sample](config/config.yaml.sample).
+
 TODO: document Postgres configuration option
 
 ##### Example config.json

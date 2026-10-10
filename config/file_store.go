@@ -1,7 +1,6 @@
 package config
 
 import (
-	"encoding/json"
 	"io/ioutil"
 	"math/rand"
 	"os"
@@ -30,11 +29,11 @@ func (f *FileStore) AppendChecks(additions []checks.Config) error {
 		return err
 	}
 	var data FileStoreData
-	if err = json.Unmarshal(file, &data); err != nil {
+	if err = decodeConfig(file, formatForPath(f.filename), &data); err != nil {
 		return err
 	}
 	data.Checks = append(data.Checks, additions...)
-	b, err := json.MarshalIndent(data, "", "  ")
+	b, err := encodeConfig(data, formatForPath(f.filename))
 	if err != nil {
 		return err
 	}
@@ -118,7 +117,7 @@ func (f *FileStore) read() error {
 		return err
 	}
 	var data FileStoreData
-	err = json.Unmarshal(file, &data)
+	err = decodeConfig(file, formatForPath(f.filename), &data)
 	if err != nil {
 		return err
 	}
@@ -127,7 +126,7 @@ func (f *FileStore) read() error {
 }
 
 func (f *FileStore) write() error {
-	b, err := json.MarshalIndent(f.data, "", "  ")
+	b, err := encodeConfig(f.data, formatForPath(f.filename))
 	if err != nil {
 		return err
 	}
