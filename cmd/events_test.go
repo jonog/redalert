@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"io"
 	"net"
 	"os"
@@ -11,6 +12,10 @@ import (
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 )
+
+type failingWriter struct{}
+
+func (failingWriter) Write([]byte) (int, error) { return 0, io.ErrClosedPipe }
 
 type eventTestServer struct {
 	request  *pb.EventListRequest
@@ -125,5 +130,66 @@ func TestEventsCommandReportsRPCAndUnavailableServerErrors(t *testing.T) {
 	rpcPort = port
 	if err := eventsCmd.RunE(eventsCmd, []string{"check-a"}); err == nil || !strings.Contains(err.Error(), "list events") {
 		t.Fatalf("unavailable server error = %v", err)
+	}
+}
+
+func TestEventsJSONOutputAndEmptyHistory(t *testing.T) {
+	srv := &eventTestServer{response: &pb.EventListResponse{Events: []*pb.Event{{
+		Time: "2025-01-02T03:04:05Z", Tags: map[string]string{"region": "west"},
+		Messages: []string{"failed"}, Metrics: []*pb.Metric{{Name: "missing"}, {Name: "load", Value: 1.25, Present: true}},
+		Metadata: map[string]string{"host": "node1"},
+	}}}}
+	rpcPort = startEventTestServer(t, srv)
+	if err := eventsCmd.Flags().Set("json", "true"); err != nil {
+		t.Fatal(err)
+	}
+	defer eventsCmd.Flags().Set("json", "false")
+
+	r, w, err := os.Pipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	eventsCmd.SetOutput(w)
+	defer eventsCmd.SetOutput(nil)
+	if err := eventsCmd.RunE(eventsCmd, []string{"check-a"}); err != nil {
+		t.Fatal(err)
+	}
+	w.Close()
+	data, err := io.ReadAll(r)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var got []*pb.Event
+	if err := json.Unmarshal(data, &got); err != nil {
+		t.Fatalf("JSON output %q: %v", data, err)
+	}
+	if len(got) != 1 || got[0].Time != "2025-01-02T03:04:05Z" || got[0].Tags["region"] != "west" ||
+		len(got[0].Messages) != 1 || got[0].Messages[0] != "failed" || got[0].Metadata["host"] != "node1" ||
+		len(got[0].Metrics) != 2 || got[0].Metrics[0].Present || !got[0].Metrics[1].Present || got[0].Metrics[1].Value != 1.25 {
+		t.Fatalf("decoded events = %#v", got)
+	}
+
+	for _, events := range [][]*pb.Event{nil, {}} {
+		srv.response = &pb.EventListResponse{Events: events}
+		r2, w2, err := os.Pipe()
+		if err != nil {
+			t.Fatal(err)
+		}
+		eventsCmd.SetOutput(w2)
+		if err := eventsCmd.RunE(eventsCmd, []string{"check-a"}); err != nil {
+			t.Fatal(err)
+		}
+		w2.Close()
+		data, err := io.ReadAll(r2)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if string(data) != "[]\n" {
+			t.Fatalf("empty JSON output = %q, want []\\n", data)
+		}
+	}
+	eventsCmd.SetOutput(failingWriter{})
+	if err := eventsCmd.RunE(eventsCmd, []string{"check-a"}); err == nil || !strings.Contains(err.Error(), "encode events as JSON") {
+		t.Fatalf("output error = %v, want encoding/output error", err)
 	}
 }

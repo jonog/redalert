@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"sort"
 	"strconv"
@@ -28,6 +29,20 @@ var eventsCmd = &cobra.Command{
 			return fmt.Errorf("list events: %w", err)
 		}
 		w := cmd.OutOrStdout()
+		jsonOutput, err := cmd.Flags().GetBool("json")
+		if err != nil {
+			return err
+		}
+		if jsonOutput {
+			events := response.Events
+			if events == nil {
+				events = make([]*pb.Event, 0)
+			}
+			if err := json.NewEncoder(w).Encode(events); err != nil {
+				return fmt.Errorf("encode events as JSON: %w", err)
+			}
+			return nil
+		}
 		if len(response.Events) == 0 {
 			_, err = fmt.Fprintln(w, "No events found.")
 			return err
@@ -68,4 +83,7 @@ func formatMap(values map[string]string) string {
 	return strings.Join(pairs, ", ")
 }
 
-func init() { RootCmd.AddCommand(eventsCmd) }
+func init() {
+	eventsCmd.Flags().Bool("json", false, "output events as JSON")
+	RootCmd.AddCommand(eventsCmd)
+}
