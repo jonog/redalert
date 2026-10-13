@@ -116,6 +116,10 @@ func TestEventsCommandRendersAllFieldsAndEmptyHistory(t *testing.T) {
 }
 
 func TestEventsCommandReportsRPCAndUnavailableServerErrors(t *testing.T) {
+	if err := eventsCmd.Flags().Set("json", "true"); err != nil {
+		t.Fatal(err)
+	}
+	defer eventsCmd.Flags().Set("json", "false")
 	srv := &eventTestServer{err: context.DeadlineExceeded}
 	rpcPort = startEventTestServer(t, srv)
 	if err := eventsCmd.RunE(eventsCmd, []string{"missing"}); err == nil || !strings.Contains(err.Error(), "list events") {
@@ -138,6 +142,10 @@ func TestEventsJSONOutputAndEmptyHistory(t *testing.T) {
 		Time: "2025-01-02T03:04:05Z", Tags: map[string]string{"region": "west"},
 		Messages: []string{"failed"}, Metrics: []*pb.Metric{{Name: "missing"}, {Name: "load", Value: 1.25, Present: true}},
 		Metadata: map[string]string{"host": "node1"},
+	}, {
+		Time: "2025-01-03T04:05:06Z", Tags: map[string]string{"region": "east"},
+		Messages: []string{"recovered"}, Metrics: []*pb.Metric{{Name: "load", Value: 2.5, Present: true}, {Name: "optional"}},
+		Metadata: map[string]string{"host": "node2"},
 	}}}}
 	rpcPort = startEventTestServer(t, srv)
 	if err := eventsCmd.Flags().Set("json", "true"); err != nil {
@@ -163,10 +171,15 @@ func TestEventsJSONOutputAndEmptyHistory(t *testing.T) {
 	if err := json.Unmarshal(data, &got); err != nil {
 		t.Fatalf("JSON output %q: %v", data, err)
 	}
-	if len(got) != 1 || got[0].Time != "2025-01-02T03:04:05Z" || got[0].Tags["region"] != "west" ||
+	if len(got) != 2 || got[0].Time != "2025-01-02T03:04:05Z" || got[0].Tags["region"] != "west" ||
 		len(got[0].Messages) != 1 || got[0].Messages[0] != "failed" || got[0].Metadata["host"] != "node1" ||
 		len(got[0].Metrics) != 2 || got[0].Metrics[0].Present || !got[0].Metrics[1].Present || got[0].Metrics[1].Value != 1.25 {
 		t.Fatalf("decoded events = %#v", got)
+	}
+	if got[1].Time != "2025-01-03T04:05:06Z" || got[1].Tags["region"] != "east" ||
+		len(got[1].Messages) != 1 || got[1].Messages[0] != "recovered" || got[1].Metadata["host"] != "node2" ||
+		len(got[1].Metrics) != 2 || !got[1].Metrics[0].Present || got[1].Metrics[0].Value != 2.5 || got[1].Metrics[1].Present {
+		t.Fatalf("second decoded event = %#v", got[1])
 	}
 
 	for _, events := range [][]*pb.Event{nil, {}} {
