@@ -84,7 +84,7 @@ type jsonEvent struct {
 
 type jsonMetric struct {
 	Name    string  `json:"name,omitempty"`
-	Value   float64 `json:"value,omitempty"`
+	Value   float64 `json:"value"`
 	Present bool    `json:"present"`
 }
 

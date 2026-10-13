@@ -140,7 +140,7 @@ func TestEventsCommandReportsRPCAndUnavailableServerErrors(t *testing.T) {
 func TestEventsJSONOutputAndEmptyHistory(t *testing.T) {
 	srv := &eventTestServer{response: &pb.EventListResponse{Events: []*pb.Event{{
 		Time: "2025-01-02T03:04:05Z", Tags: map[string]string{"region": "west"},
-		Messages: []string{"failed"}, Metrics: []*pb.Metric{{Name: "missing"}, {Name: "load", Value: 1.25, Present: true}},
+		Messages: []string{"failed"}, Metrics: []*pb.Metric{{Name: "missing"}, {Name: "load", Value: 1.25, Present: true}, {Name: "zero", Value: 0, Present: true}},
 		Metadata: map[string]string{"host": "node1"},
 	}, {
 		Time: "2025-01-03T04:05:06Z", Tags: map[string]string{"region": "east"},
@@ -183,9 +183,12 @@ func TestEventsJSONOutputAndEmptyHistory(t *testing.T) {
 	if string(raw[0].Metrics[0]["present"]) != "false" {
 		t.Fatalf("false metric present field = %s, want false", raw[0].Metrics[0]["present"])
 	}
+	if string(raw[0].Metrics[2]["value"]) != "0" {
+		t.Fatalf("zero metric value field = %s, want 0", raw[0].Metrics[2]["value"])
+	}
 	if len(got) != 2 || got[0].Time != "2025-01-02T03:04:05Z" || got[0].Tags["region"] != "west" ||
 		len(got[0].Messages) != 1 || got[0].Messages[0] != "failed" || got[0].Metadata["host"] != "node1" ||
-		len(got[0].Metrics) != 2 || got[0].Metrics[0].Present || !got[0].Metrics[1].Present || got[0].Metrics[1].Value != 1.25 {
+		len(got[0].Metrics) != 3 || got[0].Metrics[0].Present || !got[0].Metrics[1].Present || got[0].Metrics[1].Value != 1.25 || !got[0].Metrics[2].Present || got[0].Metrics[2].Value != 0 {
 		t.Fatalf("decoded events = %#v", got)
 	}
 	if got[1].Time != "2025-01-03T04:05:06Z" || got[1].Tags["region"] != "east" ||
