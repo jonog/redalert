@@ -171,6 +171,18 @@ func TestEventsJSONOutputAndEmptyHistory(t *testing.T) {
 	if err := json.Unmarshal(data, &got); err != nil {
 		t.Fatalf("JSON output %q: %v", data, err)
 	}
+	var raw []struct {
+		Metrics []map[string]json.RawMessage `json:"metrics"`
+	}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		t.Fatalf("decode metric JSON fields: %v", err)
+	}
+	if _, ok := raw[0].Metrics[0]["present"]; !ok {
+		t.Fatalf("false metric omitted present field: %s", data)
+	}
+	if string(raw[0].Metrics[0]["present"]) != "false" {
+		t.Fatalf("false metric present field = %s, want false", raw[0].Metrics[0]["present"])
+	}
 	if len(got) != 2 || got[0].Time != "2025-01-02T03:04:05Z" || got[0].Tags["region"] != "west" ||
 		len(got[0].Messages) != 1 || got[0].Messages[0] != "failed" || got[0].Metadata["host"] != "node1" ||
 		len(got[0].Metrics) != 2 || got[0].Metrics[0].Present || !got[0].Metrics[1].Present || got[0].Metrics[1].Value != 1.25 {

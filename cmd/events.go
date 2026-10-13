@@ -34,9 +34,13 @@ var eventsCmd = &cobra.Command{
 			return err
 		}
 		if jsonOutput {
-			events := response.Events
-			if events == nil {
-				events = make([]*pb.Event, 0)
+			events := make([]jsonEvent, 0, len(response.Events))
+			for _, event := range response.Events {
+				encoded := jsonEvent{Time: event.Time, Tags: event.Tags, Messages: event.Messages, Metadata: event.Metadata}
+				for _, metric := range event.Metrics {
+					encoded.Metrics = append(encoded.Metrics, jsonMetric{Name: metric.Name, Value: metric.Value, Present: metric.Present})
+				}
+				events = append(events, encoded)
 			}
 			if err := json.NewEncoder(w).Encode(events); err != nil {
 				return fmt.Errorf("encode events as JSON: %w", err)
@@ -68,6 +72,20 @@ var eventsCmd = &cobra.Command{
 		}
 		return nil
 	},
+}
+
+type jsonEvent struct {
+	Time     string            `json:"time,omitempty"`
+	Tags     map[string]string `json:"tags,omitempty"`
+	Messages []string          `json:"messages,omitempty"`
+	Metrics  []jsonMetric      `json:"metrics,omitempty"`
+	Metadata map[string]string `json:"metadata,omitempty"`
+}
+
+type jsonMetric struct {
+	Name    string  `json:"name,omitempty"`
+	Value   float64 `json:"value,omitempty"`
+	Present bool    `json:"present"`
 }
 
 func formatMap(values map[string]string) string {
