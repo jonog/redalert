@@ -147,6 +147,8 @@ Use "redalert [command] --help" for more information about a command.
 
 Use `redalert events <check-id>` to display the events currently retained by the running server for one check. The in-memory event store is bounded, so older evicted events and events from previous server processes are unavailable. The command uses the configured `--rpc-port` (default 8889).
 
+Use `redalert events <check-id> --json` to output the retained events as a JSON array.
+
 Use `redalert check-add --input checks.json` to append one or more checks to the running server's file configuration and start them immediately. The input is a nonempty JSON array using the `checks` entries from `config.json`; omitted IDs are generated and the command prints the IDs that were added. Use `--input -` to read the array from standard input. For example:
 
 ```json

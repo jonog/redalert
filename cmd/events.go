@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"sort"
 	"strconv"
@@ -28,6 +29,24 @@ var eventsCmd = &cobra.Command{
 			return fmt.Errorf("list events: %w", err)
 		}
 		w := cmd.OutOrStdout()
+		jsonOutput, err := cmd.Flags().GetBool("json")
+		if err != nil {
+			return err
+		}
+		if jsonOutput {
+			events := make([]jsonEvent, 0, len(response.Events))
+			for _, event := range response.Events {
+				encoded := jsonEvent{Time: event.Time, Tags: event.Tags, Messages: event.Messages, Metadata: event.Metadata}
+				for _, metric := range event.Metrics {
+					encoded.Metrics = append(encoded.Metrics, jsonMetric{Name: metric.Name, Value: metric.Value, Present: metric.Present})
+				}
+				events = append(events, encoded)
+			}
+			if err := json.NewEncoder(w).Encode(events); err != nil {
+				return fmt.Errorf("encode events as JSON: %w", err)
+			}
+			return nil
+		}
 		if len(response.Events) == 0 {
 			_, err = fmt.Fprintln(w, "No events found.")
 			return err
@@ -55,6 +74,20 @@ var eventsCmd = &cobra.Command{
 	},
 }
 
+type jsonEvent struct {
+	Time     string            `json:"time,omitempty"`
+	Tags     map[string]string `json:"tags,omitempty"`
+	Messages []string          `json:"messages,omitempty"`
+	Metrics  []jsonMetric      `json:"metrics,omitempty"`
+	Metadata map[string]string `json:"metadata,omitempty"`
+}
+
+type jsonMetric struct {
+	Name    string  `json:"name,omitempty"`
+	Value   float64 `json:"value"`
+	Present bool    `json:"present"`
+}
+
 func formatMap(values map[string]string) string {
 	keys := make([]string, 0, len(values))
 	for key := range values {
@@ -68,4 +101,7 @@ func formatMap(values map[string]string) string {
 	return strings.Join(pairs, ", ")
 }
 
-func init() { RootCmd.AddCommand(eventsCmd) }
+func init() {
+	eventsCmd.Flags().Bool("json", false, "output events as JSON")
+	RootCmd.AddCommand(eventsCmd)
+}
