@@ -3,6 +3,7 @@ package config
 import (
 	"encoding/json"
 	"io/ioutil"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -129,11 +130,12 @@ func TestMalformedYAMLDoesNotOverwrite(t *testing.T) {
 }
 
 func TestFileStore_Checks(t *testing.T) {
-	err := ioutil.WriteFile("/tmp/test_file_store", testConfig(), 0644)
+	path := filepath.Join(t.TempDir(), "config.json")
+	err := ioutil.WriteFile(path, testConfig(), 0644)
 	if err != nil {
 		t.Fatalf("error: %#v", err)
 	}
-	fs, err := NewFileStore("/tmp/test_file_store")
+	fs, err := NewFileStore(path)
 	if err != nil {
 		t.Fatalf("error: %#v", err)
 	}
@@ -184,11 +186,12 @@ func TestFileStore_Checks(t *testing.T) {
 }
 
 func TestFileStore_CheckIDGeneration(t *testing.T) {
-	err := ioutil.WriteFile("/tmp/test_file_store", testConfig(), 0644)
+	path := filepath.Join(t.TempDir(), "config.json")
+	err := ioutil.WriteFile(path, testConfig(), 0644)
 	if err != nil {
 		t.Fatalf("error: %#v", err)
 	}
-	fs, err := NewFileStore("/tmp/test_file_store")
+	fs, err := NewFileStore(path)
 	if err != nil {
 		t.Fatalf("error: %#v", err)
 	}
@@ -202,11 +205,12 @@ func TestFileStore_CheckIDGeneration(t *testing.T) {
 }
 
 func TestFileStore_Notifications(t *testing.T) {
-	err := ioutil.WriteFile("/tmp/test_file_store", testConfig(), 0644)
+	path := filepath.Join(t.TempDir(), "config.json")
+	err := ioutil.WriteFile(path, testConfig(), 0644)
 	if err != nil {
 		t.Fatalf("error: %#v", err)
 	}
-	fs, err := NewFileStore("/tmp/test_file_store")
+	fs, err := NewFileStore(path)
 	if err != nil {
 		t.Fatalf("error: %#v", err)
 	}
