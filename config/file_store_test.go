@@ -56,6 +56,7 @@ func testConfig() []byte {
 }
 
 func TestYAMLFileStoreRewriteAndAppend(t *testing.T) {
+	t.Parallel()
 	path := t.TempDir() + "/config.YML"
 	input := `checks:
   - name: Demo
@@ -115,6 +116,7 @@ func mustRead(t *testing.T, path string) []byte {
 }
 
 func TestMalformedYAMLDoesNotOverwrite(t *testing.T) {
+	t.Parallel()
 	path := t.TempDir() + "/broken.yaml"
 	original := []byte("checks: [\n")
 	if err := ioutil.WriteFile(path, original, 0644); err != nil {
@@ -129,11 +131,13 @@ func TestMalformedYAMLDoesNotOverwrite(t *testing.T) {
 }
 
 func TestFileStore_Checks(t *testing.T) {
-	err := ioutil.WriteFile("/tmp/test_file_store", testConfig(), 0644)
+	t.Parallel()
+	path := t.TempDir() + "/config.json"
+	err := ioutil.WriteFile(path, testConfig(), 0644)
 	if err != nil {
 		t.Fatalf("error: %#v", err)
 	}
-	fs, err := NewFileStore("/tmp/test_file_store")
+	fs, err := NewFileStore(path)
 	if err != nil {
 		t.Fatalf("error: %#v", err)
 	}
@@ -184,11 +188,13 @@ func TestFileStore_Checks(t *testing.T) {
 }
 
 func TestFileStore_CheckIDGeneration(t *testing.T) {
-	err := ioutil.WriteFile("/tmp/test_file_store", testConfig(), 0644)
+	t.Parallel()
+	path := t.TempDir() + "/config.json"
+	err := ioutil.WriteFile(path, testConfig(), 0644)
 	if err != nil {
 		t.Fatalf("error: %#v", err)
 	}
-	fs, err := NewFileStore("/tmp/test_file_store")
+	fs, err := NewFileStore(path)
 	if err != nil {
 		t.Fatalf("error: %#v", err)
 	}
@@ -202,11 +208,13 @@ func TestFileStore_CheckIDGeneration(t *testing.T) {
 }
 
 func TestFileStore_Notifications(t *testing.T) {
-	err := ioutil.WriteFile("/tmp/test_file_store", testConfig(), 0644)
+	t.Parallel()
+	path := t.TempDir() + "/config.json"
+	err := ioutil.WriteFile(path, testConfig(), 0644)
 	if err != nil {
 		t.Fatalf("error: %#v", err)
 	}
-	fs, err := NewFileStore("/tmp/test_file_store")
+	fs, err := NewFileStore(path)
 	if err != nil {
 		t.Fatalf("error: %#v", err)
 	}
@@ -235,6 +243,7 @@ func TestFileStore_Notifications(t *testing.T) {
 }
 
 func TestFileStore_AppendChecksPreservesOtherValuesAndUpdatesMemory(t *testing.T) {
+	t.Parallel()
 	path := t.TempDir() + "/config.json"
 	if err := ioutil.WriteFile(path, testConfig(), 0644); err != nil {
 		t.Fatal(err)
